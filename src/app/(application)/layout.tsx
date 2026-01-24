@@ -1,30 +1,14 @@
 'use client'
 
-import React from 'react'
+import { useMemo, type ReactNode } from 'react'
 import Sidebar from '@/components/Layout/Sidebar'
 import Header from '@/components/Layout/Header'
-import { PAGE_TITLES } from '@/lib/constants/menu'
 import { usePathname } from 'next/navigation'
+import { resolvePageTitle } from '@/lib/utils/pageTitle'
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname()
-
-  // Get page title based on current pathname
-  const getPageTitle = () => {
-    // Check for exact match first
-    if (PAGE_TITLES[pathname]) {
-      return PAGE_TITLES[pathname]
-    }
-
-    // Check for partial match (useful for dynamic routes)
-    const matchedKey = Object.keys(PAGE_TITLES).find(
-      (key) => pathname.startsWith(key) && key !== '/'
-    )
-
-    return matchedKey ? PAGE_TITLES[matchedKey] : 'Dashboard'
-  }
-
-  const pageTitle = getPageTitle()
+  const pageTitle = useMemo(() => resolvePageTitle(pathname), [pathname])
 
   return (
     <div className='w-full max-w-[2500px] flex flex-col h-screen bg-grey-50 text-blackish'>

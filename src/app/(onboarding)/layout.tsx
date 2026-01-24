@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 import HomeIcon from '../../assets/icons/HomeIcon'
-import Image from 'next/image'
+import OnboardingLogo from './components/OnboardingLogo'
 
 const OnboardingLayout = ({
   children,
@@ -34,17 +34,7 @@ const OnboardingLayout = ({
           </Link>
         </div>
         <div className='flex lg:hidden justify-between items-center py-6 px-4'>
-          <Link href='/'>
-            <div className='w-[146px] h-[60px] flex items-center justify-center'>
-              <Image
-                src='/assets/images/logo/logo.svg'
-                alt='Giftseon'
-                className='w-full h-full'
-                width={200}
-                height={80}
-              />
-            </div>
-          </Link>
+          <OnboardingLogo />
           <Link href='/'>
             <div className='flex items-center space-x-1'>
               <span className='w-4 h-4 text-[#5B7880]'>
