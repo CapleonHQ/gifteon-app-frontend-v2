@@ -47,7 +47,7 @@ const TextStyleEditor = ({
         <textarea
           value={value.text}
           onChange={(e) => onChange({ ...value, text: e.target.value })}
-          className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden focus:ring-1 text-sm text-blackish font-medium focus:ring-primary-500 resize-none'
+          className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium focus:border-primary-500 resize-none'
           rows={3}
         />
       ) : (
@@ -55,7 +55,7 @@ const TextStyleEditor = ({
           type='text'
           value={value.text}
           onChange={(e) => onChange({ ...value, text: e.target.value })}
-          className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden focus:ring-1 text-sm text-blackish font-medium focus:ring-primary-500'
+          className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium focus:border-primary-500'
         />
       )}
     </div>

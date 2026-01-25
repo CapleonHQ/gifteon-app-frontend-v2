@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { RadioGroup, SuccessRadioGroupItem } from '@/components/ui/radio-group'
 
 const RadioField = ({
   label,
@@ -30,7 +30,7 @@ const RadioField = ({
             key={option.value}
             className='flex items-center space-x-2 border-r last:border-r-0 border-grey-50 py-3.5 px-3 cursor-pointer hover:bg-grey-50 transition-colors'
           >
-            <RadioGroupItem
+            <SuccessRadioGroupItem
               value={option.value}
               id={option.value}
               className='size-5'

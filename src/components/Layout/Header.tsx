@@ -68,7 +68,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
 
   return (
     <>
-      <header className='w-full bg-[#F5FDFF80] lg:bg-white border-b-[0.2px] lg:border-b-[0.4px] border-grey-50 px-4 sm:px-6 py-4 lg:py-6 fixed lg:relative top-0 left-0 right-0 z-50'>
+      <header className='w-full bg-[#F5FDFF80] lg:bg-white border-b-[0.2px] lg:border-b-[0.4px] border-grey-50 px-4 sm:px-6 py-4 lg:py-6 fixed lg:relative top-0 left-0 right-0 z-5'>
         <div className='flex items-center justify-between gap-4 lg:gap-6'>
           {/* Left Section - Logo (Mobile) and Page Title */}
           <div className='flex items-center gap-6'>
@@ -339,7 +339,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className='fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden'
+              className='fixed inset-0 bg-black/20 backdrop-blur-sm z-3 lg:hidden'
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
@@ -349,7 +349,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className='fixed top-[72.5px] right-0 bottom-0 w-full max-w-md bg-white z-40 lg:hidden shadow-2xl overflow-y-auto'
+              className='fixed top-[72.5px] right-0 bottom-0 w-full max-w-md bg-white z-4 lg:hidden shadow-2xl overflow-y-auto'
             >
               <div className='flex flex-col h-full'>
                 {/* Mobile Menu Navigation */}

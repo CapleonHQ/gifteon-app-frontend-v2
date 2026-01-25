@@ -1,5 +1,12 @@
 import React from 'react'
 
+const formatAmount = (value: string) => {
+  if (!value) return ''
+  const numeric = value.replace(/\D/g, '')
+  if (!numeric) return ''
+  return Number(numeric).toLocaleString('en-US')
+}
+
 const InputField = ({
   label,
   value,
@@ -7,6 +14,7 @@ const InputField = ({
   placeholder,
   type = 'text',
   helper,
+  formatAsAmount = false,
 }: {
   label: string
   value: string
@@ -14,15 +22,23 @@ const InputField = ({
   placeholder?: string
   type?: string
   helper?: string
+  formatAsAmount?: boolean
 }) => (
   <div>
     <label className='text-sm font-medium mb-2 block'>{label}</label>
     <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
+      type={formatAsAmount ? 'text' : type}
+      value={formatAsAmount ? formatAmount(value) : value}
+      onChange={(e) => {
+        if (formatAsAmount) {
+          onChange(e.target.value.replace(/\D/g, ''))
+          return
+        }
+        onChange(e.target.value)
+      }}
+      inputMode={formatAsAmount ? 'numeric' : undefined}
       placeholder={placeholder}
-      className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden focus:ring-1 text-sm text-blackish font-medium focus:ring-primary-500'
+      className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden focus:border text-sm text-blackish font-medium focus:border-primary-500'
     />
     {helper && <p className='text-xs text-grey-500 mt-1'>{helper}</p>}
   </div>
