@@ -1,21 +1,21 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import TemplatePreview from './TemplatePreview'
-import { GiftPageData } from '@/types/gifts'
+import { useCreateGift } from './CreateGiftContext'
 
 type MobilePreviewModalProps = {
   isOpen: boolean
   onClose: () => void
-  giftPageData: GiftPageData
   selectedTemplate: number | null
 }
 
 const MobilePreviewModal = ({
   isOpen,
   onClose,
-  giftPageData,
   selectedTemplate,
 }: MobilePreviewModalProps) => {
+  const { giftPageData } = useCreateGift()
+
   return (
     <AnimatePresence>
       {isOpen && (

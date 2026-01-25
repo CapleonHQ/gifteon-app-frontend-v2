@@ -1,18 +1,9 @@
 import InputField from './Components/InputField'
-import { GiftPageData } from '@/types/gifts'
+import { useCreateGift } from './CreateGiftContext'
 
-type SettingsSocialLinksProps = {
-  socialLinks: GiftPageData['socialLinks']
-  onSocialLinkChange: (
-    key: keyof GiftPageData['socialLinks'],
-    value: string
-  ) => void
-}
+const SettingsSocialLinks = () => {
+  const { giftPageData, updateSocialLink } = useCreateGift()
 
-const SettingsSocialLinks = ({
-  socialLinks,
-  onSocialLinkChange,
-}: SettingsSocialLinksProps) => {
   return (
     <div className='mb-6'>
       <h4 className='font-medium text-grey-700 mb-2 text-sm'>
@@ -21,20 +12,20 @@ const SettingsSocialLinks = ({
       <div className='space-y-3'>
         <InputField
           label='Instagram'
-          value={socialLinks.instagram || ''}
-          onChange={(value) => onSocialLinkChange('instagram', value)}
+          value={giftPageData.socialLinks.instagram || ''}
+          onChange={(value) => updateSocialLink('instagram', value)}
           placeholder='Enter your Instagram url'
         />
         <InputField
           label='X'
-          value={socialLinks.twitter || ''}
-          onChange={(value) => onSocialLinkChange('twitter', value)}
+          value={giftPageData.socialLinks.twitter || ''}
+          onChange={(value) => updateSocialLink('twitter', value)}
           placeholder='Enter your X url'
         />
         <InputField
           label='LinkedIn'
-          value={socialLinks.linkedin || ''}
-          onChange={(value) => onSocialLinkChange('linkedin', value)}
+          value={giftPageData.socialLinks.linkedin || ''}
+          onChange={(value) => updateSocialLink('linkedin', value)}
           placeholder='Enter your Linkedin url'
         />
       </div>

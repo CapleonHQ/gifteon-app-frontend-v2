@@ -1,47 +1,37 @@
-import type { ChangeEvent } from 'react'
 import MediaUpload from './Components/MediaUpload'
 import TextStyleEditor from './Components/TextStyleEditor'
 import ButtonSettings from './Components/ButtonSettings'
-import { GiftPageData } from '@/types/gifts'
+import { useCreateGift } from './CreateGiftContext'
 
-type CustomizeStepProps = {
-  data: GiftPageData
-  onDataChange: (data: GiftPageData) => void
-  onMediaUpload: (event: ChangeEvent<HTMLInputElement>) => void
-  onMediaRemove: () => void
-}
-
-const CustomizeStep = ({
-  data,
-  onDataChange,
-  onMediaUpload,
-  onMediaRemove,
-}: CustomizeStepProps) => {
+const CustomizeStep = () => {
+  const {
+    giftPageData,
+    updateTitle,
+    updateDescription,
+    updateButton,
+    handleMediaUpload,
+    handleMediaRemove,
+  } = useCreateGift()
   return (
     <>
       <MediaUpload
-        media={data.media}
-        onUpload={onMediaUpload}
-        onRemove={onMediaRemove}
+        media={giftPageData.media}
+        onUpload={handleMediaUpload}
+        onRemove={handleMediaRemove}
       />
 
       <TextStyleEditor
         label='Title Settings'
-        value={data.title}
-        onChange={(newTitle) => onDataChange({ ...data, title: newTitle })}
+        value={giftPageData.title}
+        onChange={updateTitle}
       />
 
-      <ButtonSettings
-        button={data.button}
-        onChange={(newButton) => onDataChange({ ...data, button: newButton })}
-      />
+      <ButtonSettings button={giftPageData.button} onChange={updateButton} />
 
       <TextStyleEditor
         label='Celebratory Message'
-        value={data.description}
-        onChange={(newDescription) =>
-          onDataChange({ ...data, description: newDescription })
-        }
+        value={giftPageData.description}
+        onChange={updateDescription}
       />
     </>
   )

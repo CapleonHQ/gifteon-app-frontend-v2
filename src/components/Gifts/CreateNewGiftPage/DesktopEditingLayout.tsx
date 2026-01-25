@@ -1,25 +1,23 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import TemplatePreview from './TemplatePreview'
 import EditingSection from './EditingSection'
-import { GiftPageData } from '@/types/gifts'
+import { useCreateGift } from './CreateGiftContext'
 
 type DesktopEditingLayoutProps = {
   customizationOpen: boolean
-  giftPageData: GiftPageData
   selectedTemplate: number | null
-  onDataChange: (data: GiftPageData) => void
   onCloseCustomization: () => void
   onSave: () => void
 }
 
 const DesktopEditingLayout = ({
   customizationOpen,
-  giftPageData,
   selectedTemplate,
-  onDataChange,
   onCloseCustomization,
   onSave,
 }: DesktopEditingLayoutProps) => {
+  const { giftPageData } = useCreateGift()
+
   return (
     <div className='hidden lg:block pb-6'>
       <div className='relative'>
@@ -44,12 +42,7 @@ const DesktopEditingLayout = ({
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className='w-full max-w-[450px] bg-white fixed top-0 right-0 h-screen z-40'
             >
-              <EditingSection
-                data={giftPageData}
-                onDataChange={onDataChange}
-                onClose={onCloseCustomization}
-                onSave={onSave}
-              />
+              <EditingSection onClose={onCloseCustomization} onSave={onSave} />
             </motion.div>
           )}
         </AnimatePresence>

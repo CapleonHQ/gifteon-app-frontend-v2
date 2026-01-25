@@ -10,92 +10,55 @@ import InputField from './Components/InputField'
 import DatePickerField from './Components/DatePickerField'
 import TimePickerField from './Components/TimePickerField'
 import AlertIcon from '@/assets/icons/AlertIcon'
+import SettingsCustomGifts from './SettingsCustomGifts'
+import { useCreateGift } from './CreateGiftContext'
 
-type SettingsGiftDetailsProps = {
-  giftFor: string
-  giftType: string
-  currency: string
-  cashAmount: string
-  minAmount: string
-  maxAmount: string
-  targetAmount: string
-  customGifts: string
-  addMusic: string
-  privacy: string
-  receiverName: string
-  receiverEmail: string
-  allowJoinGifting: string
-  joinTargetAmount: string
-  joinMinAmount: string
-  setTimeframe: string
-  giftingEndDate: Date | undefined
-  giftingEndTime: string
-  onGiftForChange: (value: string) => void
-  onGiftTypeChange: (value: string) => void
-  onCurrencyChange: (value: string) => void
-  onCashAmountChange: (value: string) => void
-  onMinAmountChange: (value: string) => void
-  onMaxAmountChange: (value: string) => void
-  onTargetAmountChange: (value: string) => void
-  onCustomGiftsChange: (value: string) => void
-  onAddMusicChange: (value: string) => void
-  onPrivacyChange: (value: string) => void
-  onReceiverNameChange: (value: string) => void
-  onReceiverEmailChange: (value: string) => void
-  onAllowJoinGiftingChange: (value: string) => void
-  onJoinTargetAmountChange: (value: string) => void
-  onJoinMinAmountChange: (value: string) => void
-  onSetTimeframeChange: (value: string) => void
-  onGiftingEndDateChange: (value?: Date) => void
-  onGiftingEndTimeChange: (value: string) => void
-  customGiftsSection?: React.ReactNode
-}
+const SettingsGiftDetails = () => {
+  const {
+    giftFor,
+    giftType,
+    currency,
+    cashAmount,
+    minAmount,
+    maxAmount,
+    targetAmount,
+    customGifts,
+    addMusic,
+    privacy,
+    receiverName,
+    receiverEmail,
+    allowJoinGifting,
+    joinTargetAmount,
+    joinMinAmount,
+    setTimeframe,
+    giftingEndDate,
+    giftingEndTime,
+    setGiftFor,
+    setGiftType,
+    setCurrency,
+    setCashAmount,
+    setMinAmount,
+    setMaxAmount,
+    setTargetAmount,
+    setCustomGifts,
+    setAddMusic,
+    setPrivacy,
+    setReceiverName,
+    setReceiverEmail,
+    setAllowJoinGifting,
+    setJoinTargetAmount,
+    setJoinMinAmount,
+    setSetTimeframe,
+    setGiftingEndDate,
+    setGiftingEndTime,
+  } = useCreateGift()
 
-const SettingsGiftDetails = ({
-  giftFor,
-  giftType,
-  currency,
-  cashAmount,
-  minAmount,
-  maxAmount,
-  targetAmount,
-  customGifts,
-  addMusic,
-  privacy,
-  receiverName,
-  receiverEmail,
-  allowJoinGifting,
-  joinTargetAmount,
-  joinMinAmount,
-  setTimeframe,
-  giftingEndDate,
-  giftingEndTime,
-  onGiftForChange,
-  onGiftTypeChange,
-  onCurrencyChange,
-  onCashAmountChange,
-  onMinAmountChange,
-  onMaxAmountChange,
-  onTargetAmountChange,
-  onCustomGiftsChange,
-  onAddMusicChange,
-  onPrivacyChange,
-  onReceiverNameChange,
-  onReceiverEmailChange,
-  onAllowJoinGiftingChange,
-  onJoinTargetAmountChange,
-  onJoinMinAmountChange,
-  onSetTimeframeChange,
-  onGiftingEndDateChange,
-  onGiftingEndTimeChange,
-  customGiftsSection,
-}: SettingsGiftDetailsProps) => {
   return (
     <div className='space-y-5'>
       <RadioField
         label='Who is this gift for?'
         value={giftFor}
-        onChange={onGiftForChange}
+        onChange={(value) => setGiftFor(value as any)}
         options={[
           { value: 'me', label: 'For me' },
           { value: 'someone', label: 'Someone else' },
@@ -105,7 +68,7 @@ const SettingsGiftDetails = ({
       <RadioField
         label='Gift Type'
         value={giftType}
-        onChange={onGiftTypeChange}
+        onChange={(value) => setGiftType(value as any)}
         options={[
           { value: 'cash', label: 'Cash' },
           { value: 'items', label: 'Gift Items on Giftseon' },
@@ -114,8 +77,8 @@ const SettingsGiftDetails = ({
           giftType === 'cash' && giftFor === 'someone'
             ? "Cash will be deposited into the user's Giftseon Wallet for withdrawal anytime."
             : giftType === 'cash'
-            ? 'Cash will be deposited into your Giftseon Wallet for withdrawal anytime.'
-            : undefined
+              ? 'Cash will be deposited into your Giftseon Wallet for withdrawal anytime.'
+              : undefined
         }
       />
       {giftType === 'cash' && giftFor === 'someone' && (
@@ -131,7 +94,7 @@ const SettingsGiftDetails = ({
         <>
           <div>
             <label className='text-sm font-medium mb-2 block'>Currency</label>
-            <Select value={currency} onValueChange={onCurrencyChange}>
+            <Select value={currency} onValueChange={setCurrency}>
               <SelectTrigger className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium h-auto!'>
                 <SelectValue placeholder='Select an option' />
               </SelectTrigger>
@@ -150,14 +113,14 @@ const SettingsGiftDetails = ({
             <InputField
               label='Minimum Amount'
               value={minAmount}
-              onChange={onMinAmountChange}
+              onChange={setMinAmount}
               placeholder='Set your minimum amount'
               formatAsAmount
             />
             <InputField
               label='Maximum Amount'
               value={maxAmount}
-              onChange={onMaxAmountChange}
+              onChange={setMaxAmount}
               placeholder='Set your maximum amount'
               formatAsAmount
             />
@@ -166,7 +129,7 @@ const SettingsGiftDetails = ({
           <InputField
             label='Target Amount'
             value={targetAmount}
-            onChange={onTargetAmountChange}
+            onChange={setTargetAmount}
             placeholder='Enter your target amount'
             helper='Optional'
             formatAsAmount
@@ -178,7 +141,7 @@ const SettingsGiftDetails = ({
         <>
           <div className='space-y-2'>
             <label className='text-sm font-medium mb-2 block'>Currency</label>
-            <Select value={currency} onValueChange={onCurrencyChange}>
+            <Select value={currency} onValueChange={setCurrency}>
               <SelectTrigger className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium h-auto!'>
                 <SelectValue placeholder='Select an option' />
               </SelectTrigger>
@@ -195,20 +158,20 @@ const SettingsGiftDetails = ({
           <InputField
             label='Enter Amount'
             value={cashAmount}
-            onChange={onCashAmountChange}
+            onChange={setCashAmount}
             placeholder='Enter amount'
             formatAsAmount
           />
           <InputField
             label='Who are you sending this gift to?'
             value={receiverName}
-            onChange={onReceiverNameChange}
+            onChange={setReceiverName}
             placeholder='Enter recipient name'
           />
           <InputField
             label="Receiver's Email Address"
             value={receiverEmail}
-            onChange={onReceiverEmailChange}
+            onChange={setReceiverEmail}
             placeholder='Enter recipient email address'
             type='email'
           />
@@ -218,19 +181,19 @@ const SettingsGiftDetails = ({
       <RadioField
         label='Do you want to add custom gifts?'
         value={customGifts}
-        onChange={onCustomGiftsChange}
+        onChange={(value) => setCustomGifts(value as any)}
         options={[
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' },
         ]}
       />
 
-      {customGiftsSection}
+      <SettingsCustomGifts />
 
       <RadioField
         label='Do you want to add music?'
         value={addMusic}
-        onChange={onAddMusicChange}
+        onChange={(value) => setAddMusic(value as any)}
         options={[
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' },
@@ -241,7 +204,7 @@ const SettingsGiftDetails = ({
         <RadioField
           label='Gift Page Privacy Control'
           value={privacy}
-          onChange={onPrivacyChange}
+          onChange={(value) => setPrivacy(value as any)}
           options={[
             { value: 'public', label: 'Public' },
             { value: 'shareable', label: 'Shareable' },
@@ -261,7 +224,7 @@ const SettingsGiftDetails = ({
           <RadioField
             label='Do you want others to join this gifting?'
             value={allowJoinGifting}
-            onChange={onAllowJoinGiftingChange}
+            onChange={(value) => setAllowJoinGifting(value as any)}
             options={[
               { value: 'yes', label: 'Yes' },
               { value: 'no', label: 'No' },
@@ -273,14 +236,14 @@ const SettingsGiftDetails = ({
               <InputField
                 label='Target Amount'
                 value={joinTargetAmount}
-                onChange={onJoinTargetAmountChange}
+                onChange={setJoinTargetAmount}
                 placeholder='Enter your target amount'
                 formatAsAmount
               />
               <InputField
                 label='Minimum Amount'
                 value={joinMinAmount}
-                onChange={onJoinMinAmountChange}
+                onChange={setJoinMinAmount}
                 placeholder='Set your minimum amount'
                 formatAsAmount
               />
@@ -290,7 +253,7 @@ const SettingsGiftDetails = ({
           <RadioField
             label='Do you want to set a timeframe for this gifting?'
             value={setTimeframe}
-            onChange={onSetTimeframeChange}
+            onChange={(value) => setSetTimeframe(value as any)}
             options={[
               { value: 'yes', label: 'Yes' },
               { value: 'no', label: 'No' },
@@ -306,13 +269,13 @@ const SettingsGiftDetails = ({
                 <DatePickerField
                   label='Date'
                   value={giftingEndDate}
-                  onChange={onGiftingEndDateChange}
+                  onChange={setGiftingEndDate}
                   placeholder='Select date'
                 />
                 <TimePickerField
                   label='Time'
                   value={giftingEndTime}
-                  onChange={onGiftingEndTimeChange}
+                  onChange={setGiftingEndTime}
                   placeholder='Select time'
                 />
               </div>

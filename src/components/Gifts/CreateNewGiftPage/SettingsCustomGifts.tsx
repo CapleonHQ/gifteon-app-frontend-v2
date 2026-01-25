@@ -1,61 +1,42 @@
-import type { ChangeEvent } from 'react'
 import InputField from './Components/InputField'
 import CustomGiftItem from './CustomGiftItem'
 import DeleteIcon from '@/assets/icons/DeleteIcon'
 import { Plus } from 'lucide-react'
 import DocumentIcon from '@/assets/icons/DocumentIcon'
+import { useCreateGift } from './CreateGiftContext'
 
-type CustomGiftForm = {
-  title: string
-  price: string
-  imageName: string
-  imageUrl?: string
-  quantity: string
-}
+const SettingsCustomGifts = () => {
+  const {
+    customGifts,
+    customGiftForm,
+    editingCustomGiftIndex,
+    customGiftItems,
+    handleCustomGiftChange,
+    handleCustomGiftImageChange,
+    handleCustomGiftRemoveImage,
+    saveCustomGift,
+    editCustomGift,
+    removeCustomGift,
+  } = useCreateGift()
 
-type SettingsCustomGiftsProps = {
-  enabled: boolean
-  form: CustomGiftForm
-  editingIndex: number | null
-  customGifts: CustomGiftForm[]
-  onChange: (field: keyof CustomGiftForm, value: string) => void
-  onImageChange: (event: ChangeEvent<HTMLInputElement>) => void
-  onRemoveImage: () => void
-  onSave: () => void
-  onEdit: (index: number) => void
-  onRemove: (index: number) => void
-}
-
-const SettingsCustomGifts = ({
-  enabled,
-  form,
-  editingIndex,
-  customGifts,
-  onChange,
-  onImageChange,
-  onRemoveImage,
-  onSave,
-  onEdit,
-  onRemove,
-}: SettingsCustomGiftsProps) => {
-  if (!enabled) return null
+  if (customGifts !== 'yes') return null
 
   return (
     <div>
-      {customGifts.length > 0 && (
+      {customGiftItems.length > 0 && (
         <div className='mb-4'>
           <p className='text-sm text-grey-700 mb-3'>
-            Custom Gifts ({customGifts.length})
+            Custom Gifts ({customGiftItems.length})
           </p>
           <div className='space-y-3'>
-            {customGifts.map((gift, index) => (
+            {customGiftItems.map((gift, index) => (
               <CustomGiftItem
                 key={`${gift.title}-${index}`}
                 title={gift.title}
                 price={gift.price}
                 imageUrl={gift.imageUrl}
-                onEdit={() => onEdit(index)}
-                onRemove={() => onRemove(index)}
+                onEdit={() => editCustomGift(index)}
+                onRemove={() => removeCustomGift(index)}
               />
             ))}
           </div>
@@ -69,27 +50,27 @@ const SettingsCustomGifts = ({
       <div className='space-y-4'>
         <InputField
           label='Title'
-          value={form.title}
-          onChange={(value) => onChange('title', value)}
+          value={customGiftForm.title}
+          onChange={(value) => handleCustomGiftChange('title', value)}
           placeholder='Enter the title or name of this gift'
         />
         <InputField
           label='Price'
-          value={form.price}
-          onChange={(value) => onChange('price', value)}
+          value={customGiftForm.price}
+          onChange={(value) => handleCustomGiftChange('price', value)}
           placeholder='Enter the price of this gift'
           formatAsAmount
         />
         <div>
           <label className='text-sm font-medium mb-2 block'>Image</label>
-          {form.imageName ? (
+          {customGiftForm.imageName ? (
             <div className='flex items-center justify-between gap-3 px-4 py-3 rounded-[12px] border border-grey-100 bg-primary-50/30'>
               <p className='text-sm font-medium text-grey-900 truncate'>
-                {form.imageName}
+                {customGiftForm.imageName}
               </p>
               <button
                 type='button'
-                onClick={onRemoveImage}
+                onClick={handleCustomGiftRemoveImage}
                 className='text-error-400 hover:text-error-600 transition-colors'
                 aria-label='Remove image'
               >
@@ -107,7 +88,7 @@ const SettingsCustomGifts = ({
               <input
                 type='file'
                 className='hidden'
-                onChange={onImageChange}
+                onChange={handleCustomGiftImageChange}
                 accept='image/*,application/pdf'
               />
             </label>
@@ -118,8 +99,10 @@ const SettingsCustomGifts = ({
           <input
             type='text'
             min='1'
-            value={form.quantity}
-            onChange={(event) => onChange('quantity', event.target.value)}
+            value={customGiftForm.quantity}
+            onChange={(event) =>
+              handleCustomGiftChange('quantity', event.target.value)
+            }
             className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden focus:ring-1 text-sm text-blackish font-medium focus:ring-primary-500'
           />
         </div>
@@ -128,13 +111,15 @@ const SettingsCustomGifts = ({
       <div className='flex justify-end mt-4'>
         <button
           type='button'
-          onClick={onSave}
-          disabled={!form.title.trim() || !form.price.trim()}
+          onClick={saveCustomGift}
+          disabled={!customGiftForm.title.trim() || !customGiftForm.price.trim()}
           className='flex items-center gap-2 py-2.5 px-5 border border-success-400 rounded-[12px] text-sm font-medium text-success-600 bg-success-50/40 hover:bg-success-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
         >
           <Plus className='w-3.5 h-3.5' />
           <span>
-            {editingIndex !== null ? 'Update custom gift' : 'Add custom gift'}
+            {editingCustomGiftIndex !== null
+              ? 'Update custom gift'
+              : 'Add custom gift'}
           </span>
         </button>
       </div>

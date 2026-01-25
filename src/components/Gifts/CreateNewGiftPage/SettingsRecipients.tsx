@@ -1,48 +1,44 @@
 import InputField from './Components/InputField'
 import RecipientItem from './Components/ReceipientItem'
-import { Recipient } from '@/types/gifts'
+import { useCreateGift } from './CreateGiftContext'
 
-type SettingsRecipientsProps = {
-  title?: string
-  listTitle?: string
-  recipients: Recipient[]
-  recipientForm: Recipient
-  editingRecipientIndex: number | null
-  onRecipientChange: (field: keyof Recipient, value: string) => void
-  onSaveRecipient: () => void
-  onCancelEditRecipient: () => void
-  onEditRecipient: (index: number) => void
-  onRemoveRecipient: (index: number) => void
-}
+const SettingsRecipients = () => {
+  const {
+    giftFor,
+    giftType,
+    recipients,
+    recipientForm,
+    editingRecipientIndex,
+    handleRecipientChange,
+    saveRecipient,
+    cancelEditRecipient,
+    editRecipient,
+    removeRecipient,
+  } = useCreateGift()
 
-const SettingsRecipients = ({
-  title = 'GIFT PAGE RECIPIENTS',
-  listTitle = 'Gift Page Recipients',
-  recipients,
-  recipientForm,
-  editingRecipientIndex,
-  onRecipientChange,
-  onSaveRecipient,
-  onCancelEditRecipient,
-  onEditRecipient,
-  onRemoveRecipient,
-}: SettingsRecipientsProps) => {
+  const title =
+    giftFor === 'someone' && giftType === 'cash'
+      ? 'GIFT PAGE PARTICIPANTS'
+      : 'GIFT PAGE RECIPIENTS'
+  const listTitle =
+    giftFor === 'someone' && giftType === 'cash'
+      ? 'Gift Page Participants'
+      : 'Gift Page Recipients'
+
   return (
     <div>
-      <h4 className='text-sm text-grey-700 font-medium mb-2'>
-        {title}
-      </h4>
+      <h4 className='text-sm text-grey-700 font-medium mb-2'>{title}</h4>
       <div className='space-y-4'>
         <InputField
           label='Name'
           value={recipientForm.name}
-          onChange={(value) => onRecipientChange('name', value)}
+          onChange={(value) => handleRecipientChange('name', value)}
           placeholder='Enter recipient name'
         />
         <InputField
           label='Email Address'
           value={recipientForm.email}
-          onChange={(value) => onRecipientChange('email', value)}
+          onChange={(value) => handleRecipientChange('email', value)}
           placeholder='Enter recipient email address'
           type='email'
         />
@@ -51,7 +47,7 @@ const SettingsRecipients = ({
         {editingRecipientIndex !== null && (
           <button
             type='button'
-            onClick={onCancelEditRecipient}
+            onClick={cancelEditRecipient}
             className='text-sm text-grey-600 hover:text-grey-800 transition-colors'
           >
             Cancel edit
@@ -59,7 +55,7 @@ const SettingsRecipients = ({
         )}
         <button
           type='button'
-          onClick={onSaveRecipient}
+          onClick={saveRecipient}
           disabled={!recipientForm.name.trim() || !recipientForm.email.trim()}
           className='py-2.5 px-5 border border-success-500 rounded-[12px] text-sm font-medium text-success-600 bg-[#E1F9EA4D] hover:bg-success-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
         >
@@ -76,8 +72,8 @@ const SettingsRecipients = ({
               <RecipientItem
                 key={`${recipient.email}-${index}`}
                 recipient={recipient}
-                onEdit={() => onEditRecipient(index)}
-                onRemove={() => onRemoveRecipient(index)}
+                onEdit={() => editRecipient(index)}
+                onRemove={() => removeRecipient(index)}
               />
             ))}
           </div>
