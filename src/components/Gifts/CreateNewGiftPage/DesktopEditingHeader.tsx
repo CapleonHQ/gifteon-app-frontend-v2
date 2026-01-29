@@ -22,8 +22,8 @@ const DesktopEditingHeader = ({
         </span>
         <span className='text-base leading-[22px]'>Back</span>
       </button>
-      <div className='flex lg:flex-col justify-between mt-2.5 items-center lg:items-start gap-2 lg:mb-3'>
-        <div className='order-1 lg:order-2 flex lg:justify-between lg:items-center w-full'>
+      <div className='flex lg:flex-col justify-between pt-2.5 items-center lg:items-start gap-2 lg:mb-3'>
+        <div className='flex lg:justify-between lg:items-center w-full'>
           <span className='font-medium text-grey-800'>
             Let&apos;s customize your template
           </span>

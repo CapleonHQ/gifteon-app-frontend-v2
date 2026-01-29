@@ -1,15 +1,13 @@
-import { PAGE_TITLES } from '@/lib/constants/menu'
+import { PAGE_TITLE_ROUTES } from '@/lib/constants/menu'
 
 const DEFAULT_TITLE = 'Dashboard'
 
-export const resolvePageTitle = (pathname: string) => {
-  if (PAGE_TITLES[pathname]) {
-    return PAGE_TITLES[pathname]
-  }
+export const resolvePageTitle = (pathname: string): string => {
+  const cleanPath = pathname.split('?')[0] // remove query params
 
-  const matchedKey = Object.keys(PAGE_TITLES).find(
-    (key) => pathname.startsWith(key) && key !== '/'
+  const matchedRoute = PAGE_TITLE_ROUTES.find((route) =>
+    route.pattern.test(cleanPath)
   )
 
-  return matchedKey ? PAGE_TITLES[matchedKey] : DEFAULT_TITLE
+  return matchedRoute?.title ?? DEFAULT_TITLE
 }

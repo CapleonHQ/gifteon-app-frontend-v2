@@ -1,6 +1,5 @@
 'use client'
 
-import { ChevronLeftIcon } from '@/assets/icons'
 import { useMobileBack } from './MobileTitleContext'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 
@@ -8,7 +7,7 @@ const MobileTitleBar = ({ title }: { title: string }) => {
   const { onBack } = useMobileBack()
 
   return (
-    <div className='lg:hidden flex items-center gap-2'>
+    <div className='flex items-center gap-2'>
       {onBack && (
         <button
           type='button'

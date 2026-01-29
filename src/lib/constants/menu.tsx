@@ -14,13 +14,18 @@ export const MENU_ITEMS = [
   { href: '/stores', label: 'Stores', icon: StoresIcon },
 ]
 
-// Page title configuration
-export const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/gifts': 'Gift Pages & Donations',
-  '/gifts/create-new': 'Create a Gift Page',
-  '/wallet': 'Wallet',
-  '/profile': 'Profile',
-  '/stores': 'Stores',
-  '/settings': 'Settings',
-}
+export const PAGE_TITLE_ROUTES: Array<{
+  pattern: RegExp
+  title: string
+}> = [
+  // Most specific first
+  { pattern: /^\/gifts\/create-new$/, title: 'Create a Gift Page' },
+  { pattern: /^\/gifts\/[^/]+$/, title: 'Gift Page Details' }, // /gifts/:id
+  { pattern: /^\/gifts$/, title: 'Gift Pages & Donations' },
+
+  { pattern: /^\/dashboard$/, title: 'Dashboard' },
+  { pattern: /^\/wallet$/, title: 'Wallet' },
+  { pattern: /^\/profile$/, title: 'Profile' },
+  { pattern: /^\/stores$/, title: 'Stores' },
+  { pattern: /^\/settings$/, title: 'Settings' },
+]

@@ -51,7 +51,7 @@ const CreateNewGiftPage = () => {
   }
 
   return (
-    <div className='w-full h-full'>
+    <div className='w-full h-full bg-white lg:bg-inherit px-4 lg:px-0'>
       <AnimatePresence mode='wait'>
         {step === 'select' && (
           <TemplateSelection
