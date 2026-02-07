@@ -21,7 +21,7 @@ import type { SummaryCard, WishItem } from '@/types/Gifts/giftDetails'
 import EditGiftPageModal from './EditGiftPageModal'
 import ShareGiftPageModal from './ShareGiftPageModal'
 import DeactivateModal from '@/components/Gifts/GiftsPage/DeactivateModal'
-import DeactivateSuccessModal from '@/components/Gifts/GiftsPage/DeactivateSuccessModal'
+import { useSuccessModal } from '@/context/SuccessModalContext'
 import ReactivateModal from './ReactivateModal'
 import GiftDetailsHeader from './GiftDetailsHeader'
 import SummaryCardsGrid from './SummaryCardsGrid'
@@ -238,8 +238,7 @@ const GiftDetailsPageClient = () => {
   const [isShareOpen, setIsShareOpen] = useState(false)
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false)
   const [isReactivateOpen, setIsReactivateOpen] = useState(false)
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
+  const { openSuccess } = useSuccessModal()
   const [isActive, setIsActive] = useState(true)
 
   const giftId = typeof params?.id === 'string' ? params.id : '1'
@@ -331,15 +330,13 @@ const GiftDetailsPageClient = () => {
   const handleDeactivateConfirm = () => {
     setIsDeactivateOpen(false)
     setIsActive(false)
-    setSuccessMessage('Your gift page has been successfully deactivated')
-    setIsSuccessOpen(true)
+    openSuccess({ message: 'Your gift page has been successfully deactivated' })
   }
 
   const handleReactivateConfirm = () => {
     setIsReactivateOpen(false)
     setIsActive(true)
-    setSuccessMessage('Your gift page has been successfully activated')
-    setIsSuccessOpen(true)
+    openSuccess({ message: 'Your gift page has been successfully activated' })
   }
 
   return (
@@ -396,8 +393,7 @@ const GiftDetailsPageClient = () => {
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         onSuccess={() => {
-          setSuccessMessage('Your updates have been saved successfully.')
-          setIsSuccessOpen(true)
+          openSuccess({ message: 'Your updates have been saved successfully.' })
         }}
       />
 
@@ -422,11 +418,6 @@ const GiftDetailsPageClient = () => {
         onConfirm={handleReactivateConfirm}
       />
 
-      <DeactivateSuccessModal
-        isOpen={isSuccessOpen}
-        message={successMessage}
-        onClose={() => setIsSuccessOpen(false)}
-      />
     </div>
   )
 }

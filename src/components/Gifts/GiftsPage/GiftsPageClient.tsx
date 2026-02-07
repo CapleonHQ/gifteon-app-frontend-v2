@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import DeactivateModal from '@/components/Gifts/GiftsPage/DeactivateModal'
-import DeactivateSuccessModal from '@/components/Gifts/GiftsPage/DeactivateSuccessModal'
+import { useSuccessModal } from '@/context/SuccessModalContext'
 import FilterModal from '@/components/Gifts/GiftsPage/FilterModal'
 import GiftsHeader from '@/components/Gifts/GiftsPage/GiftsHeader'
 import GiftsTable from '@/components/Gifts/GiftsPage/GiftsTable'
@@ -103,7 +103,6 @@ const GiftsPageClient = () => {
   const [openMobileId, setOpenMobileId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false)
-  const [isDeactivateSuccessOpen, setIsDeactivateSuccessOpen] = useState(false)
   const [deactivateCount, setDeactivateCount] = useState(0)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [filterFromDate, setFilterFromDate] = useState<Date | undefined>()
@@ -111,6 +110,7 @@ const GiftsPageClient = () => {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterVisibility, setFilterVisibility] = useState('all')
+  const { openSuccess } = useSuccessModal()
 
   const allSelected = useMemo(
     () => giftPages.length > 0 && selectedIds.size === giftPages.length,
@@ -190,7 +190,7 @@ const GiftsPageClient = () => {
 
   const handleDeactivateConfirm = () => {
     setIsDeactivateOpen(false)
-    setIsDeactivateSuccessOpen(true)
+    openSuccess({ message: successMessage })
   }
 
   const deactivateMessage =
@@ -280,12 +280,6 @@ const GiftsPageClient = () => {
         message={deactivateMessage}
         onClose={() => setIsDeactivateOpen(false)}
         onConfirm={handleDeactivateConfirm}
-      />
-
-      <DeactivateSuccessModal
-        isOpen={isDeactivateSuccessOpen}
-        message={successMessage}
-        onClose={() => setIsDeactivateSuccessOpen(false)}
       />
 
       <FilterModal
