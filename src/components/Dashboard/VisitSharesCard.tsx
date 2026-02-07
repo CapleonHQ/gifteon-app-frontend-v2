@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import DashboardEmptyState from './DashboardEmptyState'
+import EmptyFolderFile from '@/assets/icons/EmptyFolderFile'
 
 ChartJS.register(
   CategoryScale,
@@ -34,9 +36,14 @@ ChartJS.register(
 type VisitSharesCardProps = {
   range: string
   onRangeChange: (value: string) => void
+  isEmpty?: boolean
 }
 
-const VisitSharesCard = ({ range, onRangeChange }: VisitSharesCardProps) => {
+const VisitSharesCard = ({
+  range,
+  onRangeChange,
+  isEmpty = false,
+}: VisitSharesCardProps) => {
   const data = useMemo(
     () => ({
       labels: ['May', 'June', 'July', 'August', 'September', 'October'],
@@ -84,6 +91,17 @@ const VisitSharesCard = ({ range, onRangeChange }: VisitSharesCardProps) => {
     []
   )
 
+  const chartData = useMemo(() => {
+    if (!isEmpty) return data
+    return {
+      ...data,
+      datasets: data.datasets.map((dataset) => ({
+        ...dataset,
+        data: [],
+      })),
+    }
+  }, [data, isEmpty])
+
   const options = useMemo(
     () => ({
       responsive: true,
@@ -127,7 +145,7 @@ const VisitSharesCard = ({ range, onRangeChange }: VisitSharesCardProps) => {
           },
 
           grid: {
-            display: true,
+            display: !isEmpty,
             drawOnChartArea: true,
             drawTicks: false,
             color: '#D6EEF4',
@@ -136,6 +154,8 @@ const VisitSharesCard = ({ range, onRangeChange }: VisitSharesCardProps) => {
             borderDashOffset: 0,
           },
           beginAtZero: true,
+          min: isEmpty ? 0 : undefined,
+          max: isEmpty ? 180 : undefined,
           ticks: {
             color: '#605C5A',
             font: {
@@ -148,7 +168,7 @@ const VisitSharesCard = ({ range, onRangeChange }: VisitSharesCardProps) => {
         },
       },
     }),
-    []
+    [isEmpty]
   )
 
   return (
@@ -171,8 +191,18 @@ const VisitSharesCard = ({ range, onRangeChange }: VisitSharesCardProps) => {
           </SelectContent>
         </Select>
       </div>
-      <div className='mt-3 h-[260px]'>
-        <Line data={data} options={options} />
+      <div className='mt-3 h-[260px] relative overflow-x-auto'>
+        <div className='min-w-[520px] h-[260px]'>
+          <Line data={chartData} options={options} />
+        </div>
+        {isEmpty ? (
+          <div className='absolute inset-0 flex items-center justify-center'>
+            <DashboardEmptyState
+              message='You have no visit or shares yet!'
+              icon={<EmptyFolderFile />}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   )

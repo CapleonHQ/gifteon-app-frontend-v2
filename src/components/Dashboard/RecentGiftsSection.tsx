@@ -4,12 +4,16 @@ import Link from 'next/link'
 import type { RecentGiftItem } from './types'
 import RecentGiftsTable from './RecentGiftsTable'
 import RecentGiftsMobileList from './RecentGiftsMobileList'
+import DashboardEmptyState from './DashboardEmptyState'
+import EmptyBox from '@/assets/icons/EmptyBox'
 
 type RecentGiftsSectionProps = {
   items: RecentGiftItem[]
 }
 
 const RecentGiftsSection = ({ items }: RecentGiftsSectionProps) => {
+  const isEmpty = items.length === 0
+
   return (
     <div className='bg-white border border-grey-50 rounded-[12px] shadow-[0px_1.5px_4px_-1px_#10192812] overflow-hidden'>
       <div className='px-4 py-3 flex items-center justify-between'>
@@ -21,8 +25,19 @@ const RecentGiftsSection = ({ items }: RecentGiftsSectionProps) => {
           See all Gift Pages
         </Link>
       </div>
-      <RecentGiftsTable items={items} />
-      <RecentGiftsMobileList items={items} />
+      {isEmpty ? (
+        <div className='px-4 py-10 lg:py-16'>
+          <DashboardEmptyState
+            message='You have no gifts yet!'
+            icon={<EmptyBox />}
+          />
+        </div>
+      ) : (
+        <>
+          <RecentGiftsTable items={items} />
+          <RecentGiftsMobileList items={items} />
+        </>
+      )}
     </div>
   )
 }
