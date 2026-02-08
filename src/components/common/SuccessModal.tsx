@@ -49,7 +49,7 @@ const SuccessModal = ({
             <button
               type='button'
               onClick={onClose}
-              className='w-full max-w-[200px] py-3.5 rounded-[12px] mt-3 sm:mt-6 bg-linear-to-r from-primary-400 to-primary-600 border border-primary-500 text-white font-medium hover:from-primary-500 hover:to-primary-700 transition-colors duration-300'
+              className='w-full max-w-[200px] py-3.5 rounded-[12px] mt-3 sm:mt-6 bg-linear-to-b from-[17.5%] from-primary-400 to-primary-600 border border-primary-500 text-white font-medium hover:from-primary-500 hover:to-primary-700 transition-colors duration-300'
             >
               Close
             </button>

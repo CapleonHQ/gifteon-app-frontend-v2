@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import DocumentFieldIcon from '@/assets/icons/DocumentFieldIcon'
 
 const disputeReasons = [
   'Duplicate transaction',
@@ -88,7 +89,7 @@ const WalletDisputeModal = ({
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           placeholder='Tell us what happened...'
-          className='w-full min-h-[120px] rounded-[12px] border border-grey-100 px-3 py-2 text-sm text-grey-800 focus:outline-none focus:ring-1 focus:ring-primary-300'
+          className='w-full min-h-[120px] rounded-[12px] border border-grey-100 px-3 py-2 text-sm text-grey-800 focus:outline-none focus:ring-1 focus:ring-primary-300 resize-none'
         />
       </div>
 
@@ -96,8 +97,11 @@ const WalletDisputeModal = ({
         <label className='text-sm text-grey-700'>Upload Photos</label>
         <button
           type='button'
-          className='w-full py-3 rounded-[12px] border border-dashed border-primary-200 text-primary-500 text-sm font-medium bg-primary-50/40 hover:bg-primary-50 transition-colors'
+          className='w-full py-3 rounded-[12px] border border-dashed border-primary-200 text-primary-500 text-sm font-medium bg-primary-50/40 hover:bg-primary-50 transition-colors flex items-center justify-center gap-2'
         >
+          <span className='w-5 h-5'>
+            <DocumentFieldIcon />
+          </span>
           Upload document
         </button>
         <p className='text-xs text-grey-500'>
@@ -145,24 +149,24 @@ const WalletDisputeModal = ({
         <div className='flex flex-col h-full'>
           <div className='pt-8 pb-4 px-4'>
             <div className='flex flex-col gap-3'>
-            <button
-              type='button'
-              onClick={handleClose}
-              className='w-6 h-6'
-              aria-label='Go back'
-            >
-              <span className='text-blackish hover:text-black/70 flex'>
-                <BackLeftIcon />
-              </span>
-            </button>
-            <div className='flex flex-col items-center justify-center gap-1'>
-              <span className='text-2xl font-medium text-blackish'>
-                Raise a Dispute
-              </span>
-              <p className='text-sm text-grey-600 text-center'>
-                Tell us what went wrong with this transaction.
-              </p>
-            </div>
+              <button
+                type='button'
+                onClick={handleClose}
+                className='w-6 h-6'
+                aria-label='Go back'
+              >
+                <span className='text-blackish hover:text-black/70 flex'>
+                  <BackLeftIcon />
+                </span>
+              </button>
+              <div className='flex flex-col items-center justify-center gap-1'>
+                <span className='text-2xl font-medium text-blackish'>
+                  Raise a Dispute
+                </span>
+                <p className='text-sm text-grey-600 text-center'>
+                  Tell us what went wrong with this transaction.
+                </p>
+              </div>
             </div>
           </div>
           <div className='flex-1 overflow-y-auto px-4 pb-4'>

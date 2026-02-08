@@ -14,6 +14,8 @@ type DatePickerFieldProps = {
   value?: Date
   onChange: (date?: Date) => void
   placeholder?: string
+  disabled?: boolean
+  displayFormat?: string
 }
 
 const DatePickerField = ({
@@ -21,25 +23,44 @@ const DatePickerField = ({
   value,
   onChange,
   placeholder = 'Select date',
+  disabled = false,
+  displayFormat = 'dd-MM-yyyy',
 }: DatePickerFieldProps) => {
   const [open, setOpen] = useState(false)
 
   return (
     <div>
       <label className='text-sm font-medium mb-2 block'>{label}</label>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (disabled) return
+          setOpen(nextOpen)
+        }}
+      >
         <PopoverTrigger asChild>
           <button
             type='button'
+            disabled={disabled}
             className={cn(
-              'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg border border-grey-50 text-sm font-medium text-grey-900 bg-white',
-              !value && 'text-grey-400'
+              'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg border text-sm font-medium bg-white',
+              disabled
+                ? 'border-grey-100 bg-grey-50 text-grey-500'
+                : 'border-grey-50 text-grey-900',
+              !value && !disabled && 'text-grey-400'
             )}
           >
-            <span className='w-5 h-5 text-primary-200 hover:text-primary-400 transition-colors'>
+            <span
+              className={cn(
+                'w-5 h-5 transition-colors',
+                disabled
+                  ? 'text-grey-300'
+                  : 'text-primary-200 hover:text-primary-400'
+              )}
+            >
               <CalendarIcon />
             </span>
-            <span>{value ? format(value, 'dd-MM-yyyy') : placeholder}</span>
+            <span>{value ? format(value, displayFormat) : placeholder}</span>
           </button>
         </PopoverTrigger>
         <PopoverContent className='w-auto p-0' align='start'>
