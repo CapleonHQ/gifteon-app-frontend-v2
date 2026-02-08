@@ -9,9 +9,10 @@ import EmptyBox from '@/assets/icons/EmptyBox'
 
 type RecentGiftsSectionProps = {
   items: RecentGiftItem[]
+  onAction: (item: RecentGiftItem) => void
 }
 
-const RecentGiftsSection = ({ items }: RecentGiftsSectionProps) => {
+const RecentGiftsSection = ({ items, onAction }: RecentGiftsSectionProps) => {
   const isEmpty = items.length === 0
 
   return (
@@ -34,8 +35,8 @@ const RecentGiftsSection = ({ items }: RecentGiftsSectionProps) => {
         </div>
       ) : (
         <>
-          <RecentGiftsTable items={items} />
-          <RecentGiftsMobileList items={items} />
+          <RecentGiftsTable items={items} onAction={onAction} />
+          <RecentGiftsMobileList items={items} onAction={onAction} />
         </>
       )}
     </div>

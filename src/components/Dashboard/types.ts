@@ -16,8 +16,10 @@ export type RecentGiftItem = {
   date: string
   worth: string
   status: 'Delivered' | 'Fulfilled' | 'Shipped' | 'Not fulfilled'
+  actionType?: 'claim_cash' | 'claim_gift' | 'deliver'
   actionLabel?: string
   image: string
+  fromName?: string
 }
 
 export const giftStatusStyles = {

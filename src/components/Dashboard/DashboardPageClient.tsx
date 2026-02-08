@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import WalletIcon from '@/assets/icons/WalletIcon'
+import { useMemo, useState } from 'react'
 import GiftIcon from '@/assets/icons/GiftIcon'
 import CashIcon from '@/assets/icons/CashIcon'
 import SummaryCards from './SummaryCards'
@@ -12,6 +11,9 @@ import KycBanner from './KycBanner'
 import type { RecentGiftItem, SummaryCardItem } from './types'
 import NotificationCircleIcon from '@/assets/icons/NotificationCircleIcon'
 import ViewIcon from '@/assets/icons/ViewIcon'
+import ClaimGiftModal from '@/components/Gifts/ClaimGiftModal'
+import MarkAsDeliveredModal from '@/components/Gifts/MarkAsDeliveredModal'
+import { useSuccessModal } from '@/context/SuccessModalContext'
 
 const summaryCards: SummaryCardItem[] = [
   {
@@ -126,17 +128,21 @@ const recentGifts: RecentGiftItem[] = [
     worth: '₦2,400',
     status: 'Fulfilled',
     actionLabel: 'Claim gift',
+    actionType: 'claim_gift',
     image: '/assets/images/place-holder-image.jpg',
+    fromName: 'Suleiman Agunde',
   },
   {
     id: '3',
     name: 'Flight Ticket',
-    type: 'Custom',
+    type: 'Custom Gift',
     date: '24 Oct, 2025',
     worth: '₦12,100',
     status: 'Fulfilled',
     actionLabel: 'Claim gift',
+    actionType: 'claim_gift',
     image: '/assets/images/place-holder-image.jpg',
+    fromName: 'Suleiman Agunde',
   },
   {
     id: '4',
@@ -146,17 +152,20 @@ const recentGifts: RecentGiftItem[] = [
     worth: '₦92,000',
     status: 'Shipped',
     actionLabel: 'Mark as delivered',
+    actionType: 'deliver',
     image: '/assets/images/place-holder-image.jpg',
   },
   {
     id: '5',
     name: 'Cash',
-    type: 'Custom',
+    type: 'Cash',
     date: '24 Oct, 2025',
     worth: '₦32,000',
     status: 'Fulfilled',
     actionLabel: 'Claim gift',
+    actionType: 'claim_cash',
     image: '/assets/images/place-holder-image.jpg',
+    fromName: 'Suleiman Agunde',
   },
   {
     id: '6',
@@ -173,6 +182,40 @@ const DashboardPageClient = () => {
   const [visitRange, setVisitRange] = useState('last-7-days')
   const isEmptyState = recentGifts.length === 0
   const summaryItems = isEmptyState ? emptySummaryCards : summaryCards
+  const { openSuccess } = useSuccessModal()
+  const [claimItem, setClaimItem] = useState<RecentGiftItem | null>(null)
+  const [deliverItem, setDeliverItem] = useState<RecentGiftItem | null>(null)
+
+  const isCashClaim =
+    (claimItem?.actionType || '') === 'claim_cash' ||
+    (claimItem?.type || '').toLowerCase().includes('cash') ||
+    (claimItem?.name || '').toLowerCase().includes('cash')
+
+  const claimModalSteps = useMemo(() => {
+    if (!claimItem) return []
+    if (isCashClaim) {
+      return [
+        'Gift will be marked as Claimed',
+        'Funds will be added to your wallet',
+        'A thank you message will be sent to Suleiman',
+      ]
+    }
+    return [
+      'Gift will be marked as Claimed',
+      'Attached gift will be downloaded to your device',
+      'A thank you message will be sent to Suleiman',
+    ]
+  }, [claimItem, isCashClaim])
+
+  const handleGiftAction = (item: RecentGiftItem) => {
+    if (item.actionType === 'deliver') {
+      setDeliverItem(item)
+      return
+    }
+    if (item.actionType === 'claim_cash' || item.actionType === 'claim_gift') {
+      setClaimItem(item)
+    }
+  }
 
   return (
     <>
@@ -193,13 +236,51 @@ const DashboardPageClient = () => {
           <GiftTypeDistributionCard isEmpty={isEmptyState} />
         </div>
 
-        <RecentGiftsSection items={recentGifts} />
+        <RecentGiftsSection items={recentGifts} onAction={handleGiftAction} />
       </div>
+
+      <ClaimGiftModal
+        isOpen={Boolean(claimItem)}
+        onClose={() => setClaimItem(null)}
+        onConfirm={() => {
+          openSuccess({
+            title: 'Success!',
+            message: isCashClaim
+              ? `This cash has been deposited into your wallet, you have a total of ${
+                  claimItem?.worth || '₦0'
+                } in your wallet.`
+              : 'This gift has been downloaded into your device.',
+          })
+          setClaimItem(null)
+        }}
+        giftName={claimItem?.name || 'Gift'}
+        fromName={claimItem?.fromName || 'Suleiman Agunde'}
+        typeLabel={claimItem?.type || 'Gift'}
+        amountLabel={isCashClaim ? 'Amount' : 'Worth'}
+        amountValue={claimItem?.worth || '₦0'}
+        nextSteps={claimModalSteps}
+      />
+
+      <MarkAsDeliveredModal
+        isOpen={Boolean(deliverItem)}
+        onClose={() => setDeliverItem(null)}
+        onConfirm={() => {
+          openSuccess({
+            title: 'Success!',
+            message: 'This Item has been marked as Delivered.',
+          })
+          setDeliverItem(null)
+        }}
+        itemName={deliverItem?.name || 'Item'}
+        itemImage={
+          deliverItem?.image || '/assets/images/place-holder-image.jpg'
+        }
+      />
 
       <button
         type='button'
         onClick={() => console.log('button clicked')}
-        className='fixed bottom-6 right-6 w-[94px] h-[84px] rounded-[70px] border-2 border-[#B8B8EA0D] shadow-[0px_16px_24px_-4px_#10192814] overflow-hidden flex items-center justify-center z-1000 bg-white'
+        className='fixed bottom-6 right-6 w-[94px] h-[84px] rounded-[70px] border-2 border-[#B8B8EA0D] shadow-[0px_16px_24px_-4px_#10192814] overflow-hidden flex items-center justify-center bg-white'
         aria-label='AI assistant'
       >
         <div className='w-[80px] h-[70px]'>

@@ -9,12 +9,14 @@ type RecentGiftsMobileRowProps = {
   item: RecentGiftItem
   isOpen: boolean
   onToggle: () => void
+  onAction: (item: RecentGiftItem) => void
 }
 
 const RecentGiftsMobileRow = ({
   item,
   isOpen,
   onToggle,
+  onAction,
 }: RecentGiftsMobileRowProps) => {
   return (
     <div className='p-3'>
@@ -78,6 +80,7 @@ const RecentGiftsMobileRow = ({
           {item.actionLabel ? (
             <button
               type='button'
+              onClick={() => onAction(item)}
               className='w-full py-3 rounded-[8px] bg-primary-400 text-white text-sm font-medium hover:bg-primary-500 transition-colors'
             >
               {item.actionLabel}

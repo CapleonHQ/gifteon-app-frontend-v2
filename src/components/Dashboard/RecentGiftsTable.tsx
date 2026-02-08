@@ -6,9 +6,10 @@ import { giftStatusStyles } from './types'
 
 type RecentGiftsTableProps = {
   items: RecentGiftItem[]
+  onAction: (item: RecentGiftItem) => void
 }
 
-const RecentGiftsTable = ({ items }: RecentGiftsTableProps) => {
+const RecentGiftsTable = ({ items, onAction }: RecentGiftsTableProps) => {
   return (
     <div className='mt-1 hidden lg:block'>
       <div className='overflow-auto'>
@@ -54,6 +55,7 @@ const RecentGiftsTable = ({ items }: RecentGiftsTableProps) => {
                 {item.actionLabel ? (
                   <button
                     type='button'
+                    onClick={() => onAction(item)}
                     className='w-fit px-3 py-1 rounded-[8px] bg-primary-400 text-white text-xs font-medium hover:bg-primary-500 transition-colors'
                   >
                     {item.actionLabel}
