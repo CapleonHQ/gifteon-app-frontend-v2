@@ -1,16 +1,18 @@
 import type { ReactNode } from 'react'
 
+type SectionCardProps = {
+  title: string
+  description?: string
+  action?: ReactNode
+  children: ReactNode
+}
+
 const SectionCard = ({
   title,
   description,
   action,
   children,
-}: {
-  title: string
-  description?: string
-  action?: ReactNode
-  children: ReactNode
-}) => {
+}: SectionCardProps) => {
   return (
     <div className='bg-white border border-grey-50 rounded-[12px]'>
       <div className='flex items-center justify-between gap-3 px-3 lg:px-6 pt-3 lg:pt-6 pb-3'>

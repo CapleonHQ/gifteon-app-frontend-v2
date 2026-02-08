@@ -2,15 +2,15 @@ import ProfileHeaderBackground from '@/components/Profile/components/ProfileHead
 import ProfileAvatar from '@/components/Profile/components/ProfileAvatar'
 import VerifiedBadge from '@/components/Profile/components/VerifiedBadge'
 
-const ProfileHeader = ({
-  profile,
-}: {
+type ProfileHeaderProps = {
   profile: {
     firstName: string
     lastName: string
     gender: string
   }
-}) => {
+}
+
+const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
   return (
     <div className='relative'>
       <ProfileHeaderBackground />

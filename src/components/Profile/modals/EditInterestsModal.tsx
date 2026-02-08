@@ -5,19 +5,21 @@ import ResponsiveModal from '@/components/common/ResponsiveModal'
 import { interestOptions } from '@/components/Profile/profileData'
 import InterestChip from '@/components/Profile/components/InterestChip'
 
+type EditInterestsModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  selected: string[]
+  onChange: (value: string[]) => void
+  onSave: () => void
+}
+
 const EditInterestsModal = ({
   isOpen,
   onClose,
   selected,
   onChange,
   onSave,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  selected: string[]
-  onChange: (value: string[]) => void
-  onSave: () => void
-}) => {
+}: EditInterestsModalProps) => {
   const current = interestOptions.filter((item) => selected.includes(item.id))
   const others = interestOptions.filter((item) => !selected.includes(item.id))
 

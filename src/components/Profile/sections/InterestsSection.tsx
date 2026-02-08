@@ -2,13 +2,12 @@ import EditIcon from '@/assets/icons/EditIcon'
 import SectionCard from '@/components/Profile/components/SectionCard'
 import InterestChip from '@/components/Profile/components/InterestChip'
 
-const InterestsSection = ({
-  interests,
-  onEdit,
-}: {
+type InterestsSectionProps = {
   interests: { id: string; label: string; icon: string }[]
   onEdit: () => void
-}) => {
+}
+
+const InterestsSection = ({ interests, onEdit }: InterestsSectionProps) => {
   return (
     <SectionCard
       title='Interests'

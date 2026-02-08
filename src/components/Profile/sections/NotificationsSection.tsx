@@ -1,16 +1,19 @@
 import SectionCard from '@/components/Profile/components/SectionCard'
-import { notificationGroups, type NotificationPrefs } from '../profileData'
+import { notificationGroups } from '../profileData'
 import NotificationHeaderRow from '@/components/Profile/sections/notifications/NotificationHeaderRow'
 import NotificationGroupDesktop from '@/components/Profile/sections/notifications/NotificationGroupDesktop'
 import NotificationGroupMobile from '@/components/Profile/sections/notifications/NotificationGroupMobile'
+import type { NotificationPrefs } from '@/types/Profile/notification'
+
+type NotificationsSectionProps = {
+  notifications: NotificationPrefs
+  onChange: (value: NotificationPrefs) => void
+}
 
 const NotificationsSection = ({
   notifications,
   onChange,
-}: {
-  notifications: NotificationPrefs
-  onChange: (value: NotificationPrefs) => void
-}) => {
+}: NotificationsSectionProps) => {
   const updatePref = (
     id: string,
     field: 'email' | 'inApp' | 'sms',

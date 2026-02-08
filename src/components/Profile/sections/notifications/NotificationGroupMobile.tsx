@@ -2,13 +2,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import type {
   NotificationGroup,
   NotificationPrefs,
-} from '@/components/Profile/profileData'
+} from '@/types/Profile/notification'
 
-const NotificationGroupMobile = ({
-  group,
-  notifications,
-  onUpdate,
-}: {
+type NotificationGroupMobileProps = {
   group: NotificationGroup
   notifications: NotificationPrefs
   onUpdate: (
@@ -16,7 +12,13 @@ const NotificationGroupMobile = ({
     field: 'email' | 'inApp' | 'sms',
     value: boolean
   ) => void
-}) => {
+}
+
+const NotificationGroupMobile = ({
+  group,
+  notifications,
+  onUpdate,
+}: NotificationGroupMobileProps) => {
   return (
     <div className='space-y-2 pb-4'>
       <p className='text-sm text-grey-500 uppercase'>{group.title}</p>

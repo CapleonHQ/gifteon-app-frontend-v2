@@ -1,17 +1,20 @@
 import { Plus } from 'lucide-react'
 import SectionCard from '@/components/Profile/components/SectionCard'
-import type { PaymentMethod } from '@/components/Profile/profileData'
+
 import PaymentMethodCard from '@/components/Profile/components/PaymentMethodCard'
+import type { PaymentMethod } from '@/types/Profile/payment'
+
+type PaymentMethodsSectionProps = {
+  methods: PaymentMethod[]
+  onAddAccount: () => void
+  onDelete: (method: PaymentMethod) => void
+}
 
 const PaymentMethodsSection = ({
   methods,
   onAddAccount,
   onDelete,
-}: {
-  methods: PaymentMethod[]
-  onAddAccount: () => void
-  onDelete: (method: PaymentMethod) => void
-}) => {
+}: PaymentMethodsSectionProps) => {
   return (
     <SectionCard
       title='Payment Methods'

@@ -1,19 +1,9 @@
 import PaymentMethodsSection from '@/components/Profile/sections/PaymentMethodsSection'
-import type { PaymentMethod } from '@/components/Profile/profileData'
 import PersonalInfoCard from '@/components/Profile/sections/PersonalInfoCard'
 import InterestsSection from '@/components/Profile/sections/InterestsSection'
+import type { PaymentMethod } from '@/types/Profile/payment'
 
-const PersonalInfoSection = ({
-  profile,
-  interests,
-  isEditingProfile,
-  onEditProfile,
-  onSaveProfile,
-  onEditInterests,
-  paymentMethods,
-  onAddAccount,
-  onDeletePayment,
-}: {
+type PersonalInfoSectionProps = {
   profile: {
     firstName: string
     lastName: string
@@ -30,7 +20,19 @@ const PersonalInfoSection = ({
   paymentMethods: PaymentMethod[]
   onAddAccount: () => void
   onDeletePayment: (method: PaymentMethod) => void
-}) => {
+}
+
+const PersonalInfoSection = ({
+  profile,
+  interests,
+  isEditingProfile,
+  onEditProfile,
+  onSaveProfile,
+  onEditInterests,
+  paymentMethods,
+  onAddAccount,
+  onDeletePayment,
+}: PersonalInfoSectionProps) => {
   return (
     <div
       className={`flex flex-col gap-8 ${

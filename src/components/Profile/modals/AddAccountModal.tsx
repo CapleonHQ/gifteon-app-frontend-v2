@@ -14,11 +14,7 @@ import {
 } from '@/components/ui/select'
 import InputField from '@/components/Profile/components/InputField'
 
-const AddAccountModal = ({
-  isOpen,
-  onClose,
-  onSave,
-}: {
+type AddAccountModalProps = {
   isOpen: boolean
   onClose: () => void
   onSave: (payload: {
@@ -26,7 +22,9 @@ const AddAccountModal = ({
     account: string
     isDefault: boolean
   }) => void
-}) => {
+}
+
+const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
   const [bank, setBank] = useState('')
   const [account, setAccount] = useState('')
   const [accountName, setAccountName] = useState('')

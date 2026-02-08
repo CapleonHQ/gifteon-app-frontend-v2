@@ -1,16 +1,18 @@
 import CloseIcon from '@/assets/icons/CloseIcon'
 import DeleteIcon from '@/assets/icons/DeleteIcon'
-import type { PaymentMethod } from '@/components/Profile/profileData'
+import type { PaymentMethod } from '@/types/Profile/payment'
+
+type DeletePaymentModalProps = {
+  target: PaymentMethod | null
+  onClose: () => void
+  onDelete: () => void
+}
 
 const DeletePaymentModal = ({
   target,
   onClose,
   onDelete,
-}: {
-  target: PaymentMethod | null
-  onClose: () => void
-  onDelete: () => void
-}) => {
+}: DeletePaymentModalProps) => {
   if (!target) return null
 
   return (

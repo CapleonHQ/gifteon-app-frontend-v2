@@ -6,15 +6,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { PaymentMethod } from '@/components/Profile/profileData'
+import type { PaymentMethod } from '@/types/Profile/payment'
 
-const PaymentMethodCard = ({
-  method,
-  onDelete,
-}: {
+type PaymentMethodCardProps = {
   method: PaymentMethod
   onDelete: (method: PaymentMethod) => void
-}) => {
+}
+
+const PaymentMethodCard = ({ method, onDelete }: PaymentMethodCardProps) => {
   return (
     <div className='flex items-center justify-between gap-4 rounded-[10px] border border-grey-50 bg-white p-3'>
       <div className='flex items-center gap-2'>

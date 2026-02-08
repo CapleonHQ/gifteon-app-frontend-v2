@@ -1,13 +1,12 @@
-import type { ProfileTabId } from './profileData'
+import type { ProfileTabId } from '@/types/Profile'
 import { tabs } from './profileData'
 
-const ProfileTabs = ({
-  activeTab,
-  onChange,
-}: {
+type ProfileTabsProps = {
   activeTab: ProfileTabId
   onChange: (tab: ProfileTabId) => void
-}) => {
+}
+
+const ProfileTabs = ({ activeTab, onChange }: ProfileTabsProps) => {
   return (
     <div className='flex items-stretch gap-2 lg:gap-4 rounded-[10px] bg-primary-50/20 border border-primary-50 py-1.5 lg:py-1 px-1.5 lg:px-3'>
       {tabs.map((tab) => (

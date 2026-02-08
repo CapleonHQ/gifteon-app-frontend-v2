@@ -1,15 +1,17 @@
 import SectionCard from '@/components/Profile/components/SectionCard'
 import InputField from '@/components/Profile/components/InputField'
 
+type AccountPinSectionProps = {
+  isEditingPin: boolean
+  onEdit: () => void
+  onSave: () => void
+}
+
 const AccountPinSection = ({
   isEditingPin,
   onEdit,
   onSave,
-}: {
-  isEditingPin: boolean
-  onEdit: () => void
-  onSave: () => void
-}) => {
+}: AccountPinSectionProps) => {
   return (
     <SectionCard
       title='Account PIN'

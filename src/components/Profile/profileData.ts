@@ -1,3 +1,9 @@
+import type {
+  NotificationGroup,
+  NotificationPrefs,
+} from '@/types/Profile/notification'
+import type { PaymentMethod } from '@/types/Profile/payment'
+
 export const profileData = {
   firstName: 'Adenike',
   lastName: 'Abioye',
@@ -24,16 +30,6 @@ export const interestOptions = [
   { id: 'cash', label: 'Cash Gifts & Vouchers', icon: '💸' },
 ]
 
-export type NotificationItem = {
-  id: string
-  label: string
-}
-
-export type NotificationGroup = {
-  title: string
-  items: NotificationItem[]
-}
-
 export const notificationGroups: NotificationGroup[] = [
   {
     title: 'Gift & Contribution Updates',
@@ -44,11 +40,13 @@ export const notificationGroups: NotificationGroup[] = [
       },
       {
         id: 'gift-goal',
-        label: 'Get notified when your gift page reaches its target or goal amount',
+        label:
+          'Get notified when your gift page reaches its target or goal amount',
       },
       {
         id: 'gift-activity',
-        label: 'Receive alerts when people view, share, or react to your gift page',
+        label:
+          'Receive alerts when people view, share, or react to your gift page',
       },
     ],
   },
@@ -74,20 +72,17 @@ export const notificationGroups: NotificationGroup[] = [
     items: [
       {
         id: 'features',
-        label: 'Stay informed about new features, discounts, and announcements.',
+        label:
+          'Stay informed about new features, discounts, and announcements.',
       },
       {
         id: 'login-alert',
-        label: "Get notified when there's a login from a new device or unusual activity.",
+        label:
+          "Get notified when there's a login from a new device or unusual activity.",
       },
     ],
   },
 ]
-
-export type NotificationPrefs = Record<
-  string,
-  { email: boolean; inApp: boolean; sms: boolean }
->
 
 export const initialNotificationPrefs = notificationGroups.reduce(
   (acc, group) => {
@@ -99,13 +94,6 @@ export const initialNotificationPrefs = notificationGroups.reduce(
   {} as NotificationPrefs
 )
 
-export type PaymentMethod = {
-  id: string
-  bank: string
-  account: string
-  isDefault: boolean
-}
-
 export const paymentMethodsSeed: PaymentMethod[] = [
   { id: 'gtb-1', bank: 'GT Bank', account: '12******34', isDefault: true },
   { id: 'gtb-2', bank: 'GT Bank', account: '12******34', isDefault: false },
@@ -116,5 +104,3 @@ export const tabs = [
   { id: 'notifications', label: 'Notifications' },
   { id: 'pin', label: 'Account PIN' },
 ] as const
-
-export type ProfileTabId = (typeof tabs)[number]['id']

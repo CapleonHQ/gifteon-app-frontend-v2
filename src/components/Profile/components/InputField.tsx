@@ -1,3 +1,13 @@
+type InputFieldProps = {
+  label: string
+  defaultValue?: string
+  value?: string
+  onChange?: (value: string) => void
+  placeholder?: string
+  disabled?: boolean
+  type?: string
+}
+
 const InputField = ({
   label,
   defaultValue,
@@ -6,15 +16,7 @@ const InputField = ({
   placeholder,
   disabled,
   type = 'text',
-}: {
-  label: string
-  defaultValue?: string
-  value?: string
-  onChange?: (value: string) => void
-  placeholder?: string
-  disabled?: boolean
-  type?: string
-}) => {
+}: InputFieldProps) => {
   return (
     <div className='space-y-1'>
       <label className='text-sm leading-[145%] font-medium text-grey-900'>

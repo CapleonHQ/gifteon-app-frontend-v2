@@ -5,12 +5,7 @@ import InputField from '@/components/Profile/components/InputField'
 import DatePickerField from '@/components/Gifts/CreateNewGiftPage/Components/DatePickerField'
 import Tick01Icon from '@/assets/icons/Tick01Icon'
 
-const PersonalInfoCard = ({
-  profile,
-  isEditing,
-  onEdit,
-  onSave,
-}: {
+type PersonalInfoCardProps = {
   profile: {
     firstName: string
     lastName: string
@@ -22,7 +17,14 @@ const PersonalInfoCard = ({
   isEditing: boolean
   onEdit: () => void
   onSave: () => void
-}) => {
+}
+
+const PersonalInfoCard = ({
+  profile,
+  isEditing,
+  onEdit,
+  onSave,
+}: PersonalInfoCardProps) => {
   const parsedDob = useMemo(() => {
     if (!profile.dob) return undefined
     const [day, month, year] = profile.dob.split('/')

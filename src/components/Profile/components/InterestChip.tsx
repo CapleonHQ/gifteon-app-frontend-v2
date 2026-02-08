@@ -1,18 +1,20 @@
 import type { ReactNode } from 'react'
 
+type InterestChipProps = {
+  label: string
+  icon: string
+  tone?: 'filled' | 'outline'
+  onClick?: () => void
+  suffix?: ReactNode
+}
+
 const InterestChip = ({
   label,
   icon,
   tone = 'filled',
   onClick,
   suffix,
-}: {
-  label: string
-  icon: string
-  tone?: 'filled' | 'outline'
-  onClick?: () => void
-  suffix?: ReactNode
-}) => {
+}: InterestChipProps) => {
   return (
     <button
       type='button'
