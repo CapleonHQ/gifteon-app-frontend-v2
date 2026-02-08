@@ -15,9 +15,9 @@ import {
   interestOptions,
   initialNotificationPrefs,
   paymentMethodsSeed,
-  type PaymentMethod,
-  type ProfileTabId,
 } from '@/components/Profile/profileData'
+import type { ProfileTabId } from '@/types/Profile'
+import type { PaymentMethod } from '@/types/Profile/payment'
 
 const ProfilePageClient = () => {
   const { openSuccess } = useSuccessModal()
