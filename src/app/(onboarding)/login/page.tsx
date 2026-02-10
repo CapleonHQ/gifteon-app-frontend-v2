@@ -1,15 +1,20 @@
 'use client'
 
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import OnboardingLogo from '../components/OnboardingLogo'
 import LoginFormStep from './components/LoginFormStep'
 import LoginSuccessStep from './components/LoginSuccessStep'
 import LoginVerificationStep from './components/LoginVerificationStep'
+import { loginUser, verifyOtp } from '@/api/services'
+import { setAccessToken, setRefreshToken } from '@/api/token'
+import { toApiError } from '@/api/errorHelpers'
 
 type LoginStep = 'login' | 'verification' | 'success'
 
 const LoginPage = () => {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState<LoginStep>('login')
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -75,12 +80,18 @@ const LoginPage = () => {
     setError('')
 
     try {
-      console.log('Logging in with email:', email)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      setCurrentStep('verification')
+      const resp = await loginUser({ email })
+      if (resp.success) {
+        setCurrentStep('verification')
+      } else {
+        setError(resp.message || 'Login failed. Please try again.')
+      }
     } catch (error: any) {
-      console.log(error)
-      setError('Login failed. Please try again.')
+      const apiError = toApiError(error)
+      setError(apiError.message)
+      if (apiError.fieldErrors?.email?.length) {
+        setEmailError(apiError.fieldErrors.email[0])
+      }
     } finally {
       setIsLoading(false)
     }
@@ -142,13 +153,18 @@ const LoginPage = () => {
     try {
       if (otp.every((digit) => digit !== '')) {
         setIsLoading(true)
-        console.log('Verifying OTP:', otp.join(''))
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        const resp = await verifyOtp({ email, otp: otp.join('') })
+        if (resp.accessToken) {
+          setAccessToken(resp.accessToken)
+        }
+        if (resp.refreshToken) {
+          setRefreshToken(resp.refreshToken)
+        }
         setCurrentStep('success')
       }
     } catch (error: any) {
-      console.log(error)
-      setError('Verification failed. Please try again.')
+      const apiError = toApiError(error)
+      setError(apiError.message)
     } finally {
       setIsLoading(false)
     }
@@ -157,11 +173,16 @@ const LoginPage = () => {
   const handleResend = async () => {
     if (canResend) {
       setIsResending(true)
-      console.log('Resending verification code to:', email)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      setCountdown(59)
-      setCanResend(false)
-      setIsResending(false)
+      try {
+        await loginUser({ email })
+        setCountdown(59)
+        setCanResend(false)
+      } catch (error: any) {
+        const apiError = toApiError(error)
+        setError(apiError.message)
+      } finally {
+        setIsResending(false)
+      }
     }
   }
 
@@ -172,7 +193,7 @@ const LoginPage = () => {
   }
 
   const handleProceedToDashboard = () => {
-    console.log('Proceeding to dashboard')
+    router.push('/dashboard')
   }
 
   const isValidEmail = Boolean(email) && validateEmail(email)

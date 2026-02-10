@@ -8,8 +8,8 @@ import {
 
 export const initializePayment = async (
   data: InitializePaymentRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/payment/initialize',
     data
   )
@@ -18,8 +18,8 @@ export const initializePayment = async (
 
 export const validateWalletBalance = async (
   data: ValidateWalletBalanceRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/payment/check-wallet-balance',
     data
   )
@@ -28,8 +28,8 @@ export const validateWalletBalance = async (
 
 export const payWithWallet = async (
   data: InitializePaymentRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.post(
     '/payment/pay-with-wallet',
     data
   )
@@ -38,8 +38,8 @@ export const payWithWallet = async (
 
 export const getTransactionByReference = async (
   reference: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.get(
     `/payment/transaction/${reference}`
   )
   return resp.data
@@ -47,8 +47,8 @@ export const getTransactionByReference = async (
 
 export const verifyTransactionByReference = async (
   reference: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.get(
     `/payment/verify/${reference}`
   )
   return resp.data

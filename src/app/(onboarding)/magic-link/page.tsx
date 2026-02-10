@@ -6,6 +6,9 @@ import { AnimatePresence } from 'framer-motion'
 import OnboardingLogo from '../components/OnboardingLogo'
 import MagicLinkError from './components/MagicLinkError'
 import MagicLinkLoading from './components/MagicLinkLoading'
+import { verifyMagicLink } from '@/api/services/auth'
+import { setAccessToken, setRefreshToken } from '@/api/token'
+import { toApiError } from '@/api/errorHelpers'
 
 type VerificationState = 'loading' | 'success' | 'error' | 'no-token'
 
@@ -26,23 +29,26 @@ const MagicLinkVerifyContent = () => {
       }
 
       try {
-        console.log('Verifying token:', token)
-
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-
-        const isValidToken = token.startsWith('valid')
-
-        if (isValidToken) {
-          console.log('Redirecting to dashboard')
-          router.push('/dashboard')
-        } else {
-          setVerificationState('error')
-          setErrorMessage('This magic link is invalid or has expired')
+        const resp = await verifyMagicLink(token)
+        if (resp.accessToken) {
+          setAccessToken(resp.accessToken)
         }
+        if (resp.refreshToken) {
+          setRefreshToken(resp.refreshToken)
+        }
+        router.push('/dashboard')
       } catch (error: any) {
-        console.error('Verification error:', error)
+        const apiError = toApiError(error)
         setVerificationState('error')
-        setErrorMessage('Something went wrong. Please try again.')
+        if (
+          apiError.code === 'UNAUTHORIZED' ||
+          apiError.code === 'NOT_FOUND' ||
+          apiError.code === 'FORBIDDEN'
+        ) {
+          setErrorMessage('This magic link is invalid or has expired')
+        } else {
+          setErrorMessage(apiError.message)
+        }
       }
     }
 

@@ -4,8 +4,8 @@ import { ApiResponse } from '@/types/Common'
 import { PaginationParams } from '@/types/Common'
 import { UpdateOrderStatusRequestBody } from '@/types/Orders'
 
-export const getMerchantOrdersOverview = async (): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+export const getMerchantOrdersOverview = async (): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/merchant/orders/overview'
   )
   return resp.data
@@ -13,8 +13,8 @@ export const getMerchantOrdersOverview = async (): Promise<ApiResponse> => {
 
 export const getMerchantOrders = async (
   params?: PaginationParams
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/merchant/orders',
     { params }
   )
@@ -23,8 +23,8 @@ export const getMerchantOrders = async (
 
 export const getMerchantOrderDetails = async (
   orderId: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     `/merchant/orders/${orderId}`
   )
   return resp.data
@@ -33,8 +33,8 @@ export const getMerchantOrderDetails = async (
 export const updateMerchantOrderStatus = async (
   orderId: string,
   data: UpdateOrderStatusRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.put(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.put(
     `/merchant/orders/${orderId}/status`,
     data
   )

@@ -8,8 +8,8 @@ import {
 
 export const createListingCategory = async (
   data: CreateListingCategoryRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/listing/categories',
     data
   )
@@ -18,8 +18,8 @@ export const createListingCategory = async (
 
 export const getListingCategories = async (
   params?: ListingCategoriesQueryParams
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/listing/categories',
     { params }
   )
@@ -28,8 +28,8 @@ export const getListingCategories = async (
 
 export const getListingCategoryProducts = async (
   id: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     `/listing/categories/${id}/products`
   )
   return resp.data

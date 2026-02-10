@@ -9,8 +9,8 @@ import {
 
 export const addToCart = async (
   data: AddToCartRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.post(
     '/store/cart/add',
     data
   )
@@ -19,16 +19,16 @@ export const addToCart = async (
 
 export const checkoutCart = async (
   data: CheckoutRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.post(
     '/store/cart/checkout',
     data
   )
   return resp.data
 }
 
-export const getCartItems = async (): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.get(
+export const getCartItems = async (): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.get(
     '/store/cart'
   )
   return resp.data
@@ -36,23 +36,23 @@ export const getCartItems = async (): Promise<ApiResponse> => {
 
 export const updateCartItem = async (
   data: UpdateCartItemRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.patch(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.patch(
     '/store/cart/update',
     data
   )
   return resp.data
 }
 
-export const removeCartItem = async (id: string): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.delete(
+export const removeCartItem = async (id: string): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.delete(
     `/store/cart/remove/${id}`
   )
   return resp.data
 }
 
-export const clearCart = async (): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.delete(
+export const clearCart = async (): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.delete(
     '/store/cart/clear'
   )
   return resp.data

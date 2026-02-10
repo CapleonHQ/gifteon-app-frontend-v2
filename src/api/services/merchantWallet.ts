@@ -3,8 +3,8 @@ import apiService from '../'
 import { ApiResponse } from '@/types/Common'
 import { PaginationParams } from '@/types/Common'
 
-export const getMerchantWalletOverview = async (): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+export const getMerchantWalletOverview = async (): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/merchant/wallet/overview'
   )
   return resp.data
@@ -12,8 +12,8 @@ export const getMerchantWalletOverview = async (): Promise<ApiResponse> => {
 
 export const getMerchantWalletTransactions = async (
   params?: PaginationParams
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/merchant/wallet/transactions',
     { params }
   )

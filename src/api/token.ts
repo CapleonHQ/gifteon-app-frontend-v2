@@ -11,6 +11,7 @@ export interface CookieOptions {
 }
 
 const ACCESS_TOKEN_COOKIE = 'giftseon_access_token'
+const REFRESH_TOKEN_COOKIE = 'giftseon_refresh_token'
 
 const isBrowser = (): boolean => typeof document !== 'undefined'
 
@@ -33,9 +34,33 @@ export const setAccessToken = (
   })
 }
 
+export const setRefreshToken = (
+  token: string,
+  options: CookieOptions = {}
+): void => {
+  if (!isBrowser()) return
+  Cookies.set(REFRESH_TOKEN_COOKIE, token, {
+    sameSite: options.sameSite ?? 'lax',
+    secure:
+      options.secure ??
+      (typeof window !== 'undefined' && window.location.protocol === 'https:'),
+    path: options.path ?? '/',
+    domain: options.domain,
+    expires:
+      typeof options.maxAgeSeconds === 'number'
+        ? options.maxAgeSeconds / (60 * 60 * 24)
+        : undefined,
+  })
+}
+
 export const getAccessToken = (): string => {
   if (!isBrowser()) return ''
   return Cookies.get(ACCESS_TOKEN_COOKIE) ?? ''
+}
+
+export const getRefreshToken = (): string => {
+  if (!isBrowser()) return ''
+  return Cookies.get(REFRESH_TOKEN_COOKIE) ?? ''
 }
 
 export const clearAccessToken = (options: CookieOptions = {}): void => {
@@ -46,4 +71,17 @@ export const clearAccessToken = (options: CookieOptions = {}): void => {
   })
 }
 
+export const clearRefreshToken = (options: CookieOptions = {}): void => {
+  if (!isBrowser()) return
+  Cookies.remove(REFRESH_TOKEN_COOKIE, {
+    path: options.path ?? '/',
+    domain: options.domain,
+  })
+}
+
 export const ACCESS_TOKEN_COOKIE_NAME = ACCESS_TOKEN_COOKIE
+export const REFRESH_TOKEN_COOKIE_NAME = REFRESH_TOKEN_COOKIE
+
+export const isAuthenticated = (): boolean => {
+  return Boolean(getAccessToken())
+}

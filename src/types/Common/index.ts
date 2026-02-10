@@ -1,11 +1,7 @@
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T> {
   status: string
   message: string
   data?: T
-  meta?: {
-    access_token?: string
-    refresh_token?: string
-  }
 }
 
 export interface PaginationParams {
@@ -14,4 +10,31 @@ export interface PaginationParams {
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
   search?: string
+}
+
+export type ApiErrorCode =
+  | 'NETWORK_ERROR'
+  | 'TIMEOUT'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'VALIDATION_ERROR'
+  | 'RATE_LIMITED'
+  | 'SERVER_ERROR'
+  | 'BAD_REQUEST'
+  | 'UNKNOWN'
+
+export type FieldErrors = Record<string, string[]>
+
+export interface NormalizedApiError {
+  ok: false
+  code: ApiErrorCode
+  message: string
+  status?: number
+  details?: string
+  fieldErrors?: FieldErrors
+  requestId?: string
+  endpoint?: string
+  method?: string
+  raw?: unknown
 }

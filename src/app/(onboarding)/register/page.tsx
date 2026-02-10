@@ -1,21 +1,27 @@
 'use client'
 
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import OnboardingLogo from '../components/OnboardingLogo'
 import RegisterFormStep from './components/RegisterFormStep'
 import RegisterSuccessStep from './components/RegisterSuccessStep'
 import RegisterVerificationStep from './components/RegisterVerificationStep'
+import { registerUser, resendVerification, verifyOtp } from '@/api/services'
+import { setAccessToken, setRefreshToken } from '@/api/token'
+import { toApiError } from '@/api/errorHelpers'
 
 type RegisterStep = 'register' | 'verification' | 'success'
 
 type Gender = 'male' | 'female' | ''
 
 const RegisterPage = () => {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState<RegisterStep>('register')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [country, setCountry] = useState('NG')
   const [gender, setGender] = useState<Gender>('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -80,12 +86,20 @@ const RegisterPage = () => {
     setError('')
 
     try {
-      console.log('Registering user:', { firstName, lastName, email, gender })
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await registerUser({
+        firstName,
+        lastName,
+        email,
+        gender: gender ? `${gender[0].toUpperCase()}${gender.slice(1)}` : undefined,
+        country,
+      })
       setCurrentStep('verification')
     } catch (error: any) {
-      console.log(error)
-      setError('Registration failed. Please try again.')
+      const apiError = toApiError(error)
+      setError(apiError.message)
+      if (apiError.fieldErrors?.email?.length) {
+        setEmailError(apiError.fieldErrors.email[0])
+      }
     } finally {
       setIsLoading(false)
     }
@@ -147,13 +161,18 @@ const RegisterPage = () => {
     try {
       if (otp.every((digit) => digit !== '')) {
         setIsLoading(true)
-        console.log('Verifying OTP:', otp.join(''))
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        const resp = await verifyOtp({ email, otp: otp.join('') })
+        if (resp.accessToken) {
+          setAccessToken(resp.accessToken)
+        }
+        if (resp.refreshToken) {
+          setRefreshToken(resp.refreshToken)
+        }
         setCurrentStep('success')
       }
     } catch (error: any) {
-      console.log(error)
-      setError('Verification failed. Please try again.')
+      const apiError = toApiError(error)
+      setError(apiError.message)
     } finally {
       setIsLoading(false)
     }
@@ -162,11 +181,16 @@ const RegisterPage = () => {
   const handleResend = async () => {
     if (canResend) {
       setIsResending(true)
-      console.log('Resending verification code to:', email)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      setCountdown(59)
-      setCanResend(false)
-      setIsResending(false)
+      try {
+        await resendVerification({ email })
+        setCountdown(59)
+        setCanResend(false)
+      } catch (error: any) {
+        const apiError = toApiError(error)
+        setError(apiError.message)
+      } finally {
+        setIsResending(false)
+      }
     }
   }
 
@@ -177,7 +201,7 @@ const RegisterPage = () => {
   }
 
   const handleProceedToDashboard = () => {
-    console.log('Proceeding to dashboard')
+    router.push('/dashboard')
   }
 
   const isValidEmail = Boolean(email) && validateEmail(email)
@@ -193,6 +217,7 @@ const RegisterPage = () => {
             firstName={firstName}
             lastName={lastName}
             email={email}
+            country={country}
             gender={gender}
             emailError={emailError}
             error={error}
@@ -201,6 +226,7 @@ const RegisterPage = () => {
             onFirstNameChange={(event) => setFirstName(event.target.value)}
             onLastNameChange={(event) => setLastName(event.target.value)}
             onEmailChange={handleEmailChange}
+            onCountryChange={(value) => setCountry(value)}
             onGenderChange={(value) => setGender(value)}
             onRegister={handleRegister}
             onDismissError={() => setError('')}

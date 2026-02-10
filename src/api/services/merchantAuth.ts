@@ -9,8 +9,8 @@ import {
 
 export const registerMerchant = async (
   data: MerchantRegisterRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.post(
     '/merchant/auth/register',
     data
   )
@@ -19,8 +19,8 @@ export const registerMerchant = async (
 
 export const verifyMerchantOtp = async (
   data: MerchantVerifyOtpRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.post(
     '/merchant/auth/verify-otp',
     data
   )
@@ -29,8 +29,8 @@ export const verifyMerchantOtp = async (
 
 export const loginMerchant = async (
   data: MerchantLoginRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.post(
     '/merchant/auth/login',
     data
   )
@@ -39,8 +39,8 @@ export const loginMerchant = async (
 
 export const verifyMerchantEmail = async (
   token: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPublic.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.get(
     '/merchant/auth/verify',
     { params: { token } }
   )

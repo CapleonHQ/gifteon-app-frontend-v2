@@ -7,10 +7,7 @@ type OtpInputsProps = {
   otp: string[]
   inputRefs: MutableRefObject<(HTMLInputElement | null)[]>
   onChange: (index: number, value: string) => void
-  onKeyDown: (
-    index: number,
-    event: KeyboardEvent<HTMLInputElement>
-  ) => void
+  onKeyDown: (index: number, event: KeyboardEvent<HTMLInputElement>) => void
   onPaste: (event: ClipboardEvent<HTMLInputElement>) => void
 }
 
@@ -35,7 +32,7 @@ const OtpInputs = ({
           type='text'
           inputMode='numeric'
           pattern='[0-9]*'
-          placeholder='-'
+          placeholder=''
           maxLength={1}
           value={digit}
           onChange={(e) => onChange(index, e.target.value)}

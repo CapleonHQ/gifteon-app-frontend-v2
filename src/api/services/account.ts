@@ -7,8 +7,8 @@ import {
   UpdateProfileRequestBody,
 } from '@/types/Account'
 
-export const getProfile = async (): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+export const getProfile = async (): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/account'
   )
   return resp.data
@@ -16,16 +16,16 @@ export const getProfile = async (): Promise<ApiResponse> => {
 
 export const updateProfile = async (
   data: UpdateProfileRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/account/update',
     data
   )
   return resp.data
 }
 
-export const setPin = async (data: SetPinRequestBody): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+export const setPin = async (data: SetPinRequestBody): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/account/set-pin',
     data
   )
@@ -34,8 +34,8 @@ export const setPin = async (data: SetPinRequestBody): Promise<ApiResponse> => {
 
 export const changePin = async (
   data: ChangePinRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/account/change-pin',
     data
   )

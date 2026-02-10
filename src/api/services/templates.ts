@@ -5,8 +5,8 @@ import { CreateTemplateRequestBody } from '@/types/Templates'
 
 export const createTemplate = async (
   data: CreateTemplateRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/templates/create',
     data
   )

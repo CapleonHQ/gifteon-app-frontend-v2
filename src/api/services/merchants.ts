@@ -8,16 +8,16 @@ import {
 
 export const createMerchant = async (
   data: CreateMerchantRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/merchants/register',
     data
   )
   return resp.data
 }
 
-export const getMerchantProfile = async (): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+export const getMerchantProfile = async (): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/merchants/profile'
   )
   return resp.data
@@ -26,8 +26,8 @@ export const getMerchantProfile = async (): Promise<ApiResponse> => {
 export const updateMerchant = async (
   id: string,
   data: UpdateMerchantRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.put(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.put(
     `/merchants/${id}`,
     data
   )
@@ -36,8 +36,8 @@ export const updateMerchant = async (
 
 export const getMerchantSettlements = async (
   id: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     `/merchants/${id}/settlements`
   )
   return resp.data

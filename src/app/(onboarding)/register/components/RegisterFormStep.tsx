@@ -5,11 +5,20 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import FormErrorAlert from '../../components/FormErrorAlert'
 import SocialAuthButtons from '../../components/SocialAuthButtons'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { COUNTRIES } from '@/lib/constants/countries'
 
 type RegisterFormStepProps = {
   firstName: string
   lastName: string
   email: string
+  country: string
   gender: 'male' | 'female' | ''
   emailError: string
   error: string
@@ -18,6 +27,7 @@ type RegisterFormStepProps = {
   onFirstNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onLastNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void
+  onCountryChange: (country: string) => void
   onGenderChange: (gender: 'male' | 'female') => void
   onRegister: (event: SyntheticEvent) => void
   onDismissError: () => void
@@ -28,6 +38,7 @@ const RegisterFormStep = ({
   firstName,
   lastName,
   email,
+  country,
   gender,
   emailError,
   error,
@@ -36,6 +47,7 @@ const RegisterFormStep = ({
   onFirstNameChange,
   onLastNameChange,
   onEmailChange,
+  onCountryChange,
   onGenderChange,
   onRegister,
   onDismissError,
@@ -157,6 +169,30 @@ const RegisterFormStep = ({
           </AnimatePresence>
         </div>
 
+        <div className='flex flex-col gap-1'>
+          <label
+            htmlFor='country'
+            className='text-sm font-medium leading-[145%] text-grey-900'
+          >
+            Country
+          </label>
+          <Select value={country} onValueChange={onCountryChange}>
+            <SelectTrigger
+              id='country'
+              className='w-full border-grey-50 rounded-[12px] text-sm text-blackish font-medium h-[48px]! shadow-none! bg-white'
+            >
+              <SelectValue placeholder='Select your country' />
+            </SelectTrigger>
+            <SelectContent className='rounded-[12px] border-grey-50'>
+              {COUNTRIES.map((item) => (
+                <SelectItem key={item.code} value={item.code}>
+                  {item.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className='flex flex-col gap-2'>
           <label className='text-sm font-medium leading-[145%] text-grey-900'>
             Gender
@@ -265,7 +301,7 @@ const RegisterFormStep = ({
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Already have an account?{' '}
           <Link
-            href='/auth/login'
+            href='/login'
             className='text-primary-400 font-semibold hover:text-primary-600 transition-colors duration-200 underline'
           >
             Log In

@@ -6,8 +6,8 @@ import { CreateCouponRequestBody, UpdateCouponRequestBody } from '@/types/Coupon
 export const getMerchantCouponDetails = async (
   listingId: string,
   couponId: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     `/merchant/listings/${listingId}/coupon/${couponId}`
   )
   return resp.data
@@ -17,8 +17,8 @@ export const updateMerchantCoupon = async (
   listingId: string,
   couponId: string,
   data: UpdateCouponRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.patch(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.patch(
     `/merchant/listings/${listingId}/coupon/${couponId}`,
     data
   )
@@ -27,8 +27,8 @@ export const updateMerchantCoupon = async (
 
 export const getMerchantCoupons = async (
   listingId: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     `/merchant/listings/${listingId}/coupons`
   )
   return resp.data
@@ -37,8 +37,8 @@ export const getMerchantCoupons = async (
 export const createMerchantCoupon = async (
   listingId: string,
   data: CreateCouponRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     `/merchant/listings/${listingId}/coupon`,
     data
   )

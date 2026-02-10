@@ -150,7 +150,7 @@ const LoginFormStep = ({
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Don&apos;t have an account?{' '}
           <Link
-            href='/auth/register'
+            href='/register'
             className='text-primary-400 font-semibold hover:text-primary-600 transition-colors duration-200 underline'
           >
             Create an account

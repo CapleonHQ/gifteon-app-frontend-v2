@@ -5,16 +5,16 @@ import { CreateStoreRequestBody, UpdateStoreRequestBody } from '@/types/Stores'
 
 export const createMerchantStore = async (
   data: CreateStoreRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.post(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
     '/merchant/stores/create',
     data
   )
   return resp.data
 }
 
-export const getMerchantStores = async (): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+export const getMerchantStores = async (): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     '/merchant/stores'
   )
   return resp.data
@@ -22,8 +22,8 @@ export const getMerchantStores = async (): Promise<ApiResponse> => {
 
 export const getMerchantStoreDetails = async (
   id: string
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.get(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
     `/merchant/stores/${id}`
   )
   return resp.data
@@ -32,8 +32,8 @@ export const getMerchantStoreDetails = async (
 export const updateMerchantStore = async (
   id: string,
   data: UpdateStoreRequestBody
-): Promise<ApiResponse> => {
-  const resp: AxiosResponse<ApiResponse> = await apiService.appPrivate.put(
+): Promise<ApiResponse<any>> => {
+  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.put(
     `/merchant/stores/${id}`,
     data
   )
