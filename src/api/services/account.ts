@@ -5,10 +5,12 @@ import {
   ChangePinRequestBody,
   SetPinRequestBody,
   UpdateProfileRequestBody,
+  UserProfile,
 } from '@/types/Account'
 
-export const getProfile = async (): Promise<ApiResponse<any>> => {
-  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.get(
+export const getProfile = async (): Promise<ApiResponse<UserProfile>> => {
+  const resp: AxiosResponse<ApiResponse<UserProfile>> =
+    await apiService.appPrivate.get(
     '/account'
   )
   return resp.data

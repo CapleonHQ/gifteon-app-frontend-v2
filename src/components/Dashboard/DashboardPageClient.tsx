@@ -1,116 +1,15 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import GiftIcon from '@/assets/icons/GiftIcon'
-import CashIcon from '@/assets/icons/CashIcon'
-import SummaryCards from './SummaryCards'
-import VisitSharesCard from './VisitSharesCard'
-import GiftTypeDistributionCard from './GiftTypeDistributionCard'
 import RecentGiftsSection from './RecentGiftsSection'
 import KycBanner from './KycBanner'
-import type { RecentGiftItem, SummaryCardItem } from './types'
-import NotificationCircleIcon from '@/assets/icons/NotificationCircleIcon'
-import ViewIcon from '@/assets/icons/ViewIcon'
 import ClaimGiftModal from '@/components/Gifts/ClaimGiftModal'
 import MarkAsDeliveredModal from '@/components/Gifts/MarkAsDeliveredModal'
 import { useSuccessModal } from '@/context/SuccessModalContext'
+import DashboardStatsSection from './DashboardStatsSection'
+import type { GiftItem } from '@/types/Gifts/index'
 
-const summaryCards: SummaryCardItem[] = [
-  {
-    id: 'claimable',
-    title: 'Claimable balance',
-    value: '₦74,600',
-    meta: 'Updated today',
-    icon: (
-      <span className='w-4 h-4 text-[#FF8D28]'>
-        <CashIcon />
-      </span>
-    ),
-    actionLabel: 'Claim',
-  },
-  {
-    id: 'active',
-    title: 'Active pages',
-    value: '4',
-    meta: '2 public, 1 private',
-    icon: (
-      <span className='w-4 h-4 text-[#34C759]'>
-        <NotificationCircleIcon />
-      </span>
-    ),
-  },
-  {
-    id: 'pending',
-    title: 'Pending gifts',
-    value: '15',
-    meta: 'Updated today',
-    icon: (
-      <span className='w-4 h-4 text-[#00C3D0]'>
-        <GiftIcon />
-      </span>
-    ),
-  },
-  {
-    id: 'views',
-    title: 'Page views',
-    value: '117',
-    meta: '+12% from yesterday',
-    icon: (
-      <span className='w-4 h-4 text-[#CB1A14]'>
-        <ViewIcon />
-      </span>
-    ),
-  },
-]
-
-const emptySummaryCards: SummaryCardItem[] = [
-  {
-    id: 'claimable',
-    title: 'Claimable balance',
-    value: '0',
-    meta: 'Updated today',
-    icon: (
-      <span className='w-4 h-4 text-[#FF8D28]'>
-        <CashIcon />
-      </span>
-    ),
-  },
-  {
-    id: 'active',
-    title: 'Active pages',
-    value: '0',
-    meta: 'No pages yet',
-    icon: (
-      <span className='w-4 h-4 text-[#34C759]'>
-        <NotificationCircleIcon />
-      </span>
-    ),
-  },
-  {
-    id: 'pending',
-    title: 'Pending gifts',
-    value: '0',
-    meta: 'No gifts yet',
-    icon: (
-      <span className='w-4 h-4 text-[#00C3D0]'>
-        <GiftIcon />
-      </span>
-    ),
-  },
-  {
-    id: 'views',
-    title: 'Page views',
-    value: '0',
-    meta: 'No visitors yet!',
-    icon: (
-      <span className='w-4 h-4 text-[#CB1A14]'>
-        <ViewIcon />
-      </span>
-    ),
-  },
-]
-
-const recentGifts: RecentGiftItem[] = [
+const recentGifts: GiftItem[] = [
   {
     id: '1',
     name: 'Comfy Couch',
@@ -179,12 +78,9 @@ const recentGifts: RecentGiftItem[] = [
 ]
 
 const DashboardPageClient = () => {
-  const [visitRange, setVisitRange] = useState('last-7-days')
-  const isEmptyState = recentGifts.length === 0
-  const summaryItems = isEmptyState ? emptySummaryCards : summaryCards
   const { openSuccess } = useSuccessModal()
-  const [claimItem, setClaimItem] = useState<RecentGiftItem | null>(null)
-  const [deliverItem, setDeliverItem] = useState<RecentGiftItem | null>(null)
+  const [claimItem, setClaimItem] = useState<GiftItem | null>(null)
+  const [deliverItem, setDeliverItem] = useState<GiftItem | null>(null)
 
   const isCashClaim =
     (claimItem?.actionType || '') === 'claim_cash' ||
@@ -207,7 +103,7 @@ const DashboardPageClient = () => {
     ]
   }, [claimItem, isCashClaim])
 
-  const handleGiftAction = (item: RecentGiftItem) => {
+  const handleGiftAction = (item: GiftItem) => {
     if (item.actionType === 'deliver') {
       setDeliverItem(item)
       return
@@ -225,16 +121,7 @@ const DashboardPageClient = () => {
         actionHref='/profile'
       />
       <div className='w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
-        <SummaryCards items={summaryItems} />
-
-        <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,346px)] gap-4 mt-2 lg:mt-0'>
-          <VisitSharesCard
-            range={visitRange}
-            onRangeChange={setVisitRange}
-            isEmpty={isEmptyState}
-          />
-          <GiftTypeDistributionCard isEmpty={isEmptyState} />
-        </div>
+        <DashboardStatsSection />
 
         <RecentGiftsSection items={recentGifts} onAction={handleGiftAction} />
       </div>

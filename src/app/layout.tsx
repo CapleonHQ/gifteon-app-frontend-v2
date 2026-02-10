@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import degular from '@/assets/fonts/degular'
 import georgia from '@/assets/fonts/georgia'
+import QueryProvider from '@/components/Providers/QueryProvider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -133,7 +134,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${degular.variable} ${georgia.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   )

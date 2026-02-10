@@ -11,7 +11,9 @@ import {
   Filler,
   Tooltip,
   Legend,
+  type ChartData,
 } from 'chart.js'
+import { format, isValid, parseISO } from 'date-fns'
 
 import {
   Select,
@@ -36,21 +38,34 @@ ChartJS.register(
 type VisitSharesCardProps = {
   range: string
   onRangeChange: (value: string) => void
-  isEmpty?: boolean
+  rangeOptions: Array<{ value: string; label: string; rangeLabel: string }>
+  points: Array<{ date: string; visits: number; shares: number }>
 }
 
 const VisitSharesCard = ({
   range,
   onRangeChange,
-  isEmpty = false,
+  rangeOptions,
+  points,
 }: VisitSharesCardProps) => {
-  const data = useMemo(
-    () => ({
-      labels: ['May', 'June', 'July', 'August', 'September', 'October'],
+  const selectedRange = rangeOptions.find((item) => item.value === range)
+
+  const lineChartData: ChartData<'line'> = useMemo(() => {
+    const labels =
+      points.map((point) => {
+        if (!point.date) return ''
+        const parsed = parseISO(point.date)
+        return isValid(parsed) ? format(parsed, 'MMM d') : ''
+      }) ?? []
+    const visits = points.map((point) => point.visits ?? 0)
+    const shares = points.map((point) => point.shares ?? 0)
+
+    return {
+      labels,
       datasets: [
         {
           label: 'Visit',
-          data: [70, 65, 68, 120, 160, 130],
+          data: visits,
           borderColor: '#089BC4',
           borderWidth: 1,
           backgroundColor: (context: {
@@ -78,7 +93,7 @@ const VisitSharesCard = ({
         },
         {
           label: 'Shares',
-          data: [88, 84, 82, 110, 130, 118],
+          data: shares,
           borderColor: '#C19348',
           borderWidth: 1,
           backgroundColor: 'rgba(210, 164, 92, 0.12)',
@@ -87,22 +102,24 @@ const VisitSharesCard = ({
           pointRadius: 0,
         },
       ],
-    }),
-    []
-  )
+    }
+  }, [points])
 
-  const chartData = useMemo(() => {
-    if (!isEmpty) return data
+  const isEmpty =
+    lineChartData.datasets.length === 0 ||
+    lineChartData.datasets.every((dataset) => dataset.data.length === 0)
+  const resolvedChartData = useMemo(() => {
+    if (!isEmpty) return lineChartData
     return {
-      ...data,
-      datasets: data.datasets.map((dataset) => ({
+      ...lineChartData,
+      datasets: lineChartData.datasets.map((dataset) => ({
         ...dataset,
         data: [],
       })),
     }
-  }, [data, isEmpty])
+  }, [lineChartData, isEmpty])
 
-  const options = useMemo(
+  const chartOptions = useMemo(
     () => ({
       responsive: true,
       maintainAspectRatio: false,
@@ -174,26 +191,33 @@ const VisitSharesCard = ({
   return (
     <div className='bg-white border border-grey-50 rounded-[12px] shadow-[0px_1.5px_4px_-1px_#10192812] p-4'>
       <div className='flex items-center justify-between gap-3'>
-        <h2 className='text-lg font-medium text-blackish'>Visit vs Shares</h2>
+        <h2 className='sm:text-lg font-medium text-blackish'>
+          Visit vs Shares
+        </h2>
         <Select value={range} onValueChange={onRangeChange}>
           <SelectTrigger className='flex items-center gap-2 text-xs text-grey-500 bg-grey-50/20 border-[0.5px] border-grey-50 rounded-full px-3 py-2 h-auto shadow-none'>
             <span className='flex items-center gap-1 text-grey-500'>
-              Last 7 days:
+              <span className='text-xs text-grey-500'>
+                {selectedRange?.label ?? 'Last 7 days'}
+                {selectedRange?.rangeLabel ? ':' : ''}
+              </span>
               <span className='text-sm text-blackish font-medium leading-[18px]'>
-                <SelectValue placeholder='Oct 5 - Oct 11' />
+                {selectedRange?.rangeLabel ?? ''}
               </span>
             </span>
           </SelectTrigger>
           <SelectContent className='rounded-[12px] border-grey-50'>
-            <SelectItem value='last-7-days'>Oct 5 - Oct 11</SelectItem>
-            <SelectItem value='last-month'>Sep 5 - Sep 11</SelectItem>
-            <SelectItem value='last-6-months'>May - Oct</SelectItem>
+            {rangeOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}: {option.rangeLabel}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
       <div className='mt-3 h-[260px] relative overflow-x-auto'>
         <div className='min-w-[520px] h-[260px]'>
-          <Line data={chartData} options={options} />
+          <Line data={resolvedChartData} options={chartOptions} />
         </div>
         {isEmpty ? (
           <div className='absolute inset-0 flex items-center justify-center'>

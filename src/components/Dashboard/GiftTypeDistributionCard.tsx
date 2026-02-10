@@ -11,22 +11,37 @@ import {
 } from 'chart.js'
 import DashboardEmptyState from './DashboardEmptyState'
 import EmptyFolderFile from '@/assets/icons/EmptyFolderFile'
+import type { GiftTypeDistributionItem } from '@/types/Stats'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 type GiftTypeDistributionCardProps = {
-  isEmpty?: boolean
+  distribution: GiftTypeDistributionItem[]
+  total: number
 }
 
 const GiftTypeDistributionCard = ({
-  isEmpty = false,
+  distribution,
+  total,
 }: GiftTypeDistributionCardProps) => {
+  const isEmpty = total === 0 || distribution.length === 0
+  const colors = ['#089BC4', '#C19348', '#5AB579', '#8B5CF6', '#F59E0B']
+  const resolvedData = distribution.length
+    ? distribution
+    : [
+        { type: 'Items', total: 0 },
+        { type: 'Cash', total: 0 },
+        { type: 'Custom Gifts', total: 0 },
+      ]
+
   const data: ChartData<'doughnut'> = {
-    labels: ['Items', 'Cash', 'Custom Gifts'],
+    labels: resolvedData.map((item) => item.type),
     datasets: [
       {
-        data: [180000, 164000, 210000],
-        backgroundColor: ['#089BC4', '#C19348', '#5AB579'],
+        data: resolvedData.map((item) => item.total),
+        backgroundColor: resolvedData.map(
+          (_, index) => colors[index % colors.length]
+        ),
         borderWidth: 0,
         hoverOffset: 4,
       },
@@ -45,7 +60,7 @@ const GiftTypeDistributionCard = ({
 
   return (
     <div className='bg-white border border-grey-50 rounded-[12px] shadow-[0px_1.5px_4px_-1px_#10192812] p-4'>
-      <h2 className='text-lg font-medium text-blackish'>
+      <h2 className='sm:text-lg font-medium text-blackish'>
         Gift Type Distribution
       </h2>
       <div className='mt-4 flex flex-col items-center'>
@@ -62,18 +77,15 @@ const GiftTypeDistributionCard = ({
               <Doughnut data={data} options={options} />
             </div>
             <div className='mt-4 flex items-center gap-4 text-xs text-grey-600'>
-              <div className='flex items-center gap-2'>
-                <span className='w-2.5 h-2.5 rounded-full bg-[#089BC4]' />
-                Items
-              </div>
-              <div className='flex items-center gap-2'>
-                <span className='w-2.5 h-2.5 rounded-full bg-[#C19348]' />
-                Cash
-              </div>
-              <div className='flex items-center gap-2'>
-                <span className='w-2.5 h-2.5 rounded-full bg-[#5AB579]' />
-                Custom Gifts
-              </div>
+              {resolvedData.map((item, index) => (
+                <div key={item.type} className='flex items-center gap-2'>
+                  <span
+                    className='w-2.5 h-2.5 rounded-full'
+                    style={{ backgroundColor: colors[index % colors.length] }}
+                  />
+                  {item.type}
+                </div>
+              ))}
             </div>
           </>
         )}
