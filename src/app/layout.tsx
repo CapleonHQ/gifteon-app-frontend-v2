@@ -4,6 +4,7 @@ import './globals.css'
 import degular from '@/assets/fonts/degular'
 import georgia from '@/assets/fonts/georgia'
 import QueryProvider from '@/components/Providers/QueryProvider'
+import { AuthProvider } from '@/context/AuthContext'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -134,7 +135,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${degular.variable} ${georgia.variable} antialiased`}
       >
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   )
