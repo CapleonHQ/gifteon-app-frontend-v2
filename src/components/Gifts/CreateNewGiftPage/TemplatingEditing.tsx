@@ -13,8 +13,12 @@ import {
   useRecipientsContext,
 } from './CreateGiftContext'
 import { createPage } from '@/api/services/pages'
-import { format } from 'date-fns'
 import type { Step } from './EditingSection'
+import {
+  validateCreateGift,
+  validateCustomizeDraft,
+} from './utils/validation'
+import { buildCreatePageFormData } from './utils/formData'
 
 interface TemplatingEditingProps {
   handleBack: () => void
@@ -90,202 +94,48 @@ const TemplatingEditingContent = ({
     giftPageData.title.underline,
   ])
 
-  const normalizeAmount = (value: string) => value.replace(/[^\d.]/g, '').trim()
-
-  const isValidEmail = (value: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-
-  const isValidAmount = (value: string) => {
-    const normalized = normalizeAmount(value)
-    if (!normalized) return false
-    const parsed = Number(normalized)
-    return Number.isFinite(parsed) && parsed > 0
-  }
-
-  const getValidationErrors = () => {
-    const errors: Record<string, string> = {}
-
-    if (!giftPageData.title.text.trim()) {
-      errors.title = 'Title is required.'
-    }
-
-    const content = giftPageData.description.text.trim()
-    if (!content) {
-      errors.description = 'Description is required.'
-    } else if (content.length < 50 || content.length > 1000) {
-      errors.description = 'Description must be between 50 and 1000 characters.'
-    }
-
-    if (!selectedTemplate) {
-      errors.template = 'Please select a template.'
-    }
-
-    if (!giftPageData.media?.file) {
-      errors.media = 'Cover image or video is required.'
-    }
-
-    if (!giftFor) {
-      errors.giftFor = 'Please select who the gift is for.'
-    }
-
-    if (!giftType) {
-      errors.giftType = 'Please select a gift type.'
-    }
-
-    if (!privacy) {
-      errors.privacy = 'Please select a privacy level.'
-    }
-
-    if (!customGifts) {
-      errors.customGifts = 'Please select if you want to add custom gifts.'
-    }
-
-    if (!addMusic) {
-      errors.addMusic = 'Please select if you want to add music.'
-    }
-
-    if (giftType === 'cash') {
-      if (!currency) {
-        errors.currency = 'Currency is required.'
-      }
-
-      if (giftFor === 'someone_else') {
-        if (!isValidAmount(cashAmount)) {
-          errors.cashAmount = 'Enter a valid cash amount.'
-        }
-        if (!receiverName.trim()) {
-          errors.receiverName = "Receiver's name is required."
-        }
-        if (!receiverEmail.trim() || !isValidEmail(receiverEmail)) {
-          errors.receiverEmail = "Receiver's email is invalid."
-        }
-
-        if (allowJoinGifting === 'yes') {
-          if (!isValidAmount(joinTargetAmount)) {
-            errors.joinTargetAmount = 'Join target amount is required.'
-          }
-          if (!isValidAmount(joinMinAmount)) {
-            errors.joinMinAmount = 'Join minimum amount is required.'
-          }
-        }
-
-        if (setTimeframe === 'yes') {
-          if (!giftingEndDate) {
-            errors.giftingEndDate = 'Gifting end date is required.'
-          }
-          if (!giftingEndTime) {
-            errors.giftingEndTime = 'Gifting end time is required.'
-          }
-        }
-      } else if (giftFor === 'for_me') {
-        if (!isValidAmount(minAmount)) {
-          errors.minAmount = 'Minimum amount is required.'
-        }
-        if (!isValidAmount(maxAmount)) {
-          errors.maxAmount = 'Maximum amount is required.'
-        }
-        if (!isValidAmount(targetAmount)) {
-          errors.targetAmount = 'Target amount is required.'
-        }
-        const minValue = Number(normalizeAmount(minAmount))
-        const maxValue = Number(normalizeAmount(maxAmount))
-        if (
-          Number.isFinite(minValue) &&
-          Number.isFinite(maxValue) &&
-          minValue > maxValue
-        ) {
-          errors.minAmount = 'Minimum amount must be less than maximum amount.'
-        }
-      }
-    }
-
-    if (customGifts === 'yes') {
-      if (customGiftItems.length === 0) {
-        errors.customGifts = 'Add at least one custom gift.'
-      } else {
-        customGiftItems.forEach((item, index) => {
-          if (!item.title.trim()) {
-            errors.customGifts = `Custom gift #${index + 1} title is required.`
-          }
-          if (!isValidAmount(item.price)) {
-            errors.customGifts = `Custom gift #${index + 1} price is required.`
-          }
-          const qty = Number(item.quantity)
-          if (!Number.isFinite(qty) || qty <= 0) {
-            errors.customGifts = `Custom gift #${
-              index + 1
-            } quantity is invalid.`
-          }
-        })
-      }
-    }
-
-    if (privacy === 'private') {
-      if (recipients.length === 0) {
-        const draftName = recipientForm.name.trim()
-        const draftEmail = recipientForm.email.trim()
-        if (!draftName && !draftEmail) {
-          errors.recipients = 'Add at least one recipient for private pages.'
-        } else {
-          if (!draftName) {
-            errors.recipientName = 'Recipient name is required.'
-          }
-          if (!draftEmail) {
-            errors.recipientEmail = 'Recipient email is required.'
-          } else if (!isValidEmail(draftEmail)) {
-            errors.recipientEmail = 'Enter a valid recipient email address.'
-          }
-        }
-      } else {
-        const missingName = recipients.find(
-          (recipient) => !recipient.name.trim()
-        )
-        if (missingName) {
-          errors.recipients = 'Recipient name is required.'
-        } else {
-          const missingEmail = recipients.find(
-            (recipient) => !recipient.email.trim()
-          )
-          if (missingEmail) {
-            errors.recipients = 'Recipient email is required.'
-          } else {
-            const invalidEmail = recipients.find(
-              (recipient) => !isValidEmail(recipient.email)
-            )
-            if (invalidEmail) {
-              errors.recipients = 'Enter a valid recipient email address.'
-            }
-          }
-        }
-      }
-    }
-
-    return errors
-  }
-
-  const getCustomizeValidationErrors = () => {
-    const errors: Record<string, string> = {}
-    if (!titleDraftRef.current.trim()) {
-      errors.title = 'Title is required.'
-    }
-
-    const content = descriptionDraftRef.current.trim()
-    if (!content) {
-      errors.description = 'Description is required.'
-    } else if (content.length < 50 || content.length > 1000) {
-      errors.description = 'Description must be between 50 and 1000 characters.'
-    }
-
-    if (!giftPageData.media?.file) {
-      errors.media = 'Cover image or video is required.'
-    }
-
-    if (!buttonLabelDraftRef.current.trim()) {
-      errors.buttonLabel = 'Button label is required.'
-    }
-
-    return errors
-  }
+  const settings = useMemo(
+    () => ({
+      giftFor,
+      giftType,
+      currency,
+      cashAmount,
+      minAmount,
+      maxAmount,
+      targetAmount,
+      customGifts,
+      addMusic,
+      privacy,
+      receiverName,
+      receiverEmail,
+      allowJoinGifting,
+      joinTargetAmount,
+      joinMinAmount,
+      setTimeframe,
+      giftingEndDate,
+      giftingEndTime,
+    }),
+    [
+      giftFor,
+      giftType,
+      currency,
+      cashAmount,
+      minAmount,
+      maxAmount,
+      targetAmount,
+      customGifts,
+      addMusic,
+      privacy,
+      receiverName,
+      receiverEmail,
+      allowJoinGifting,
+      joinTargetAmount,
+      joinMinAmount,
+      setTimeframe,
+      giftingEndDate,
+      giftingEndTime,
+    ]
+  )
 
   const commitDrafts = () => {
     if (titleDraftRef.current !== giftPageData.title.text) {
@@ -329,16 +179,6 @@ const TemplatingEditingContent = ({
     })
   }
 
-  const appendIf = (
-    formData: FormData,
-    key: string,
-    value?: string | Blob | null
-  ) => {
-    if (value === undefined || value === null) return
-    if (typeof value === 'string' && value.trim() === '') return
-    formData.append(key, value)
-  }
-
   const disableContinue = false
 
   const handleSave = async () => {
@@ -352,209 +192,30 @@ const TemplatingEditingContent = ({
 
     try {
       commitDrafts()
-      const validationErrors = getValidationErrors()
+      const validationErrors = validateCreateGift({
+        giftPageData,
+        selectedTemplate,
+        settings,
+        recipients,
+        recipientForm,
+        customGiftItems,
+      })
       if (Object.keys(validationErrors).length > 0) {
         setFieldErrors(validationErrors)
         scrollToFirstError()
         return
       }
 
-      const formData = new FormData()
-
-      appendIf(formData, 'title', giftPageData.title.text)
-      appendIf(formData, 'content', giftPageData.description.text)
-      appendIf(formData, 'active', 'true')
-      appendIf(formData, 'titleFont', giftPageData.title.font)
-      appendIf(formData, 'titleColor', giftPageData.title.color)
-      appendIf(formData, 'textAlignment', giftPageData.title.alignment)
-      appendIf(formData, 'titleFormat', titleFormat)
-      appendIf(formData, 'categoryId', 'dummy-category-id')
-
-      const titleSize = parseInt(giftPageData.title.size, 10)
-      if (!Number.isNaN(titleSize)) {
-        appendIf(formData, 'titleSize', String(titleSize))
-      }
-
-      appendIf(formData, 'buttonLabel', giftPageData.button.label)
-      appendIf(formData, 'buttonTextColor', giftPageData.button.textColor)
-      appendIf(
-        formData,
-        'buttonBackgroundColor',
-        giftPageData.button.backgroundColor
-      )
-
-      appendIf(formData, 'contentFont', giftPageData.description.font)
-      appendIf(formData, 'contentColor', giftPageData.description.color)
-      const contentSize = parseInt(giftPageData.description.size, 10)
-      if (!Number.isNaN(contentSize)) {
-        appendIf(formData, 'contentSize', String(contentSize))
-      }
-
-      if (hasGiftMedia && giftPageData.media.file) {
-        appendIf(formData, 'coverImage', giftPageData.media.file)
-      }
-
-      if (selectedTemplate) {
-        appendIf(formData, 'templateId', String(selectedTemplate))
-      }
-
-      const whoIsFor = giftFor
-      appendIf(formData, 'settings[whoIsFor]', whoIsFor)
-      appendIf(
-        formData,
-        'settings[acceptCashGift]',
-        String(giftType === 'cash')
-      )
-      appendIf(
-        formData,
-        'settings[hasStoreItems]',
-        String(giftType === 'items')
-      )
-      appendIf(
-        formData,
-        'settings[allowCustomGifts]',
-        String(customGifts === 'yes')
-      )
-      appendIf(formData, 'settings[hasMusic]', String(addMusic === 'yes'))
-      appendIf(formData, 'settings[privacy]', privacy)
-
-      if (giftType === 'cash') {
-        appendIf(
-          formData,
-          'settings[cashGift][currency]',
-          currency ? currency.toUpperCase() : ''
-        )
-
-        if (giftFor === 'someone_else') {
-          const normalizedCashAmount = normalizeAmount(cashAmount)
-          appendIf(
-            formData,
-            'settings[cashGift][targetAmount]',
-            normalizedCashAmount
-          )
-        } else {
-          appendIf(
-            formData,
-            'settings[cashGift][minimumAmount]',
-            normalizeAmount(minAmount)
-          )
-          appendIf(
-            formData,
-            'settings[cashGift][maximumAmount]',
-            normalizeAmount(maxAmount)
-          )
-          appendIf(
-            formData,
-            'settings[cashGift][targetAmount]',
-            normalizeAmount(targetAmount)
-          )
-        }
-      }
-
-      if (customGifts === 'yes') {
-        customGiftItems.forEach((item, index) => {
-          appendIf(
-            formData,
-            `settings[customGifts][${index}][title]`,
-            item.title
-          )
-          appendIf(
-            formData,
-            `settings[customGifts][${index}][quantity]`,
-            item.quantity
-          )
-          appendIf(
-            formData,
-            `settings[customGifts][${index}][unitPrice]`,
-            normalizeAmount(item.price)
-          )
-          if (item.imageFile) {
-            appendIf(
-              formData,
-              `settings[customGifts][${index}][image]`,
-              item.imageFile
-            )
-          }
-        })
-      }
-
-      const effectiveRecipients =
-        recipients.length > 0
-          ? recipients
-          : recipientForm.name.trim() && recipientForm.email.trim()
-          ? [
-              {
-                name: recipientForm.name.trim(),
-                email: recipientForm.email.trim(),
-              },
-            ]
-          : []
-
-      effectiveRecipients.forEach((recipient, index) => {
-        appendIf(
-          formData,
-          `settings[recipients][${index}][name]`,
-          recipient.name
-        )
-        appendIf(
-          formData,
-          `settings[recipients][${index}][email]`,
-          recipient.email
-        )
+      const formData = buildCreatePageFormData({
+        giftPageData,
+        selectedTemplate,
+        categoryId: 'dummy-category-id',
+        titleFormat,
+        settings,
+        customGiftItems,
+        recipients,
+        recipientForm,
       })
-
-      const socials = [
-        { provider: 'instagram', url: giftPageData.socialLinks.instagram },
-        { provider: 'x', url: giftPageData.socialLinks.twitter },
-        { provider: 'linkedin', url: giftPageData.socialLinks.linkedin },
-      ].filter((social) => Boolean(social.url?.trim()))
-
-      socials.forEach((social, index) => {
-        appendIf(
-          formData,
-          `settings[socials][${index}][provider]`,
-          social.provider
-        )
-        appendIf(formData, `settings[socials][${index}][url]`, social.url || '')
-      })
-
-      if (receiverName) {
-        appendIf(formData, 'settings[receiver][name]', receiverName)
-      }
-      if (receiverEmail) {
-        appendIf(formData, 'settings[receiver][email]', receiverEmail)
-      }
-
-      if (giftType === 'cash' && giftFor === 'someone_else') {
-        appendIf(
-          formData,
-          'settings[allowJoinGifting]',
-          String(allowJoinGifting === 'yes')
-        )
-        appendIf(
-          formData,
-          'settings[joinTargetAmount]',
-          normalizeAmount(joinTargetAmount)
-        )
-        appendIf(
-          formData,
-          'settings[joinMinAmount]',
-          normalizeAmount(joinMinAmount)
-        )
-        appendIf(
-          formData,
-          'settings[setTimeframe]',
-          String(setTimeframe === 'yes')
-        )
-        if (giftingEndDate) {
-          appendIf(
-            formData,
-            'settings[giftingEndDate]',
-            format(giftingEndDate, 'yyyy-MM-dd')
-          )
-        }
-        appendIf(formData, 'settings[giftingEndTime]', giftingEndTime)
-      }
 
       const resp = await createPage(formData)
       const data = resp?.data ?? {}
@@ -672,7 +333,12 @@ const TemplatingEditingContent = ({
         }}
         showPreview={true}
         onContinueAttempt={() => {
-          const nextErrors = getCustomizeValidationErrors()
+          const nextErrors = validateCustomizeDraft({
+            title: titleDraftRef.current,
+            description: descriptionDraftRef.current,
+            buttonLabel: buttonLabelDraftRef.current,
+            hasMedia: Boolean(giftPageData.media?.file),
+          })
           const hasErrors = Object.values(nextErrors).some((value) => value)
           setContinueErrors(nextErrors)
           if (hasErrors) return false
@@ -722,7 +388,12 @@ const TemplatingEditingContent = ({
           },
         }}
         onContinueAttempt={() => {
-          const nextErrors = getCustomizeValidationErrors()
+          const nextErrors = validateCustomizeDraft({
+            title: titleDraftRef.current,
+            description: descriptionDraftRef.current,
+            buttonLabel: buttonLabelDraftRef.current,
+            hasMedia: Boolean(giftPageData.media?.file),
+          })
           const hasErrors = Object.values(nextErrors).some((value) => value)
           setContinueErrors(nextErrors)
           if (hasErrors) return false
