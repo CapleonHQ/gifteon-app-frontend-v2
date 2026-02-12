@@ -10,25 +10,25 @@ import {
 
 export const TEMPLATES = [
   {
-    id: 1,
-    title: 'Template 1',
+    id: 'e6f41b22-1594-42d2-8a93-36d33fd955ad',
+    title: 'Premium',
     description: 'Side by side layout',
     layout: 'template1',
   },
   {
-    id: 2,
+    id: 'e6f41b22-1594-42d2-8a93-36d33fd955ad1',
     title: 'Template 2',
     description: 'Centered circular image',
     layout: 'template2',
   },
   {
-    id: 3,
+    id: 'e6f41b22-1594-42d2-8a93-36d33fd955ad2',
     title: 'Template 3',
     description: 'Horizontal split view',
     layout: 'template3',
   },
   {
-    id: 4,
+    id: 'e6f41b22-1594-42d2-8a93-36d33fd955ad3',
     title: 'Template 4',
     description: 'Grid layout',
     layout: 'template4',

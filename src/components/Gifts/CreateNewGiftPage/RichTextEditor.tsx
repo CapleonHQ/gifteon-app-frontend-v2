@@ -45,7 +45,7 @@ const RichTextEditor = ({
     text: string
     font: string
     color: string
-    alignment: 'left' | 'center' | 'right'
+    alignment: 'left' | 'middle' | 'right'
     size: string
     bold: boolean
     italic: boolean
@@ -130,6 +130,8 @@ const RichTextEditor = ({
             <div className='flex w-full rounded-[4px] bg-[#F2F2F399] overflow-hidden'>
               <button
                 onClick={() => onChange({ ...value, alignment: 'left' })}
+                title='Left'
+                aria-label='Left'
                 className={`flex-1 py-4 ${
                   value.alignment === 'left'
                     ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
@@ -139,9 +141,11 @@ const RichTextEditor = ({
                 <AlignLeft className='w-4 h-4 mx-auto' />
               </button>
               <button
-                onClick={() => onChange({ ...value, alignment: 'center' })}
+                onClick={() => onChange({ ...value, alignment: 'middle' })}
+                title='Middle'
+                aria-label='Middle'
                 className={`flex-1 py-3 ${
-                  value.alignment === 'center'
+                  value.alignment === 'middle'
                     ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
                     : 'text-grey-700 border border-transparent hover:bg-white-100'
                 }`}
@@ -150,6 +154,8 @@ const RichTextEditor = ({
               </button>
               <button
                 onClick={() => onChange({ ...value, alignment: 'right' })}
+                title='Right'
+                aria-label='Right'
                 className={`flex-1 py-3 ${
                   value.alignment === 'right'
                     ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'

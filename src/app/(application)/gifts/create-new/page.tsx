@@ -1,19 +1,21 @@
 'use client'
 
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { GiftPageData } from '@/types/gifts'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import TemplateSelection from '@/components/Gifts/CreateNewGiftPage/TemplateSelection'
 import TemplatingEditing from '@/components/Gifts/CreateNewGiftPage/TemplatingEditing'
 import SuccessModal from '@/components/Gifts/CreateNewGiftPage/CreateSuccessModal'
 
 const CreateNewGiftPage = () => {
+  const router = useRouter()
   const [step, setStep] = useState<'select' | 'customize'>('select')
-  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [giftPageLink, setGiftPageLink] = useState('')
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleTemplateSelect = (templateId: number) => {
+  const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId)
   }
 
@@ -28,30 +30,27 @@ const CreateNewGiftPage = () => {
     setSelectedTemplate(null)
   }
 
-  const handleSave = async () => {
-    // Here you would send giftPageData to your backend
-    console.log('Saving gift page data:')
-
-    // Example API call:
-    try {
-      // const response = await fetch('/api/gift-pages', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(giftPageData)
-      // })
-      // const result = await response.json()
-
-      // For demo purposes, using a mock link
-      const mockLink = 'giftpagelinkhereqiftpagelinkhereQgiftseon.com'
-      setGiftPageLink(mockLink)
-      setShowSuccessModal(true)
-    } catch (error) {
-      console.error('Failed to save:', error)
+  const handleCreated = (link: string) => {
+    setGiftPageLink(link)
+    setShowSuccessModal(true)
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current)
     }
+    redirectTimerRef.current = setTimeout(() => {
+      router.push('/gift-pages')
+    }, 10000)
   }
 
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <div className='w-full h-full'>
+    <div className='w-full h-full bg-white lg:bg-inherit px-4 lg:px-0'>
       <AnimatePresence mode='wait'>
         {step === 'select' && (
           <TemplateSelection
@@ -64,7 +63,7 @@ const CreateNewGiftPage = () => {
         {step === 'customize' && (
           <TemplatingEditing
             handleBack={handleBack}
-            handleSave={handleSave}
+            onCreated={handleCreated}
             selectedTemplate={selectedTemplate}
           />
         )}
@@ -72,7 +71,10 @@ const CreateNewGiftPage = () => {
 
       <SuccessModal
         isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
+        onClose={() => {
+          setShowSuccessModal(false)
+          router.push('/gift-pages')
+        }}
         giftPageLink={giftPageLink}
       />
     </div>

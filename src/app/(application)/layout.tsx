@@ -1,51 +1,49 @@
 'use client'
 
-import React from 'react'
+import { useMemo, type ReactNode } from 'react'
 import Sidebar from '@/components/Layout/Sidebar'
 import Header from '@/components/Layout/Header'
-import { PAGE_TITLES } from '@/lib/constants/menu'
 import { usePathname } from 'next/navigation'
+import { resolvePageTitle } from '@/lib/utils/pageTitle'
+import { MobileBackProvider } from '@/components/Layout/MobileTitleContext'
+import MobileTitleBar from '@/components/Layout/MobileTitleBar'
+import { SuccessModalProvider } from '@/context/SuccessModalContext'
+import AuthGuard from '@/components/Auth/AuthGuard'
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname()
-
-  // Get page title based on current pathname
-  const getPageTitle = () => {
-    // Check for exact match first
-    if (PAGE_TITLES[pathname]) {
-      return PAGE_TITLES[pathname]
-    }
-
-    // Check for partial match (useful for dynamic routes)
-    const matchedKey = Object.keys(PAGE_TITLES).find(
-      (key) => pathname.startsWith(key) && key !== '/'
-    )
-
-    return matchedKey ? PAGE_TITLES[matchedKey] : 'Dashboard'
-  }
-
-  const pageTitle = getPageTitle()
+  const pageTitle = useMemo(() => resolvePageTitle(pathname), [pathname])
 
   return (
-    <div className='w-full max-w-[2500px] flex flex-col h-screen bg-grey-50 text-blackish'>
-      <main className='grid grid-cols-1 lg:grid-cols-[auto_1fr] flex-1 overflow-hidden'>
-        {/* Desktop Sidebar */}
-        <div className='hidden lg:block'>
-          <Sidebar />
-        </div>
-        <div className='w-full h-full overflow-hidden flex-1 transition-all duration-300 flex flex-col'>
-          <Header pageTitle={pageTitle} />
-          <div className='flex-1 overflow-y-auto bg-white lg:bg-grey-50 mt-[72.5px] lg:mt-0 px-4 lg:px-6 pt-8 lg:pt-5 pb-6'>
-            <div className='lg:hidden'>
-              <h1 className='text-blackish text-2xl leading-[127%] font-medium'>
-                {pageTitle}
-              </h1>
-            </div>
-            {children}
+    <MobileBackProvider>
+      <SuccessModalProvider>
+        <AuthGuard>
+          <div className='w-full h-screen bg-grey-50 text-blackish flex flex-col overflow-hidden'>
+            <main className='flex-1 grid grid-cols-1 lg:grid-cols-[auto_1fr] overflow-hidden'>
+              {/* Desktop Sidebar */}
+              <div className='hidden lg:block overflow-y-auto'>
+                <Sidebar />
+              </div>
+              <div className='flex flex-col overflow-hidden min-w-0'>
+                <Header pageTitle={pageTitle} />
+                <div className='flex-1 overflow-y-auto mt-[72.5px] lg:mt-0'>
+                  <div className='w-full min-h-full lg:px-6 h-full'>
+                    <div className='w-full min-h-full mx-auto max-w-[1440px] 2xl:max-w-[1600px] h-full'>
+                      <div className='px-4 lg:hidden bg-white py-4'>
+                        <MobileTitleBar title={pageTitle} />
+                      </div>
+                      <div className='lg:mt-6 mb-4 lg:pb-[30px] min-h-full flex flex-col'>
+                        {children}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </main>
           </div>
-        </div>
-      </main>
-    </div>
+        </AuthGuard>
+      </SuccessModalProvider>
+    </MobileBackProvider>
   )
 }
 

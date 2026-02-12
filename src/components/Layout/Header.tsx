@@ -28,6 +28,11 @@ import {
 import { usePathname } from 'next/navigation'
 import { MENU_ITEMS } from '@/lib/constants/menu'
 import { NOTIFICATIONS } from '@/lib/constants/dummy'
+import { useAuth } from '@/context/AuthContext'
+import { logout } from '@/api/auth'
+import PolygonIcon from '@/assets/icons/PolygonIcon'
+import Favoriteicon from '@/assets/icons/Favoriteicon'
+import EditIcon02 from '@/assets/icons/EditIcon02'
 
 const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -38,8 +43,21 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false)
 
   const pathname = usePathname()
+  const { user } = useAuth()
 
   const unreadCount = NOTIFICATIONS.filter((n) => n.unread).length
+
+  const displayName = user?.firstName ? `Hello, ${user.firstName}` : 'Hello'
+  const email = user?.email ?? ''
+  const avatarUrl = user?.profilePicture ?? ''
+  const initials =
+    `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase() ||
+    'U'
+  const handleLogout = () => {
+    setProfileDropdownOpen(false)
+    setIsMobileMenuOpen(false)
+    logout({ redirectTo: '/login' })
+  }
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -66,9 +84,33 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
     }
   }, [isMobileSearchOpen])
 
+  // Close mobile overlays when crossing into desktop
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)')
+    const handleChange = () => {
+      if (mediaQuery.matches) {
+        setIsMobileMenuOpen(false)
+        setIsMobileSearchOpen(false)
+      }
+    }
+
+    handleChange()
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+
+    mediaQuery.addListener(handleChange)
+    return () => mediaQuery.removeListener(handleChange)
+  }, [])
+
   return (
     <>
-      <header className='w-full bg-[#F5FDFF80] lg:bg-white border-b-[0.2px] lg:border-b-[0.4px] border-grey-50 px-4 sm:px-6 py-4 lg:py-6 fixed lg:relative top-0 left-0 right-0 z-50'>
+      <header
+        className={`w-full ${
+          isMobileSearchOpen ? 'bg-white' : 'bg-[#F5FDFF80]'
+        } lg:bg-white border-b-[0.2px] lg:border-b-[0.4px] border-grey-50 px-4 sm:px-6 py-4 lg:py-6 fixed lg:relative top-0 left-0 right-0 z-40`}
+      >
         <div className='flex items-center justify-between gap-4 lg:gap-6'>
           {/* Left Section - Logo (Mobile) and Page Title */}
           <div className='flex items-center gap-6'>
@@ -198,17 +240,17 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                 <div className='hidden lg:flex items-center gap-2 pl-3 pr-2 py-2 hover:bg-grey-50 rounded-lg transition-colors cursor-pointer'>
                   <div className='flex items-center gap-2'>
                     <Avatar className='w-10 h-10'>
-                      <AvatarImage src='/assets/images/avatar-placeholder.png' />
+                      {avatarUrl ? <AvatarImage src={avatarUrl} /> : null}
                       <AvatarFallback className='bg-primary-100 text-primary-600 font-medium'>
-                        AD
+                        {initials}
                       </AvatarFallback>
                     </Avatar>
                     <div className='flex flex-col gap-1'>
                       <span className='font-medium text-blackish leading-[20px]'>
-                        Hello, Adenike
+                        {displayName}
                       </span>
                       <span className='text-xs text-grey-500 leading-[16px]'>
-                        adenikeabi@gmail.com
+                        {email}
                       </span>
                     </div>
                   </div>
@@ -219,54 +261,68 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                   )}
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className='w-56 border-grey-100' align='end'>
-                <div className='px-2 py-2'>
-                  <p className='text-sm font-medium text-grey-900'>Adenike</p>
-                  <p className='text-xs text-grey-600'>adenikeabi@gmail.com</p>
-                </div>
-                <DropdownMenuSeparator className='bg-grey-50' />
-                <DropdownMenuItem className='cursor-pointer text-grey-700 focus:text-grey-900 focus:bg-grey-50'>
-                  <span className='w-4 h-4 mr-2'>
-                    <ProfileIcon />
+              <div className='relative'>
+                <DropdownMenuContent
+                  className='w-56 border-none shadow-[0px_10px_18px_-2px_#10192812]'
+                  align='end'
+                  sideOffset={24}
+                >
+                  <span className='absolute text-white w-10 h-[29px] -top-4 right-2.5'>
+                    <PolygonIcon />
                   </span>
-                  My Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className='cursor-pointer text-grey-700 focus:text-grey-900 focus:bg-grey-50'>
-                  <span className='w-4 h-4 mr-2'>
-                    <WalletIcon />
-                  </span>
-                  My Wallet
-                </DropdownMenuItem>
-                <DropdownMenuItem className='cursor-pointer text-grey-700 focus:text-grey-900 focus:bg-grey-50'>
-                  <svg
-                    className='w-4 h-4 mr-2'
-                    viewBox='0 0 24 24'
-                    fill='none'
-                    stroke='currentColor'
+                  <div className='px-2 py-2'>
+                    <p className='text-sm font-medium text-grey-900'>
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className='text-xs text-grey-600'>{email}</p>
+                  </div>
+                  <DropdownMenuSeparator className='bg-grey-50' />
+                  <DropdownMenuItem className='cursor-pointer text-grey-900 focus:text-grey-900 focus:bg-grey-50'>
+                    <span className='w-5 h-5 mr-2 text-grey-500 [&>svg]:size-full! [&_svg]:text-current!'>
+                      <Favoriteicon />
+                    </span>
+                    Favorite Gifts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className='cursor-pointer text-grey-900 focus:text-grey-900 focus:bg-grey-50'>
+                    <span className='w-5 h-5 mr-2 text-grey-500 [&>svg]:size-full! [&_svg]:text-current!'>
+                      <EditIcon02 />
+                    </span>
+                    Edit Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className='cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50'
+                    onClick={handleLogout}
                   >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'
-                    />
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
-                    />
-                  </svg>
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className='bg-grey-50' />
-                <DropdownMenuItem className='cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50'>
-                  <span className='w-4 h-4 mr-2'>
-                    <LogoutIcon />
-                  </span>
-                  Log Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+                    <span className='w-5 h-5 mr-2 text-grey-500 [&>svg]:size-full! [&_svg]:text-current!'>
+                      <LogoutIcon />
+                    </span>
+                    Log Out
+                  </DropdownMenuItem>
+                  {/* <DropdownMenuItem className='cursor-pointer text-grey-700 focus:text-grey-900 focus:bg-grey-50'>
+                    <svg
+                      className='w-4 h-4 mr-2'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'
+                      />
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                      />
+                    </svg>
+                    Settings
+                  </DropdownMenuItem> */}
+                  {/* <DropdownMenuSeparator className='bg-grey-50' /> */}
+                </DropdownMenuContent>
+              </div>
             </DropdownMenu>
 
             {/* Mobile Menu Toggle */}
@@ -339,7 +395,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className='fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden'
+              className='fixed inset-x-0 bottom-0 top-[72.5px] bg-black/20 backdrop-blur-sm z-40 lg:hidden'
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
@@ -349,7 +405,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className='fixed top-[72.5px] right-0 bottom-0 w-full max-w-md bg-white z-40 lg:hidden shadow-2xl overflow-y-auto'
+              className='fixed top-[72.5px] right-0 bottom-0 w-full max-w-md bg-white z-50 lg:hidden shadow-2xl overflow-y-auto'
             >
               <div className='flex flex-col h-full'>
                 {/* Mobile Menu Navigation */}
@@ -386,7 +442,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                   <div className='pt-3 pb-2 border-y border-grey-50'>
                     <motion.button
                       className='w-full flex items-center gap-2 px-3 py-3 rounded-lg text-left text-grey-600 hover:bg-grey-50 transition-colors'
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={handleLogout}
                       whileTap={{ scale: 0.98 }}
                     >
                       <span className='w-6 h-6'>
@@ -406,17 +462,17 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                       whileTap={{ scale: 0.98 }}
                     >
                       <Avatar className='w-10 h-10'>
-                        <AvatarImage src='/assets/images/avatar-placeholder.png' />
+                        {avatarUrl ? <AvatarImage src={avatarUrl} /> : null}
                         <AvatarFallback className='bg-primary-100 text-primary-600 font-medium'>
-                          AD
+                          {initials}
                         </AvatarFallback>
                       </Avatar>
                       <div className='flex flex-col flex-1 gap-1'>
                         <span className='font-medium text-blackish leading-[20px]'>
-                          Hello, Adenike
+                          {displayName}
                         </span>
                         <span className='text-xs text-grey-500 leading-[16px]'>
-                          adenikeabi@gmail.com
+                          {email}
                         </span>
                       </div>
                       <motion.div
@@ -435,10 +491,16 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.2 }}
-                          className='overflow-hidden mt-2 pl-4'
+                          className='overflow-hidden mt-2'
                         >
                           <div className='flex flex-col gap-1 py-2'>
-                            <Link
+                            <div className='flex items-center text-grey-500 hover:bg-grey-50 transition-colors duration-300 cursor-pointer py-2.5 px-4 rounded-[8px]'>
+                              <span className='w-5 h-5 mr-2 text-grey-500'>
+                                <Favoriteicon />
+                              </span>
+                              Favorite Gifts
+                            </div>
+                            {/* <Link
                               href='/settings'
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -464,7 +526,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                                 </svg>
                                 <span className='text-sm'>Settings</span>
                               </div>
-                            </Link>
+                            </Link> */}
                           </div>
                         </motion.div>
                       )}
