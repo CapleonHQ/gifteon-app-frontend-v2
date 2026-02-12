@@ -15,7 +15,7 @@ import { type CustomGiftForm } from './types'
 
 export type { CustomGiftForm } from './types'
 
-type CreateGiftContextValue = {
+type GiftPageDataContextValue = {
   giftPageData: GiftPageData
   setGiftPageData: (data: GiftPageData) => void
   updateTitle: (title: GiftPageData['title']) => void
@@ -24,8 +24,11 @@ type CreateGiftContextValue = {
   updateSocialLink: (key: keyof GiftPageData['socialLinks'], value: string) => void
   handleMediaUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
   handleMediaRemove: () => void
-  giftFor: 'me' | 'someone' | ''
-  setGiftFor: (value: 'me' | 'someone' | '') => void
+}
+
+type GiftSettingsContextValue = {
+  giftFor: 'for_me' | 'someone_else' | ''
+  setGiftFor: (value: 'for_me' | 'someone_else' | '') => void
   giftType: 'cash' | 'items' | ''
   setGiftType: (value: 'cash' | 'items' | '') => void
   currency: string
@@ -60,6 +63,9 @@ type CreateGiftContextValue = {
   setGiftingEndDate: (value: Date | undefined) => void
   giftingEndTime: string
   setGiftingEndTime: (value: string) => void
+}
+
+type RecipientsContextValue = {
   recipients: Recipient[]
   recipientForm: Recipient
   editingRecipientIndex: number | null
@@ -68,6 +74,9 @@ type CreateGiftContextValue = {
   removeRecipient: (index: number) => void
   editRecipient: (index: number) => void
   cancelEditRecipient: () => void
+}
+
+type CustomGiftsContextValue = {
   customGiftForm: CustomGiftForm
   customGiftItems: CustomGiftForm[]
   editingCustomGiftIndex: number | null
@@ -81,7 +90,10 @@ type CreateGiftContextValue = {
   removeCustomGift: (index: number) => void
 }
 
-const CreateGiftContext = createContext<CreateGiftContextValue | null>(null)
+const GiftPageDataContext = createContext<GiftPageDataContextValue | null>(null)
+const GiftSettingsContext = createContext<GiftSettingsContextValue | null>(null)
+const RecipientsContext = createContext<RecipientsContextValue | null>(null)
+const CustomGiftsContext = createContext<CustomGiftsContextValue | null>(null)
 
 export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
   const {
@@ -143,6 +155,7 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
           media: {
             type: file.type.startsWith('video') ? 'video' : 'image',
             url: reader.result as string,
+            file,
           },
         })
       }
@@ -154,11 +167,11 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
   const handleMediaRemove = useCallback(() => {
     setGiftPageData({
       ...giftSettings.giftPageData,
-      media: { type: 'image', url: '' },
+      media: { type: 'image', url: '', file: undefined },
     })
   }, [giftSettings.giftPageData, setGiftPageData])
 
-  const value = useMemo(
+  const giftPageDataValue = useMemo(
     () => ({
       giftPageData: giftSettings.giftPageData,
       setGiftPageData,
@@ -168,6 +181,21 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
       updateSocialLink,
       handleMediaUpload,
       handleMediaRemove,
+    }),
+    [
+      giftSettings.giftPageData,
+      setGiftPageData,
+      updateTitle,
+      updateDescription,
+      updateButton,
+      updateSocialLink,
+      handleMediaUpload,
+      handleMediaRemove,
+    ]
+  )
+
+  const giftSettingsValue = useMemo(
+    () => ({
       giftFor: giftSettings.giftFor,
       setGiftFor,
       giftType: giftSettings.giftType,
@@ -204,33 +232,8 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
       setGiftingEndDate,
       giftingEndTime: giftSettings.giftingEndTime,
       setGiftingEndTime,
-      recipients,
-      recipientForm,
-      editingRecipientIndex,
-      handleRecipientChange,
-      saveRecipient,
-      removeRecipient,
-      editRecipient,
-      cancelEditRecipient,
-      customGiftForm,
-      customGiftItems,
-      editingCustomGiftIndex,
-      handleCustomGiftChange,
-      handleCustomGiftImageChange,
-      handleCustomGiftRemoveImage,
-      saveCustomGift,
-      editCustomGift,
-      removeCustomGift,
     }),
     [
-      giftSettings.giftPageData,
-      setGiftPageData,
-      updateTitle,
-      updateDescription,
-      updateButton,
-      updateSocialLink,
-      handleMediaUpload,
-      handleMediaRemove,
       giftSettings.giftFor,
       setGiftFor,
       giftSettings.giftType,
@@ -267,6 +270,11 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
       setGiftingEndDate,
       giftSettings.giftingEndTime,
       setGiftingEndTime,
+    ]
+  )
+
+  const recipientsValue = useMemo(
+    () => ({
       recipients,
       recipientForm,
       editingRecipientIndex,
@@ -275,6 +283,32 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
       removeRecipient,
       editRecipient,
       cancelEditRecipient,
+    }),
+    [
+      recipients,
+      recipientForm,
+      editingRecipientIndex,
+      handleRecipientChange,
+      saveRecipient,
+      removeRecipient,
+      editRecipient,
+      cancelEditRecipient,
+    ]
+  )
+
+  const customGiftsValue = useMemo(
+    () => ({
+      customGiftForm,
+      customGiftItems,
+      editingCustomGiftIndex,
+      handleCustomGiftChange,
+      handleCustomGiftImageChange,
+      handleCustomGiftRemoveImage,
+      saveCustomGift,
+      editCustomGift,
+      removeCustomGift,
+    }),
+    [
       customGiftForm,
       customGiftItems,
       editingCustomGiftIndex,
@@ -288,16 +322,46 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
   )
 
   return (
-    <CreateGiftContext.Provider value={value}>
-      {children}
-    </CreateGiftContext.Provider>
+    <GiftPageDataContext.Provider value={giftPageDataValue}>
+      <GiftSettingsContext.Provider value={giftSettingsValue}>
+        <RecipientsContext.Provider value={recipientsValue}>
+          <CustomGiftsContext.Provider value={customGiftsValue}>
+            {children}
+          </CustomGiftsContext.Provider>
+        </RecipientsContext.Provider>
+      </GiftSettingsContext.Provider>
+    </GiftPageDataContext.Provider>
   )
 }
 
-export const useCreateGift = () => {
-  const context = useContext(CreateGiftContext)
+export const useGiftPageData = () => {
+  const context = useContext(GiftPageDataContext)
   if (!context) {
-    throw new Error('useCreateGift must be used within CreateGiftProvider')
+    throw new Error('useGiftPageData must be used within CreateGiftProvider')
+  }
+  return context
+}
+
+export const useGiftSettingsContext = () => {
+  const context = useContext(GiftSettingsContext)
+  if (!context) {
+    throw new Error('useGiftSettingsContext must be used within CreateGiftProvider')
+  }
+  return context
+}
+
+export const useRecipientsContext = () => {
+  const context = useContext(RecipientsContext)
+  if (!context) {
+    throw new Error('useRecipientsContext must be used within CreateGiftProvider')
+  }
+  return context
+}
+
+export const useCustomGiftsContext = () => {
+  const context = useContext(CustomGiftsContext)
+  if (!context) {
+    throw new Error('useCustomGiftsContext must be used within CreateGiftProvider')
   }
   return context
 }

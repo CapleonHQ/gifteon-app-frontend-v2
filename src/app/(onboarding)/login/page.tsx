@@ -10,11 +10,13 @@ import LoginVerificationStep from './components/LoginVerificationStep'
 import { loginUser, verifyOtp } from '@/api/services'
 import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
+import { useAuth } from '@/context/AuthContext'
 
 type LoginStep = 'login' | 'verification' | 'success'
 
 const LoginPage = () => {
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [currentStep, setCurrentStep] = useState<LoginStep>('login')
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -160,7 +162,8 @@ const LoginPage = () => {
         if (resp.refreshToken) {
           setRefreshToken(resp.refreshToken)
         }
-        setCurrentStep('success')
+        await refreshUser()
+        router.push('/dashboard')
       }
     } catch (error: any) {
       const apiError = toApiError(error)

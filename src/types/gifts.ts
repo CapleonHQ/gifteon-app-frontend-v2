@@ -2,6 +2,7 @@ export interface GiftPageData {
   media: {
     type: 'image' | 'video'
     url: string
+    file?: File
   }
   title: {
     text: string

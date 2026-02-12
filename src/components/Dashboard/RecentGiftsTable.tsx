@@ -1,12 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import type { RecentGiftItem } from './types'
+import type { GiftItem } from '@/types/Gifts/index'
 import { giftStatusStyles } from './types'
 
 type RecentGiftsTableProps = {
-  items: RecentGiftItem[]
-  onAction: (item: RecentGiftItem) => void
+  items: GiftItem[]
+  onAction: (item: GiftItem) => void
 }
 
 const RecentGiftsTable = ({ items, onAction }: RecentGiftsTableProps) => {

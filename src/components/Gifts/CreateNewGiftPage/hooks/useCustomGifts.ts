@@ -23,6 +23,7 @@ export const useCustomGifts = (): UseCustomGiftsReturn => {
     price: '',
     imageName: '',
     imageUrl: '',
+    imageFile: undefined,
     quantity: '1',
   })
   const [customGiftItems, setCustomGiftItems] = useState<CustomGiftForm[]>([])
@@ -48,13 +49,19 @@ export const useCustomGifts = (): UseCustomGiftsReturn => {
         ...prev,
         imageName: file.name,
         imageUrl,
+        imageFile: file,
       }))
     },
     []
   )
 
   const handleCustomGiftRemoveImage = useCallback(() => {
-    setCustomGiftForm((prev) => ({ ...prev, imageName: '', imageUrl: '' }))
+    setCustomGiftForm((prev) => ({
+      ...prev,
+      imageName: '',
+      imageUrl: '',
+      imageFile: undefined,
+    }))
   }, [])
 
   const saveCustomGift = useCallback(() => {
@@ -82,6 +89,7 @@ export const useCustomGifts = (): UseCustomGiftsReturn => {
       price: '',
       imageName: '',
       imageUrl: '',
+      imageFile: undefined,
       quantity: '1',
     })
     setEditingCustomGiftIndex(null)

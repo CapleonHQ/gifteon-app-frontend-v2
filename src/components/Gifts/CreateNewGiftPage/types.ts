@@ -3,5 +3,6 @@ export type CustomGiftForm = {
   price: string
   imageName: string
   imageUrl?: string
+  imageFile?: File
   quantity: string
 }

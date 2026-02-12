@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import {
   PreviewTemplate1,
   PreviewTemplate2,
@@ -31,4 +32,4 @@ const TemplatePreview = ({
   return <div className='w-full max-w-2xl mx-auto'>{renderTemplate()}</div>
 }
 
-export default TemplatePreview
+export default memo(TemplatePreview)

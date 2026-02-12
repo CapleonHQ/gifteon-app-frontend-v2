@@ -7,12 +7,14 @@ const MediaUpload = ({
   media,
   onUpload,
   onRemove,
+  error,
 }: {
   media: { type: 'image' | 'video'; url: string }
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   onRemove: () => void
+  error?: string
 }) => (
-  <div className='mb-5 sm:mb-6'>
+  <div className='mb-5 sm:mb-6' data-error={error ? 'true' : undefined}>
     <h4 className='text-lg font-medium text-blackish mb-2'>Media</h4>
     <div className='aspect-video bg-[#F3F2F280] border border-grey-100 rounded-[8px] px-3.5 pt-2 pb-4 overflow-hidden'>
       <div className='relative w-full h-full'>
@@ -75,6 +77,7 @@ const MediaUpload = ({
         />
       </div>
     </div>
+    {error && <p className='text-xs text-error-600 mt-2'>{error}</p>}
   </div>
 )
 

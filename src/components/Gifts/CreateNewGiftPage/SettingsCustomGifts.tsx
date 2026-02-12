@@ -3,11 +3,20 @@ import CustomGiftItem from './CustomGiftItem'
 import DeleteIcon from '@/assets/icons/DeleteIcon'
 import { Plus } from 'lucide-react'
 import DocumentIcon from '@/assets/icons/DocumentIcon'
-import { useCreateGift } from './CreateGiftContext'
+import {
+  useCustomGiftsContext,
+  useGiftSettingsContext,
+} from './CreateGiftContext'
 
-const SettingsCustomGifts = () => {
+const SettingsCustomGifts = ({
+  error,
+  onClearError,
+}: {
+  error?: string
+  onClearError?: (key: string) => void
+}) => {
+  const { customGifts } = useGiftSettingsContext()
   const {
-    customGifts,
     customGiftForm,
     editingCustomGiftIndex,
     customGiftItems,
@@ -17,7 +26,7 @@ const SettingsCustomGifts = () => {
     saveCustomGift,
     editCustomGift,
     removeCustomGift,
-  } = useCreateGift()
+  } = useCustomGiftsContext()
 
   if (customGifts !== 'yes') return null
 
@@ -46,18 +55,25 @@ const SettingsCustomGifts = () => {
       <p className='text-sm text-grey-700 uppercase tracking-wide mb-3'>
         Custom Gifts
       </p>
+      {error && <p className='text-xs text-error-600 mb-3'>{error}</p>}
 
       <div className='space-y-4'>
         <InputField
           label='Title'
           value={customGiftForm.title}
-          onChange={(value) => handleCustomGiftChange('title', value)}
+          onChange={(value) => {
+            handleCustomGiftChange('title', value)
+            onClearError?.('customGifts')
+          }}
           placeholder='Enter the title or name of this gift'
         />
         <InputField
           label='Price'
           value={customGiftForm.price}
-          onChange={(value) => handleCustomGiftChange('price', value)}
+          onChange={(value) => {
+            handleCustomGiftChange('price', value)
+            onClearError?.('customGifts')
+          }}
           placeholder='Enter the price of this gift'
           formatAsAmount
         />
@@ -100,9 +116,10 @@ const SettingsCustomGifts = () => {
             type='text'
             min='1'
             value={customGiftForm.quantity}
-            onChange={(event) =>
+            onChange={(event) => {
               handleCustomGiftChange('quantity', event.target.value)
-            }
+              onClearError?.('customGifts')
+            }}
             className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden focus:ring-1 text-sm text-blackish font-medium focus:ring-primary-500'
           />
         </div>
@@ -111,7 +128,10 @@ const SettingsCustomGifts = () => {
       <div className='flex justify-end mt-4'>
         <button
           type='button'
-          onClick={saveCustomGift}
+          onClick={() => {
+            saveCustomGift()
+            onClearError?.('customGifts')
+          }}
           disabled={!customGiftForm.title.trim() || !customGiftForm.price.trim()}
           className='flex items-center gap-2 py-2.5 px-5 border border-success-400 rounded-[12px] text-sm font-medium text-success-600 bg-success-50/40 hover:bg-success-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
         >

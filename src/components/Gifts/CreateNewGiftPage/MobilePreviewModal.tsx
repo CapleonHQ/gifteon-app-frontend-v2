@@ -1,20 +1,34 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { useDeferredValue, useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import TemplatePreview from './TemplatePreview'
-import { useCreateGift } from './CreateGiftContext'
+import { useGiftPageData } from './CreateGiftContext'
 
 type MobilePreviewModalProps = {
   isOpen: boolean
   onClose: () => void
   selectedTemplate: number | null
+  showPreview?: boolean
 }
 
 const MobilePreviewModal = ({
   isOpen,
   onClose,
   selectedTemplate,
+  showPreview = true,
 }: MobilePreviewModalProps) => {
-  const { giftPageData } = useCreateGift()
+  const { giftPageData } = useGiftPageData()
+  const deferredGiftPageData = useDeferredValue(giftPageData)
+  const [previewData, setPreviewData] = useState(deferredGiftPageData)
+
+  if (!showPreview) return null
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPreviewData(deferredGiftPageData)
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [deferredGiftPageData])
 
   return (
     <AnimatePresence>
@@ -50,7 +64,7 @@ const MobilePreviewModal = ({
               </div>
               <div className='flex-1 overflow-y-auto'>
                 <TemplatePreview
-                  data={giftPageData}
+                  data={previewData}
                   templateId={selectedTemplate}
                 />
               </div>

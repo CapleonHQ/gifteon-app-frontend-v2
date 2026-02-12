@@ -1,7 +1,7 @@
 'use client'
 
 import SummaryCard from './SummaryCard'
-import type { SummaryCardItem } from './types'
+import type { SummaryCardItem } from '@/types/Stats'
 
 type SummaryCardsProps = {
   items: SummaryCardItem[]

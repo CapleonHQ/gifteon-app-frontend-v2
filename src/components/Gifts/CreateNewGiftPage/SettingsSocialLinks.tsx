@@ -1,8 +1,8 @@
 import InputField from './Components/InputField'
-import { useCreateGift } from './CreateGiftContext'
+import { useGiftPageData } from './CreateGiftContext'
 
 const SettingsSocialLinks = () => {
-  const { giftPageData, updateSocialLink } = useCreateGift()
+  const { giftPageData, updateSocialLink } = useGiftPageData()
 
   return (
     <div className='mb-6'>

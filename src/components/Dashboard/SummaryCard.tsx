@@ -1,6 +1,6 @@
 'use client'
 
-import type { SummaryCardItem } from './types'
+import type { SummaryCardItem } from '@/types/Stats'
 
 type SummaryCardProps = {
   item: SummaryCardItem

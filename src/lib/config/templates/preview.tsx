@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import Image from 'next/image'
 import {
   InstagramColored,
@@ -9,7 +9,7 @@ import {
 import { GiftPageData } from '@/types/gifts'
 
 // ========== PREVIEW TEMPLATE 1 ==========
-export const PreviewTemplate1 = ({ data }: { data: GiftPageData }) => {
+export const PreviewTemplate1 = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -191,10 +191,10 @@ export const PreviewTemplate1 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})
 
 // ========== PREVIEW TEMPLATE 2 ==========
-export const PreviewTemplate2 = ({ data }: { data: GiftPageData }) => {
+export const PreviewTemplate2 = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -362,10 +362,10 @@ export const PreviewTemplate2 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})
 
 // ========== PREVIEW TEMPLATE 3 ==========
-export const PreviewTemplate3 = ({ data }: { data: GiftPageData }) => {
+export const PreviewTemplate3 = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -536,10 +536,10 @@ export const PreviewTemplate3 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})
 
 // ========== PREVIEW TEMPLATE 4 ==========
-export const PreviewTemplate4 = ({ data }: { data: GiftPageData }) => {
+export const PreviewTemplate4 = memo(({ data }: { data: GiftPageData }) => {
   const [commentsOpen, setCommentsOpen] = useState(true)
   const [activitiesOpen, setActivitiesOpen] = useState(false)
 
@@ -729,4 +729,4 @@ export const PreviewTemplate4 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})

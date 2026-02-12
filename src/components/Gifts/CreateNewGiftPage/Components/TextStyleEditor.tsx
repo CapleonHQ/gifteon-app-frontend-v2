@@ -17,11 +17,15 @@ import {
   Italic,
   Underline,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 const TextStyleEditor = ({
   label,
   value,
   onChange,
+  onCommitText,
+  onDraftTextChange,
+  error,
 }: {
   label: string
   value: {
@@ -34,10 +38,19 @@ const TextStyleEditor = ({
     italic: boolean
     underline: boolean
   }
-  onChange: (value: any) => void
-}) => (
-  <div className='mb-5 sm:mb-6'>
-    <h4 className='text-lg font-medium text-blackish mb-2'>{label}</h4>
+  onChange?: (value: any) => void
+  onCommitText: (value: string) => void
+  onDraftTextChange?: (value: string) => void
+  error?: string
+}) => {
+  const [localText, setLocalText] = useState(value.text)
+
+  useEffect(() => {
+    setLocalText(value.text)
+  }, [value.text])
+  return (
+    <div className='mb-5 sm:mb-6' data-error={error ? 'true' : undefined}>
+      <h4 className='text-lg font-medium text-blackish mb-2'>{label}</h4>
 
     <div className='mb-4'>
       <label className='text-sm font-medium text-grey-900 mb-2 block'>
@@ -45,19 +58,38 @@ const TextStyleEditor = ({
       </label>
       {label === 'Celebratory Message' ? (
         <textarea
-          value={value.text}
-          onChange={(e) => onChange({ ...value, text: e.target.value })}
-          className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium focus:border-primary-500 resize-none'
+          value={localText}
+          onChange={(e) => {
+            const nextValue = e.target.value
+            setLocalText(nextValue)
+            onDraftTextChange?.(nextValue)
+          }}
+          onBlur={() => onCommitText(localText)}
+          className={`w-full px-3 py-3.5 border rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium resize-none ${
+            error
+              ? 'border-error-300 focus:border-error-400'
+              : 'border-grey-50 focus:border-primary-500'
+          }`}
           rows={3}
         />
       ) : (
         <input
           type='text'
-          value={value.text}
-          onChange={(e) => onChange({ ...value, text: e.target.value })}
-          className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium focus:border-primary-500'
+          value={localText}
+          onChange={(e) => {
+            const nextValue = e.target.value
+            setLocalText(nextValue)
+            onDraftTextChange?.(nextValue)
+          }}
+          onBlur={() => onCommitText(localText)}
+          className={`w-full px-3 py-3.5 border rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium ${
+            error
+              ? 'border-error-300 focus:border-error-400'
+              : 'border-grey-50 focus:border-primary-500'
+          }`}
         />
       )}
+      {error && <p className='text-xs text-error-600 mt-1'>{error}</p>}
     </div>
 
     <div className='grid grid-cols-2 gap-4 mb-4'>
@@ -67,7 +99,9 @@ const TextStyleEditor = ({
         </label>
         <Select
           value={value.font}
-          onValueChange={(font) => onChange({ ...value, font })}
+          onValueChange={(font) =>
+            onChange?.({ ...value, text: localText, font })
+          }
         >
           <SelectTrigger className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium h-auto!'>
             <SelectValue />
@@ -85,7 +119,9 @@ const TextStyleEditor = ({
       <ColorPickerField
         label='Text Color'
         color={value.color}
-        onChange={(color) => onChange({ ...value, color })}
+        onChange={(color) =>
+          onChange?.({ ...value, text: localText, color })
+        }
       />
     </div>
 
@@ -98,7 +134,9 @@ const TextStyleEditor = ({
           <div className='flex w-full rounded-[4px] bg-[#F2F2F399] overflow-hidden'>
             <button
               type='button'
-              onClick={() => onChange({ ...value, alignment: 'left' })}
+              onClick={() =>
+                onChange?.({ ...value, text: localText, alignment: 'left' })
+              }
               className={`flex-1 py-4 ${
                 value.alignment === 'left'
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
@@ -109,7 +147,9 @@ const TextStyleEditor = ({
             </button>
             <button
               type='button'
-              onClick={() => onChange({ ...value, alignment: 'center' })}
+              onClick={() =>
+                onChange?.({ ...value, text: localText, alignment: 'center' })
+              }
               className={`flex-1 py-3 ${
                 value.alignment === 'center'
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
@@ -120,7 +160,9 @@ const TextStyleEditor = ({
             </button>
             <button
               type='button'
-              onClick={() => onChange({ ...value, alignment: 'right' })}
+              onClick={() =>
+                onChange?.({ ...value, text: localText, alignment: 'right' })
+              }
               className={`flex-1 py-3 ${
                 value.alignment === 'right'
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
@@ -138,7 +180,9 @@ const TextStyleEditor = ({
           <div className='flex w-full rounded-[4px] bg-[#F2F2F399] overflow-hidden'>
             <button
               type='button'
-              onClick={() => onChange({ ...value, bold: !value.bold })}
+              onClick={() =>
+                onChange?.({ ...value, text: localText, bold: !value.bold })
+              }
               className={`flex-1 py-4 ${
                 value.bold
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
@@ -149,7 +193,9 @@ const TextStyleEditor = ({
             </button>
             <button
               type='button'
-              onClick={() => onChange({ ...value, italic: !value.italic })}
+              onClick={() =>
+                onChange?.({ ...value, text: localText, italic: !value.italic })
+              }
               className={`flex-1 py-4 ${
                 value.italic
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
@@ -161,7 +207,11 @@ const TextStyleEditor = ({
             <button
               type='button'
               onClick={() =>
-                onChange({ ...value, underline: !value.underline })
+                onChange?.({
+                  ...value,
+                  text: localText,
+                  underline: !value.underline,
+                })
               }
               className={`flex-1 py-4 ${
                 value.underline
@@ -181,7 +231,9 @@ const TextStyleEditor = ({
         </label>
         <Select
           value={value.size}
-          onValueChange={(size) => onChange({ ...value, size })}
+          onValueChange={(size) =>
+            onChange?.({ ...value, text: localText, size })
+          }
         >
           <SelectTrigger className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium h-auto!'>
             <SelectValue />
@@ -200,7 +252,8 @@ const TextStyleEditor = ({
         </Select>
       </div>
     </div>
-  </div>
-)
+    </div>
+  )
+}
 
 export default TextStyleEditor

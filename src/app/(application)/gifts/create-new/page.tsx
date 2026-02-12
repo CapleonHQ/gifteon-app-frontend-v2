@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GiftPageData } from '@/types/gifts'
 import TemplateSelection from '@/components/Gifts/CreateNewGiftPage/TemplateSelection'
 import TemplatingEditing from '@/components/Gifts/CreateNewGiftPage/TemplatingEditing'
 import SuccessModal from '@/components/Gifts/CreateNewGiftPage/CreateSuccessModal'
@@ -28,26 +27,9 @@ const CreateNewGiftPage = () => {
     setSelectedTemplate(null)
   }
 
-  const handleSave = async () => {
-    // Here you would send giftPageData to your backend
-    console.log('Saving gift page data:')
-
-    // Example API call:
-    try {
-      // const response = await fetch('/api/gift-pages', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(giftPageData)
-      // })
-      // const result = await response.json()
-
-      // For demo purposes, using a mock link
-      const mockLink = 'giftpagelinkhereqiftpagelinkhereQgiftseon.com'
-      setGiftPageLink(mockLink)
-      setShowSuccessModal(true)
-    } catch (error) {
-      console.error('Failed to save:', error)
-    }
+  const handleCreated = (link: string) => {
+    setGiftPageLink(link)
+    setShowSuccessModal(true)
   }
 
   return (
@@ -64,7 +46,7 @@ const CreateNewGiftPage = () => {
         {step === 'customize' && (
           <TemplatingEditing
             handleBack={handleBack}
-            handleSave={handleSave}
+            onCreated={handleCreated}
             selectedTemplate={selectedTemplate}
           />
         )}

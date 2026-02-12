@@ -1,11 +1,24 @@
 import InputField from './Components/InputField'
 import RecipientItem from './Components/ReceipientItem'
-import { useCreateGift } from './CreateGiftContext'
+import {
+  useGiftSettingsContext,
+  useRecipientsContext,
+} from './CreateGiftContext'
 
-const SettingsRecipients = () => {
+const SettingsRecipients = ({
+  error,
+  onClearError,
+  nameError,
+  emailError,
+}: {
+  error?: string
+  onClearError?: (key: string) => void
+  nameError?: string
+  emailError?: string
+}) => {
+  const { giftFor, giftType, privacy } = useGiftSettingsContext()
+
   const {
-    giftFor,
-    giftType,
     recipients,
     recipientForm,
     editingRecipientIndex,
@@ -14,33 +27,48 @@ const SettingsRecipients = () => {
     cancelEditRecipient,
     editRecipient,
     removeRecipient,
-  } = useCreateGift()
+  } = useRecipientsContext()
 
   const title =
-    giftFor === 'someone' && giftType === 'cash'
+    giftFor === 'someone_else' && giftType === 'cash'
       ? 'GIFT PAGE PARTICIPANTS'
       : 'GIFT PAGE RECIPIENTS'
   const listTitle =
-    giftFor === 'someone' && giftType === 'cash'
+    giftFor === 'someone_else' && giftType === 'cash'
       ? 'Gift Page Participants'
       : 'Gift Page Recipients'
+
+  if (privacy !== 'private') {
+    return null
+  }
 
   return (
     <div>
       <h4 className='text-sm text-grey-700 font-medium mb-2'>{title}</h4>
+      {error && <p className='text-xs text-error-600 mb-2'>{error}</p>}
       <div className='space-y-4'>
         <InputField
           label='Name'
           value={recipientForm.name}
-          onChange={(value) => handleRecipientChange('name', value)}
+          onChange={(value) => {
+            handleRecipientChange('name', value)
+            onClearError?.('recipients')
+            onClearError?.('recipientName')
+          }}
           placeholder='Enter recipient name'
+          error={nameError}
         />
         <InputField
           label='Email Address'
           value={recipientForm.email}
-          onChange={(value) => handleRecipientChange('email', value)}
+          onChange={(value) => {
+            handleRecipientChange('email', value)
+            onClearError?.('recipients')
+            onClearError?.('recipientEmail')
+          }}
           placeholder='Enter recipient email address'
           type='email'
+          error={emailError}
         />
       </div>
       <div className='flex items-center justify-end gap-3 mt-4'>
@@ -55,11 +83,18 @@ const SettingsRecipients = () => {
         )}
         <button
           type='button'
-          onClick={saveRecipient}
+          onClick={() => {
+            saveRecipient()
+            onClearError?.('recipients')
+            onClearError?.('recipientName')
+            onClearError?.('recipientEmail')
+          }}
           disabled={!recipientForm.name.trim() || !recipientForm.email.trim()}
           className='py-2.5 px-5 border border-success-500 rounded-[12px] text-sm font-medium text-success-600 bg-[#E1F9EA4D] hover:bg-success-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
         >
-          {editingRecipientIndex !== null ? 'Update recipient' : '+ Add recipient'}
+          {editingRecipientIndex !== null
+            ? 'Update recipient'
+            : '+ Add recipient'}
         </button>
       </div>
       {recipients.length > 0 && (

@@ -2,14 +2,15 @@
 
 import { ChevronDown } from 'lucide-react'
 import Image from 'next/image'
-import type { RecentGiftItem } from './types'
+
 import { giftStatusStyles } from './types'
+import type { GiftItem } from '@/types/Gifts/index'
 
 type RecentGiftsMobileRowProps = {
-  item: RecentGiftItem
+  item: GiftItem
   isOpen: boolean
   onToggle: () => void
-  onAction: (item: RecentGiftItem) => void
+  onAction: (item: GiftItem) => void
 }
 
 const RecentGiftsMobileRow = ({

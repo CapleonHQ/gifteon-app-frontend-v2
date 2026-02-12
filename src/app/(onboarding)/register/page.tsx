@@ -10,6 +10,7 @@ import RegisterVerificationStep from './components/RegisterVerificationStep'
 import { registerUser, resendVerification, verifyOtp } from '@/api/services'
 import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
+import { useAuth } from '@/context/AuthContext'
 
 type RegisterStep = 'register' | 'verification' | 'success'
 
@@ -17,6 +18,7 @@ type Gender = 'male' | 'female' | ''
 
 const RegisterPage = () => {
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [currentStep, setCurrentStep] = useState<RegisterStep>('register')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -168,6 +170,7 @@ const RegisterPage = () => {
         if (resp.refreshToken) {
           setRefreshToken(resp.refreshToken)
         }
+        await refreshUser()
         setCurrentStep('success')
       }
     } catch (error: any) {

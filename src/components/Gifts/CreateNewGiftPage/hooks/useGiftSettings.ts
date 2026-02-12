@@ -5,7 +5,7 @@ import { type GiftPageData } from '@/types/gifts'
 
 type GiftSettingsState = {
   giftPageData: GiftPageData
-  giftFor: 'me' | 'someone' | ''
+  giftFor: 'for_me' | 'someone_else' | ''
   giftType: 'cash' | 'items' | ''
   currency: string
   cashAmount: string

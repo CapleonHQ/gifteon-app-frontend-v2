@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import type { RecentGiftItem } from './types'
+import type { GiftItem } from '@/types/Gifts/index'
 import RecentGiftsMobileRow from './RecentGiftsMobileRow'
 
 type RecentGiftsMobileListProps = {
-  items: RecentGiftItem[]
-  onAction: (item: RecentGiftItem) => void
+  items: GiftItem[]
+  onAction: (item: GiftItem) => void
 }
 
 const RecentGiftsMobileList = ({

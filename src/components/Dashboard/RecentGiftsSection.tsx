@@ -1,15 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import type { RecentGiftItem } from './types'
+import type { GiftItem } from '@/types/Gifts/index'
 import RecentGiftsTable from './RecentGiftsTable'
 import RecentGiftsMobileList from './RecentGiftsMobileList'
 import DashboardEmptyState from './DashboardEmptyState'
 import EmptyBox from '@/assets/icons/EmptyBox'
 
 type RecentGiftsSectionProps = {
-  items: RecentGiftItem[]
-  onAction: (item: RecentGiftItem) => void
+  items: GiftItem[]
+  onAction: (item: GiftItem) => void
 }
 
 const RecentGiftsSection = ({ items, onAction }: RecentGiftsSectionProps) => {

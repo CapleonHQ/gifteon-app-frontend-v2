@@ -9,12 +9,14 @@ import MagicLinkLoading from './components/MagicLinkLoading'
 import { verifyMagicLink } from '@/api/services/auth'
 import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
+import { useAuth } from '@/context/AuthContext'
 
 type VerificationState = 'loading' | 'success' | 'error' | 'no-token'
 
 const MagicLinkVerifyContent = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { refreshUser } = useAuth()
   const [verificationState, setVerificationState] =
     useState<VerificationState>('loading')
   const [errorMessage, setErrorMessage] = useState('')
@@ -36,6 +38,7 @@ const MagicLinkVerifyContent = () => {
         if (resp.refreshToken) {
           setRefreshToken(resp.refreshToken)
         }
+        await refreshUser()
         router.push('/dashboard')
       } catch (error: any) {
         const apiError = toApiError(error)
