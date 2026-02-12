@@ -5,7 +5,7 @@ import EmptyBox from '@/assets/icons/EmptyBox'
 
 const GiftsEmptyState = () => {
   return (
-    <div className='px-4 py-16 lg:py-4 h-full flex lg:items-center lg:justify-center'>
+    <div className='px-4 py-16 lg:pt-60 h-full flex lg:items-center lg:justify-center'>
       <div className='max-w-[420px] mx-auto text-center flex flex-col items-center gap-4'>
         <span className='text-grey-400 w-12 h-12'>
           <EmptyBox />

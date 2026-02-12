@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { type CustomGiftForm } from '../types'
+import { type CustomGiftForm } from '@/types/Gifts/index'
 
 type UseCustomGiftsReturn = {
   customGiftForm: CustomGiftForm

@@ -1,5 +1,5 @@
 import type { GiftPageData, Recipient } from '@/types/gifts'
-import type { CustomGiftForm } from '../types'
+import { type CustomGiftForm } from '@/types/Gifts/index'
 
 export type CustomizeDraft = {
   title: string
@@ -78,8 +78,13 @@ export const validateCustomizeDraft = (draft: CustomizeDraft) => {
 
 export const validateCreateGift = (input: CreateGiftValidationInput) => {
   const errors: Record<string, string> = {}
-  const { giftPageData, selectedTemplate, settings, recipients, recipientForm } =
-    input
+  const {
+    giftPageData,
+    selectedTemplate,
+    settings,
+    recipients,
+    recipientForm,
+  } = input
 
   if (!giftPageData.title.text.trim()) {
     errors.title = 'Title is required.'
@@ -191,9 +196,7 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
         }
         const qty = Number(item.quantity)
         if (!Number.isFinite(qty) || qty <= 0) {
-          errors.customGifts = `Custom gift #${
-            index + 1
-          } quantity is invalid.`
+          errors.customGifts = `Custom gift #${index + 1} quantity is invalid.`
         }
       })
     }
@@ -216,9 +219,7 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
         }
       }
     } else {
-      const missingName = recipients.find(
-        (recipient) => !recipient.name.trim()
-      )
+      const missingName = recipients.find((recipient) => !recipient.name.trim())
       if (missingName) {
         errors.recipients = 'Recipient name is required.'
       } else {

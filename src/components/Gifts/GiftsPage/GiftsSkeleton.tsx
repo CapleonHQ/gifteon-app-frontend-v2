@@ -42,7 +42,7 @@ const MobileSkeletonCard = () => (
 
 const GiftsSkeleton = () => {
   return (
-    <div className='animate-pulse'>
+    <div className='animate-pulse lg:mt-2.5'>
       <div className='hidden lg:block'>
         <div className='px-4 py-2.5 border-b border-grey-50 bg-grey-50/50'>
           <div className='grid grid-cols-[24px_1.5fr_1fr_1fr_1fr_0.8fr_0.9fr_0.7fr_0.8fr_28px] text-sm gap-4 text-grey-600 items-center'>

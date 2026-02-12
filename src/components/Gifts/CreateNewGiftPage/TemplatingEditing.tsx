@@ -12,10 +12,10 @@ import {
   useGiftSettingsContext,
   useRecipientsContext,
 } from './CreateGiftContext'
-import { createPage } from '@/api/services/pages'
 import type { Step } from './EditingSection'
 import { validateCreateGift, validateCustomizeDraft } from './utils/validation'
 import { buildCreatePageFormData } from './utils/formData'
+import { useCreateGiftPage } from './hooks/useCreateGiftPage'
 
 interface TemplatingEditingProps {
   handleBack: () => void
@@ -30,7 +30,6 @@ const TemplatingEditingContent = ({
 }: TemplatingEditingProps) => {
   const [customizationOpen, setCustomizationOpen] = useState(true)
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [longSave, setLongSave] = useState(false)
   const [step, setStep] = useState<Step>('customize')
@@ -58,8 +57,6 @@ const TemplatingEditingContent = ({
   } = useGiftSettingsContext()
   const { recipients, recipientForm } = useRecipientsContext()
   const { customGiftItems } = useCustomGiftsContext()
-
-  const hasGiftMedia = Boolean(giftPageData.media?.file)
   const [continueErrors, setContinueErrors] = useState<Record<string, string>>(
     {}
   )
@@ -179,9 +176,23 @@ const TemplatingEditingContent = ({
 
   const disableContinue = false
 
+  const createPageMutation = useCreateGiftPage({
+    onSuccess: (link) => {
+      onCreated(link)
+    },
+    onError: (error) => {
+      console.error('Failed to create gift page:', error)
+      setFieldErrors({
+        form: 'Failed to create gift page. Please try again.',
+      })
+      scrollToFirstError()
+    },
+  })
+
+  const isSaving = createPageMutation.isPending
+
   const handleSave = async () => {
     if (isSaving) return
-    setIsSaving(true)
     setFieldErrors({})
     setLongSave(false)
     const longSaveTimer = setTimeout(() => {
@@ -215,37 +226,11 @@ const TemplatingEditingContent = ({
         recipientForm,
       })
 
-      const resp = await createPage(formData)
-      const data = resp?.data ?? {}
-
-      let link =
-        data.link ||
-        data.url ||
-        data.pageUrl ||
-        data.pageLink ||
-        data.slug ||
-        ''
-
-      if (!link && data.id) {
-        link = String(data.id)
-      }
-
-      if (link && !link.startsWith('http')) {
-        const origin =
-          typeof window !== 'undefined' ? window.location.origin : ''
-        link = `${origin}/gifts/${link}`
-      }
-
-      onCreated(link)
-    } catch (error) {
-      console.error('Failed to create gift page:', error)
-      setFieldErrors({
-        form: 'Failed to create gift page. Please try again.',
-      })
-      scrollToFirstError()
+      await createPageMutation.mutateAsync(formData)
+    } catch {
+      // Errors are handled in mutation onError.
     } finally {
       clearTimeout(longSaveTimer)
-      setIsSaving(false)
     }
   }
 

@@ -8,6 +8,9 @@ import {
 } from '@/assets/icons'
 import { GiftPageData } from '@/types/gifts'
 
+const toCssTextAlign = (alignment: GiftPageData['title']['alignment']) =>
+  alignment === 'middle' ? 'center' : alignment
+
 // ========== PREVIEW TEMPLATE 1 ==========
 export const PreviewTemplate1 = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
@@ -27,7 +30,7 @@ export const PreviewTemplate1 = memo(({ data }: { data: GiftPageData }) => {
             fontWeight: data.title.bold ? 'bold' : 'normal',
             fontStyle: data.title.italic ? 'italic' : 'normal',
             textDecoration: data.title.underline ? 'underline' : 'none',
-            textAlign: data.title.alignment,
+            textAlign: toCssTextAlign(data.title.alignment),
             color: data.title.color,
             fontFamily: data.title.font,
           }}
@@ -76,7 +79,7 @@ export const PreviewTemplate1 = memo(({ data }: { data: GiftPageData }) => {
                 textDecoration: data.description.underline
                   ? 'underline'
                   : 'none',
-                textAlign: data.description.alignment,
+                textAlign: toCssTextAlign(data.description.alignment),
                 color: data.description.color,
                 fontFamily: data.description.font,
               }}
@@ -284,7 +287,7 @@ export const PreviewTemplate2 = memo(({ data }: { data: GiftPageData }) => {
               fontWeight: data.title.bold ? 'bold' : 'normal',
               fontStyle: data.title.italic ? 'italic' : 'normal',
               textDecoration: data.title.underline ? 'underline' : 'none',
-              textAlign: data.title.alignment,
+              textAlign: toCssTextAlign(data.title.alignment),
               color: data.title.color,
               fontFamily: data.title.font,
             }}
@@ -298,7 +301,7 @@ export const PreviewTemplate2 = memo(({ data }: { data: GiftPageData }) => {
               fontWeight: data.description.bold ? 'bold' : 'normal',
               fontStyle: data.description.italic ? 'italic' : 'normal',
               textDecoration: data.description.underline ? 'underline' : 'none',
-              textAlign: data.description.alignment,
+              textAlign: toCssTextAlign(data.description.alignment),
               color: data.description.color,
               fontFamily: data.description.font,
             }}
@@ -385,7 +388,7 @@ export const PreviewTemplate3 = memo(({ data }: { data: GiftPageData }) => {
                 fontWeight: data.title.bold ? 'bold' : 'normal',
                 fontStyle: data.title.italic ? 'italic' : 'normal',
                 textDecoration: data.title.underline ? 'underline' : 'none',
-                textAlign: data.title.alignment,
+                textAlign: toCssTextAlign(data.title.alignment),
                 color: data.title.color,
                 fontFamily: data.title.font,
               }}
@@ -401,7 +404,7 @@ export const PreviewTemplate3 = memo(({ data }: { data: GiftPageData }) => {
                 textDecoration: data.description.underline
                   ? 'underline'
                   : 'none',
-                textAlign: data.description.alignment,
+                textAlign: toCssTextAlign(data.description.alignment),
                 color: data.description.color,
                 fontFamily: data.description.font,
               }}
@@ -584,7 +587,7 @@ export const PreviewTemplate4 = memo(({ data }: { data: GiftPageData }) => {
               fontWeight: data.title.bold ? 'bold' : 'normal',
               fontStyle: data.title.italic ? 'italic' : 'normal',
               textDecoration: data.title.underline ? 'underline' : 'none',
-              textAlign: data.title.alignment,
+              textAlign: toCssTextAlign(data.title.alignment),
               color: data.title.color,
               fontFamily: data.title.font,
             }}
@@ -630,7 +633,7 @@ export const PreviewTemplate4 = memo(({ data }: { data: GiftPageData }) => {
               fontWeight: data.description.bold ? 'bold' : 'normal',
               fontStyle: data.description.italic ? 'italic' : 'normal',
               textDecoration: data.description.underline ? 'underline' : 'none',
-              textAlign: data.description.alignment,
+              textAlign: toCssTextAlign(data.description.alignment),
               color: data.description.color,
               fontFamily: data.description.font,
             }}

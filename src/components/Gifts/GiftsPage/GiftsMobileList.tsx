@@ -12,6 +12,7 @@ type GiftsMobileListProps = {
   onToggle: (id: string) => void
   onSelect: (id: string) => void
   onLongPressSelect: (id: string) => void
+  onView: (id: string) => void
   onDeactivateSelected: () => void
   onClearSelection: () => void
   onDeactivateSingle: () => void
@@ -24,6 +25,7 @@ const GiftsMobileList = ({
   onToggle,
   onSelect,
   onLongPressSelect,
+  onView,
   onDeactivateSelected,
   onClearSelection,
   onDeactivateSingle,
@@ -64,6 +66,7 @@ const GiftsMobileList = ({
           selectionMode={selectionMode}
           onToggle={() => onToggle(page.id)}
           onSelect={() => onSelect(page.id)}
+          onView={() => onView(page.id)}
           onDeactivate={onDeactivateSingle}
           onStartPress={() => startPress(page.id)}
           onClearPress={clearPress}

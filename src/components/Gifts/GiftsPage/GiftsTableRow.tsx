@@ -9,6 +9,7 @@ type GiftsTableRowProps = {
   page: GiftPageItem
   isSelected: boolean
   onToggle: () => void
+  onView: () => void
   onDeactivate: () => void
 }
 
@@ -16,6 +17,7 @@ const GiftsTableRow = ({
   page,
   isSelected,
   onToggle,
+  onView,
   onDeactivate,
 }: GiftsTableRowProps) => {
   return (
@@ -56,7 +58,7 @@ const GiftsTableRow = ({
           {page.status}
         </span>
       </div>
-      <GiftsTableRowActions onDeactivate={onDeactivate} />
+      <GiftsTableRowActions onView={onView} onDeactivate={onDeactivate} />
     </div>
   )
 }

@@ -7,9 +7,19 @@ import FilterIcon from '@/assets/icons/FilterIcon'
 
 type GiftsHeaderProps = {
   onFilterClick: () => void
+  totalPages: number
+  searchValue: string
+  onSearchChange: (value: string) => void
 }
 
-const GiftsHeader = ({ onFilterClick }: GiftsHeaderProps) => {
+const GiftsHeader = ({
+  onFilterClick,
+  totalPages,
+  searchValue,
+  onSearchChange,
+}: GiftsHeaderProps) => {
+  const pageLabel = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`
+
   return (
     <div className='flex flex-col gap-4 py-4 lg:pt-3 lg:pb-0 px-4'>
       <div className='lg:hidden'>
@@ -23,7 +33,7 @@ const GiftsHeader = ({ onFilterClick }: GiftsHeaderProps) => {
       </div>
       <div className='flex gap-3 items-center justify-between'>
         <span className='text-xl lg:text-sm font-medium text-blackish max-w-[200px]'>
-          32 Pages
+          {pageLabel}
         </span>
         <div className='flex items-center gap-2 sm:gap-6'>
           <div className='hidden lg:block relative w-[250px]'>
@@ -34,6 +44,8 @@ const GiftsHeader = ({ onFilterClick }: GiftsHeaderProps) => {
             <input
               type='text'
               placeholder='Search'
+              value={searchValue}
+              onChange={(event) => onSearchChange(event.target.value)}
               className='w-full pl-9 pr-3 py-[7px] bg-grey-50/30 border border-grey-50 rounded-[12px] text-grey-700 placeholder:text-grey-700 focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary-300 transition-colors'
             />
           </div>

@@ -11,9 +11,7 @@ import { GiftPageData, Recipient } from '@/types/gifts'
 import { useCustomGifts } from './hooks/useCustomGifts'
 import { useGiftSettings } from './hooks/useGiftSettings'
 import { useRecipients } from './hooks/useRecipients'
-import { type CustomGiftForm } from './types'
-
-export type { CustomGiftForm } from './types'
+import { type CustomGiftForm } from '@/types/Gifts/index'
 
 type GiftPageDataContextValue = {
   giftPageData: GiftPageData
@@ -21,10 +19,11 @@ type GiftPageDataContextValue = {
   updateTitle: (title: GiftPageData['title']) => void
   updateDescription: (description: GiftPageData['description']) => void
   updateButton: (button: GiftPageData['button']) => void
-  updateSocialLink: (key: keyof GiftPageData['socialLinks'], value: string) => void
-  handleMediaUpload: (
-    event: React.ChangeEvent<HTMLInputElement> | File
+  updateSocialLink: (
+    key: keyof GiftPageData['socialLinks'],
+    value: string
   ) => void
+  handleMediaUpload: (event: React.ChangeEvent<HTMLInputElement> | File) => void
   handleMediaRemove: () => void
 }
 
@@ -347,7 +346,9 @@ export const useGiftPageData = () => {
 export const useGiftSettingsContext = () => {
   const context = useContext(GiftSettingsContext)
   if (!context) {
-    throw new Error('useGiftSettingsContext must be used within CreateGiftProvider')
+    throw new Error(
+      'useGiftSettingsContext must be used within CreateGiftProvider'
+    )
   }
   return context
 }
@@ -355,7 +356,9 @@ export const useGiftSettingsContext = () => {
 export const useRecipientsContext = () => {
   const context = useContext(RecipientsContext)
   if (!context) {
-    throw new Error('useRecipientsContext must be used within CreateGiftProvider')
+    throw new Error(
+      'useRecipientsContext must be used within CreateGiftProvider'
+    )
   }
   return context
 }
@@ -363,7 +366,9 @@ export const useRecipientsContext = () => {
 export const useCustomGiftsContext = () => {
   const context = useContext(CustomGiftsContext)
   if (!context) {
-    throw new Error('useCustomGiftsContext must be used within CreateGiftProvider')
+    throw new Error(
+      'useCustomGiftsContext must be used within CreateGiftProvider'
+    )
   }
   return context
 }

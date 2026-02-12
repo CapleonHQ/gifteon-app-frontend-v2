@@ -203,7 +203,10 @@ export const useGiftSettings = (): UseGiftSettingsReturn => {
     dispatch({ type: 'SET_FIELD', field: 'giftType', value })
   }, [])
   const setCurrency = useCallback((value: string) => {
-    dispatch({ type: 'SET_FIELD', field: 'currency', value })
+    const normalizedValue = value.trim().toUpperCase()
+    const mappedValue =
+      normalizedValue === 'NAIRA' ? 'NGN' : normalizedValue
+    dispatch({ type: 'SET_FIELD', field: 'currency', value: mappedValue })
   }, [])
   const setCashAmount = useCallback((value: string) => {
     dispatch({ type: 'SET_FIELD', field: 'cashAmount', value })

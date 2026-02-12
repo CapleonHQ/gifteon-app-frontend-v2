@@ -30,6 +30,9 @@ import PageVisitsCard from './PageVisitsCard'
 import GiftTypeDistributionCard from './GiftTypeDistributionCard'
 import WishesSection from './WishesSection'
 import EyeOnIcon from '@/assets/icons/EyeOnIcon'
+import { usePageById } from '@/hooks/tanstack/pages'
+import { toApiError } from '@/api/errorHelpers'
+import GiftDetailsErrorState from './GiftDetailsErrorState'
 
 ChartJS.register(
   ArcElement,
@@ -239,11 +242,16 @@ const GiftDetailsPageClient = () => {
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false)
   const [isReactivateOpen, setIsReactivateOpen] = useState(false)
   const { openSuccess } = useSuccessModal()
-  const [isActive, setIsActive] = useState(true)
+  const [activeOverrides, setActiveOverrides] = useState<
+    Record<string, boolean>
+  >({})
 
   const giftId = typeof params?.id === 'string' ? params.id : '1'
-  const giftTitle = "Adenike's Birthday Bash"
-  const giftUrl = `/u/${giftId}`
+  const pageQuery = usePageById(giftId)
+  const page = pageQuery.data?.data
+  const giftTitle = page?.title ?? 'Gift Page'
+  const giftUrl = page?.publicUrl ?? `/u/${giftId}`
+  const isActive = activeOverrides[giftId] ?? page?.isActive ?? true
 
   useEffect(() => {
     setOnBack(() => () => {
@@ -329,65 +337,94 @@ const GiftDetailsPageClient = () => {
 
   const handleDeactivateConfirm = () => {
     setIsDeactivateOpen(false)
-    setIsActive(false)
+    setActiveOverrides((prev) => ({ ...prev, [giftId]: false }))
     openSuccess({ message: 'Your gift page has been successfully deactivated' })
   }
 
   const handleReactivateConfirm = () => {
     setIsReactivateOpen(false)
-    setIsActive(true)
+    setActiveOverrides((prev) => ({ ...prev, [giftId]: true }))
     openSuccess({ message: 'Your gift page has been successfully activated' })
   }
 
+  const showInitialPageLoader = pageQuery.isLoading && !page
+  const pageError = pageQuery.isError ? toApiError(pageQuery.error) : null
+  const showPageErrorState = !!pageError && !page
+  const isMissingPage =
+    pageError?.code === 'NOT_FOUND' || pageError?.status === 404
+
+  const errorTitle = isMissingPage
+    ? 'This page can’t be found'
+    : 'Unable to load this page'
+  const errorDescription = isMissingPage
+    ? 'This gift page may have been deleted, moved, or the link is no longer valid.'
+    : 'Something went wrong while loading this gift page. Please try again.'
+
   return (
     <div className='w-full bg-white px-4 lg:px-0 lg:bg-inherit lg:rounded-[20px] flex-1'>
-      <div className='flex flex-col gap-6 lg:gap-5'>
-        <GiftDetailsHeader
-          title={giftTitle}
-          isActive={isActive}
-          onBack={() => router.back()}
-          onView={handleViewPage}
-          onEdit={() => setIsEditOpen(true)}
-          onShare={() => setIsShareOpen(true)}
-          onToggleActive={() =>
-            isActive ? setIsDeactivateOpen(true) : setIsReactivateOpen(true)
-          }
-        />
-
-        <SummaryCardsGrid cards={summaryCards} CardBgSvg={CardBgSvg} />
-
-        <div className='mt-4 lg:mt-1 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,364px)] gap-5'>
-          <div className='flex flex-col gap-5'>
-            <GiftActivitySection
-              items={giftActivity}
-              openMobileId={openMobileId}
-              onToggleMobile={(id) =>
-                setOpenMobileId((prev) => (prev === id ? null : id))
-              }
-            />
-
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-              <PageVisitsCard
-                visitRange={visitRange}
-                onVisitRangeChange={setVisitRange}
-                data={barData}
-                options={barOptions}
-              />
-
-              <GiftTypeDistributionCard
-                data={doughnutData}
-                options={doughnutOptions}
-              />
-            </div>
+      {showInitialPageLoader ? (
+        <div className='h-full min-h-[500px] lg:min-h-[700px] flex items-center justify-center'>
+          <div className='flex flex-col items-center gap-3'>
+            <div className='h-8 w-8 animate-spin rounded-full border-2 border-primary-200 border-t-primary-500' />
+            <p className='text-sm text-grey-700'>Loading page details...</p>
           </div>
-
-          <WishesSection
-            wishes={wishes}
-            wishSort={wishSort}
-            onWishSortChange={setWishSort}
-          />
         </div>
-      </div>
+      ) : showPageErrorState ? (
+        <GiftDetailsErrorState
+          title={errorTitle}
+          description={errorDescription}
+          onRetry={() => pageQuery.refetch()}
+          isRetrying={pageQuery.isFetching}
+        />
+      ) : (
+        <div className='flex flex-col gap-6 lg:gap-5'>
+          <GiftDetailsHeader
+            title={giftTitle}
+            isActive={isActive}
+            onBack={() => router.back()}
+            onView={handleViewPage}
+            onEdit={() => setIsEditOpen(true)}
+            onShare={() => setIsShareOpen(true)}
+            onToggleActive={() =>
+              isActive ? setIsDeactivateOpen(true) : setIsReactivateOpen(true)
+            }
+          />
+
+          <SummaryCardsGrid cards={summaryCards} CardBgSvg={CardBgSvg} />
+
+          <div className='mt-4 lg:mt-1 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,364px)] gap-5'>
+            <div className='flex flex-col gap-5'>
+              <GiftActivitySection
+                items={giftActivity}
+                openMobileId={openMobileId}
+                onToggleMobile={(id) =>
+                  setOpenMobileId((prev) => (prev === id ? null : id))
+                }
+              />
+
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                <PageVisitsCard
+                  visitRange={visitRange}
+                  onVisitRangeChange={setVisitRange}
+                  data={barData}
+                  options={barOptions}
+                />
+
+                <GiftTypeDistributionCard
+                  data={doughnutData}
+                  options={doughnutOptions}
+                />
+              </div>
+            </div>
+
+            <WishesSection
+              wishes={wishes}
+              wishSort={wishSort}
+              onWishSortChange={setWishSort}
+            />
+          </div>
+        </div>
+      )}
 
       <EditGiftPageModal
         isOpen={isEditOpen}
@@ -417,7 +454,6 @@ const GiftDetailsPageClient = () => {
         onClose={() => setIsReactivateOpen(false)}
         onConfirm={handleReactivateConfirm}
       />
-
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import type { GiftPageData, Recipient } from '@/types/gifts'
-import type { CustomGiftForm } from '../types'
+import { type CustomGiftForm } from '@/types/Gifts/index'
 import type { GiftSettingsValues } from './validation'
 import { normalizeAmount } from './validation'
 
@@ -153,25 +153,17 @@ export const buildCreatePageFormData = ({
     recipients.length > 0
       ? recipients
       : recipientForm.name.trim() && recipientForm.email.trim()
-        ? [
-            {
-              name: recipientForm.name.trim(),
-              email: recipientForm.email.trim(),
-            },
-          ]
-        : []
+      ? [
+          {
+            name: recipientForm.name.trim(),
+            email: recipientForm.email.trim(),
+          },
+        ]
+      : []
 
   effectiveRecipients.forEach((recipient, index) => {
-    appendIf(
-      formData,
-      `settings[recipients][${index}][name]`,
-      recipient.name
-    )
-    appendIf(
-      formData,
-      `settings[recipients][${index}][email]`,
-      recipient.email
-    )
+    appendIf(formData, `settings[recipients][${index}][name]`, recipient.name)
+    appendIf(formData, `settings[recipients][${index}][email]`, recipient.email)
   })
 
   const socials = [
@@ -181,16 +173,8 @@ export const buildCreatePageFormData = ({
   ].filter((social) => Boolean(social.url?.trim()))
 
   socials.forEach((social, index) => {
-    appendIf(
-      formData,
-      `settings[socials][${index}][provider]`,
-      social.provider
-    )
-    appendIf(
-      formData,
-      `settings[socials][${index}][url]`,
-      social.url || ''
-    )
+    appendIf(formData, `settings[socials][${index}][provider]`, social.provider)
+    appendIf(formData, `settings[socials][${index}][url]`, social.url || '')
   })
 
   if (settings.receiverName) {

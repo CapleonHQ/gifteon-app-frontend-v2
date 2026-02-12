@@ -12,6 +12,7 @@ type GiftsMobileCardProps = {
   selectionMode: boolean
   onToggle: () => void
   onSelect: () => void
+  onView: () => void
   onDeactivate: () => void
   onStartPress: () => void
   onClearPress: () => void
@@ -24,6 +25,7 @@ const GiftsMobileCard = ({
   selectionMode,
   onToggle,
   onSelect,
+  onView,
   onDeactivate,
   onStartPress,
   onClearPress,
@@ -124,7 +126,7 @@ const GiftsMobileCard = ({
             </div>
           </div>
 
-          <GiftsMobileActionButtons onDeactivate={onDeactivate} />
+          <GiftsMobileActionButtons onView={onView} onDeactivate={onDeactivate} />
         </>
       )}
     </div>

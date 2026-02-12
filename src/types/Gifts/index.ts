@@ -10,3 +10,12 @@ export type GiftItem = {
   image: string
   fromName?: string
 }
+
+export type CustomGiftForm = {
+  title: string
+  price: string
+  imageName: string
+  imageUrl?: string
+  imageFile?: File
+  quantity: string
+}

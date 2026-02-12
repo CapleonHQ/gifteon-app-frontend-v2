@@ -14,10 +14,14 @@ import ShareIcon from '@/assets/icons/ShareIcon'
 import CancelHalfCircle from '@/assets/icons/CancelHalfCircle'
 
 type GiftsTableRowActionsProps = {
+  onView: () => void
   onDeactivate: () => void
 }
 
-const GiftsTableRowActions = ({ onDeactivate }: GiftsTableRowActionsProps) => {
+const GiftsTableRowActions = ({
+  onView,
+  onDeactivate,
+}: GiftsTableRowActionsProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -34,7 +38,7 @@ const GiftsTableRowActions = ({ onDeactivate }: GiftsTableRowActionsProps) => {
         align='end'
         className='rounded-[16px] border border-grey-50 px-2 py-2 shadow-[0px_10px_30px_-10px_#10192833]'
       >
-        <DropdownMenuItem className='gap-2 cursor-pointer'>
+        <DropdownMenuItem className='gap-2 cursor-pointer' onClick={onView}>
           <span className='w-5 h-5 text-secondary-800 [&>svg]:size-full! [&_svg]:text-current!'>
             <EyeOnIcon />
           </span>

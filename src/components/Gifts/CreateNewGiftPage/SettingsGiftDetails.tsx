@@ -147,9 +147,13 @@ const SettingsGiftDetails = ({
                 <SelectItem value='placeholder' disabled>
                   Select an option
                 </SelectItem>
-                <SelectItem value='naira'>Naira</SelectItem>
-                <SelectItem value='usd'>USD</SelectItem>
-                <SelectItem value='eur'>EUR</SelectItem>
+                <SelectItem value='NGN'>Naira (₦)</SelectItem>
+                <SelectItem value='USD' disabled>
+                  US Dollar ($)
+                </SelectItem>
+                <SelectItem value='EUR' disabled>
+                  Euro (€)
+                </SelectItem>
               </SelectContent>
             </Select>
             {errors?.currency && (
@@ -215,9 +219,13 @@ const SettingsGiftDetails = ({
                 <SelectItem value='placeholder' disabled>
                   Select an option
                 </SelectItem>
-                <SelectItem value='naira'>Naira</SelectItem>
-                <SelectItem value='usd'>USD</SelectItem>
-                <SelectItem value='eur'>EUR</SelectItem>
+                <SelectItem value='NGN'>Naira (₦)</SelectItem>
+                <SelectItem value='USD' disabled>
+                  US Dollar ($)
+                </SelectItem>
+                <SelectItem value='EUR' disabled>
+                  Euro (€)
+                </SelectItem>
               </SelectContent>
             </Select>
             {errors?.currency && (

@@ -6,17 +6,22 @@ import ShareIcon from '@/assets/icons/ShareIcon'
 import CancelHalfCircle from '@/assets/icons/CancelHalfCircle'
 
 type GiftsMobileActionButtonsProps = {
+  onView: () => void
   onDeactivate: () => void
 }
 
 const GiftsMobileActionButtons = ({
+  onView,
   onDeactivate,
 }: GiftsMobileActionButtonsProps) => {
   return (
     <div className='mt-3 grid grid-cols-1 gap-3'>
       <button
         className='flex items-center justify-center gap-2 w-full py-3 rounded-[8px] bg-primary-400 transition-colors hover:bg-primary-500 duration-300 text-white text-sm font-medium'
-        onClick={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation()
+          onView()
+        }}
       >
         <span className='w-3.5 h-3.5 text-white'>
           <EyeOnIcon />
