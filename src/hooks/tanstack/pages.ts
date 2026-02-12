@@ -1,14 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
 import { getPageById, getPages } from '@/api/services/pages'
 import { ApiResponse } from '@/types/Common'
-import { PageDetails, PagesListData, PagesQueryParams } from '@/types/Pages'
-import { extractPageDetails, extractPagesListData } from '@/lib/pages/transformers'
+import {
+  PageDetails,
+  PageDetailsApiData,
+  PagesListApiData,
+  PagesListData,
+  PagesQueryParams,
+} from '@/types/Pages'
+import { mapPageDetails, mapPagesListData } from '@/lib/pages/transformers'
 
-type PagesResponse = Omit<ApiResponse<unknown>, 'data'> & {
+type PagesResponse = Omit<ApiResponse<PagesListApiData>, 'data'> & {
   data: PagesListData
 }
 
-type PageDetailsResponse = Omit<ApiResponse<unknown>, 'data'> & {
+type PageDetailsResponse = Omit<ApiResponse<PageDetailsApiData>, 'data'> & {
   data: PageDetails | null
 }
 
@@ -18,7 +24,7 @@ export const usePages = (params?: PagesQueryParams) => {
     queryFn: () => getPages(params),
     select: (response): PagesResponse => ({
       ...response,
-      data: extractPagesListData(response.data),
+      data: mapPagesListData(response.data),
     }),
   })
 }
@@ -30,7 +36,7 @@ export const usePageById = (pageId: string) => {
     enabled: pageId.length > 0,
     select: (response): PageDetailsResponse => ({
       ...response,
-      data: extractPageDetails(response.data),
+      data: mapPageDetails(response.data),
     }),
   })
 }

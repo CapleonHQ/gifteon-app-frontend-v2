@@ -1,9 +1,11 @@
 'use client'
 
 import {
+  getTransactionStatusLabel,
+  getTransactionStatusStyle,
+  getTransactionTypeLabel,
+  getTransactionTypeStyle,
   type WalletTransaction,
-  transactionStatusStyles,
-  transactionTypeStyles,
 } from './types'
 import WalletTransactionsTableActions from './WalletTransactionsTableActions'
 
@@ -25,20 +27,20 @@ const WalletTransactionsTableRow = ({
       <div>
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-sm leading-[133%] tracking-[-2%] font-medium ${
-            transactionTypeStyles[transaction.type]
+            getTransactionTypeStyle(transaction.type)
           }`}
         >
-          {transaction.type}
+          {getTransactionTypeLabel(transaction.type)}
         </span>
       </div>
       <span>{formatAmount(transaction.amount)}</span>
       <div>
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-sm leading-[133%] tracking-[-2%] font-medium ${
-            transactionStatusStyles[transaction.status]
+            getTransactionStatusStyle(transaction.status)
           }`}
         >
-          {transaction.status}
+          {getTransactionStatusLabel(transaction.status)}
         </span>
       </div>
       <WalletTransactionsTableActions onReport={onReport} />

@@ -2,9 +2,11 @@
 
 import { ChevronDown } from 'lucide-react'
 import {
+  getTransactionStatusLabel,
+  getTransactionStatusStyle,
+  getTransactionTypeLabel,
+  getTransactionTypeStyle,
   type WalletTransaction,
-  transactionStatusStyles,
-  transactionTypeStyles,
 } from './types'
 import FlagIcon from '@/assets/icons/FlagIcon'
 
@@ -35,10 +37,10 @@ const WalletTransactionsMobileCard = ({
           <div className='w-[90px]'>
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-sm leading-[133%] tracking-[-2%] font-medium ${
-                transactionStatusStyles[transaction.status]
+                getTransactionStatusStyle(transaction.status)
               }`}
             >
-              {transaction.status}
+              {getTransactionStatusLabel(transaction.status)}
             </span>
           </div>
         </div>
@@ -60,10 +62,10 @@ const WalletTransactionsMobileCard = ({
             <span>Type:</span>
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-sm leading-[133%] tracking-[-2%] font-medium ${
-                transactionTypeStyles[transaction.type]
+                getTransactionTypeStyle(transaction.type)
               }`}
             >
-              {transaction.type}
+              {getTransactionTypeLabel(transaction.type)}
             </span>
           </div>
           <div className='flex items-center justify-between'>

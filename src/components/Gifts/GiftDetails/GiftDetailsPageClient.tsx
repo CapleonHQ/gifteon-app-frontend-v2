@@ -33,6 +33,7 @@ import EyeOnIcon from '@/assets/icons/EyeOnIcon'
 import { usePageById } from '@/hooks/tanstack/pages'
 import { toApiError } from '@/api/errorHelpers'
 import GiftDetailsErrorState from './GiftDetailsErrorState'
+import { usePageComments } from '@/hooks/tanstack/pageComments'
 
 ChartJS.register(
   ArcElement,
@@ -86,14 +87,13 @@ const summaryCards: SummaryCard[] = [
   },
 ]
 
-const giftActivity: GiftActivityItem[] = [
+const mockGiftActivity: GiftActivityItem[] = [
   {
     id: '1',
     gift: 'Comfy Couch',
     type: 'Gifts on Giftseon',
     sender: 'Paul Akorede',
     status: 'Unclaimed',
-
     worth: '₦169,000',
   },
   {
@@ -102,131 +102,7 @@ const giftActivity: GiftActivityItem[] = [
     type: 'Custom',
     sender: 'Femi Oliemro',
     status: 'Claimed',
-
     worth: '₦35,000',
-  },
-  {
-    id: '3',
-    gift: 'Smart Watch',
-    type: 'Gifts on Giftseon',
-    sender: '-',
-    status: 'Pending',
-
-    worth: '₦35,000',
-  },
-  {
-    id: '4',
-    gift: 'Bluetooth Speaker',
-    type: 'Custom',
-    sender: 'Femi Oliemro',
-    status: 'Shipped',
-
-    worth: '₦35,000',
-  },
-  {
-    id: '5',
-    gift: 'Flight Ticket',
-    type: 'Custom',
-    sender: '-',
-    status: 'Pending',
-
-    worth: '₦35,000',
-  },
-  {
-    id: '6',
-    gift: 'Yoga Mat',
-    type: 'Custom',
-    sender: 'Suleiman Bolden',
-    status: 'Used',
-
-    worth: '₦169,000',
-  },
-]
-
-const wishes: WishItem[] = [
-  {
-    id: '1',
-    name: 'Sofia Patel',
-    time: '10 mins ago',
-    message:
-      'Happy Birthday! 🎉 May your day be filled with laughter, love, and little surprises that make you smile. Here’s a space to celebrate you, share good vibes, and make your special day unforgettable!',
-  },
-  {
-    id: '2',
-    name: 'James Carter',
-    time: '15 mins ago',
-    message:
-      'Happy Birthday, James! 🎉 May your day be as fantastic as you are. Wishing you joy, laughter, and unforgettable moments!',
-  },
-  {
-    id: '3',
-    name: 'Ifeoma Nwankwo',
-    time: '1 hr ago',
-    message:
-      'Wishing you a day as bright as your smile, Elara! Hope it’s filled with everything that makes you happy. Cheers to you!',
-  },
-  {
-    id: '4',
-    name: 'Anonymous',
-    time: '2 hrs ago',
-    message:
-      'Happy Birthday! 🥳 Wishing you a day filled with love, laughter, and all your favorite things. Make it a memorable one!',
-  },
-  {
-    id: '5',
-    name: 'Anonymous',
-    time: '2 hrs ago',
-    message:
-      'Happy Birthday! 🎉 Wishing you a day filled with love, laughter, and all your favorite things. Make it a memorable one!',
-  },
-  {
-    id: '6',
-    name: 'Ifeoma Nwankwo',
-    time: '1 hr ago',
-    message:
-      'Wishing you a day as bright as your smile, Elara! Hope it’s filled with everything that makes you happy. Cheers to you!',
-  },
-  {
-    id: '7',
-    name: 'Sofia Patel',
-    time: '10 mins ago',
-    message:
-      'Happy Birthday! 🎉 May your day be filled with laughter, love, and little surprises that make you smile. Here’s a space to celebrate you, share good vibes, and make your special day unforgettable!',
-  },
-  {
-    id: '8',
-    name: 'James Carter',
-    time: '15 mins ago',
-    message:
-      'Happy Birthday, James! 🎉 May your day be as fantastic as you are. Wishing you joy, laughter, and unforgettable moments!',
-  },
-  {
-    id: '9',
-    name: 'Ifeoma Nwankwo',
-    time: '1 hr ago',
-    message:
-      'Wishing you a day as bright as your smile, Elara! Hope it’s filled with everything that makes you happy. Cheers to you!',
-  },
-  {
-    id: '10',
-    name: 'Anonymous',
-    time: '2 hrs ago',
-    message:
-      'Happy Birthday! 🥳 Wishing you a day filled with love, laughter, and all your favorite things. Make it a memorable one!',
-  },
-  {
-    id: '11',
-    name: 'Anonymous',
-    time: '2 hrs ago',
-    message:
-      'Happy Birthday! 🎉 Wishing you a day filled with love, laughter, and all your favorite things. Make it a memorable one!',
-  },
-  {
-    id: '12',
-    name: 'Ifeoma Nwankwo',
-    time: '1 hr ago',
-    message:
-      'Wishing you a day as bright as your smile, Elara! Hope it’s filled with everything that makes you happy. Cheers to you!',
   },
 ]
 
@@ -248,10 +124,13 @@ const GiftDetailsPageClient = () => {
 
   const giftId = typeof params?.id === 'string' ? params.id : '1'
   const pageQuery = usePageById(giftId)
+  const commentsQuery = usePageComments(giftId)
   const page = pageQuery.data?.data
   const giftTitle = page?.title ?? 'Gift Page'
   const giftUrl = page?.publicUrl ?? `/u/${giftId}`
   const isActive = activeOverrides[giftId] ?? page?.isActive ?? true
+  const activityItems: GiftActivityItem[] = mockGiftActivity
+  const wishItems: WishItem[] = commentsQuery.data?.data ?? []
 
   useEffect(() => {
     setOnBack(() => () => {
@@ -395,7 +274,7 @@ const GiftDetailsPageClient = () => {
           <div className='mt-4 lg:mt-1 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,364px)] gap-5'>
             <div className='flex flex-col gap-5'>
               <GiftActivitySection
-                items={giftActivity}
+                items={activityItems}
                 openMobileId={openMobileId}
                 onToggleMobile={(id) =>
                   setOpenMobileId((prev) => (prev === id ? null : id))
@@ -418,9 +297,12 @@ const GiftDetailsPageClient = () => {
             </div>
 
             <WishesSection
-              wishes={wishes}
+              wishes={wishItems}
               wishSort={wishSort}
               onWishSortChange={setWishSort}
+              isLoading={commentsQuery.isLoading}
+              isError={commentsQuery.isError}
+              onRetry={() => commentsQuery.refetch()}
             />
           </div>
         </div>

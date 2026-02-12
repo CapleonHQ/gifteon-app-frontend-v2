@@ -8,67 +8,30 @@ import WalletTransactionsHeader from './WalletTransactionsHeader'
 import WalletTransactionsTable from './WalletTransactionsTable'
 import WalletTransactionsMobileList from './WalletTransactionsMobileList'
 import WalletTransactionsEmptyState from './WalletTransactionsEmptyState'
+import WalletTransactionsNoResults from './WalletTransactionsNoResults'
+import WalletTransactionsSkeleton from './WalletTransactionsSkeleton'
 import WalletTopUpModal from './WalletTopUpModal'
 import WalletWithdrawModal from './WalletWithdrawModal'
 import WalletDisputeModal from './WalletDisputeModal'
+import WalletSummarySkeleton from './WalletSummarySkeleton'
 import { useSuccessModal } from '@/context/SuccessModalContext'
+import {
+  useWalletDetails,
+  useTopupWalletLocals,
+  useWalletTransactions,
+} from '@/hooks/tanstack/wallet'
+import { useDebounce } from '@/hooks/useDebounce'
+import { parseWalletBalance } from '@/lib/wallet/transformers'
 import { type WalletTransaction } from './types'
-
-const mockTransactions: WalletTransaction[] = [
-  {
-    id: '1',
-    date: 'Aug 13, 2025',
-    description: 'Gift Received from Campaign #GH23',
-    type: 'Credit',
-    amount: 40500,
-    status: 'Completed',
-  },
-  {
-    id: '2',
-    date: 'Aug 13, 2025',
-    description: 'Withdrawal to Bank (GTB - 12******34)',
-    type: 'Debit',
-    amount: 40500,
-    status: 'Pending',
-  },
-  {
-    id: '3',
-    date: 'Aug 13, 2025',
-    description: 'Gift Received from Campaign #GH23',
-    type: 'Credit',
-    amount: 40500,
-    status: 'Completed',
-  },
-  {
-    id: '4',
-    date: 'Aug 13, 2025',
-    description: 'Withdrawal to Bank (GTB - 12******34)',
-    type: 'Debit',
-    amount: 40500,
-    status: 'Completed',
-  },
-  {
-    id: '5',
-    date: 'Aug 13, 2025',
-    description: 'Gift Received from Campaign #GH23',
-    type: 'Credit',
-    amount: 40500,
-    status: 'Completed',
-  },
-]
 
 const bankAccounts = [
   { id: 'gtb', label: 'GTB - 12******34' },
   { id: 'sterling', label: 'Sterling Bank - 01******78' },
 ]
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
+const PAGE_SIZE = 10
+const EMPTY_TRANSACTIONS: WalletTransaction[] = []
+const TOPUP_ERROR_MESSAGE = 'Unable to initialize top-up. Please try again.'
 
 const WalletPageClient = () => {
   const [isTopUpOpen, setIsTopUpOpen] = useState(false)
@@ -78,43 +41,159 @@ const WalletPageClient = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const { openSuccess } = useSuccessModal()
+  const debouncedSearch = useDebounce(searchQuery.trim(), 400)
 
-  const availableBalance = 750890
-  const totalReceived = 777100
-  const totalWithdrawn = 27790
+  const detailsQuery = useWalletDetails()
+  const topupMutation = useTopupWalletLocals()
+  const transactionsQuery = useWalletTransactions({
+    page: currentPage,
+    limit: PAGE_SIZE,
+    search: debouncedSearch || undefined,
+    type: typeFilter === 'all' ? undefined : typeFilter,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+  })
 
-  const transactions = mockTransactions
-  const hasTransactions = transactions.length > 0
+  const walletDetails = detailsQuery.data?.data
+  const transactionsData = transactionsQuery.data?.data
 
-  const formattedBalance = useMemo(
-    () => formatCurrency(availableBalance),
-    [availableBalance]
+  const availableBalance = parseWalletBalance(walletDetails?.balance)
+  const currency = walletDetails?.currency || 'USD'
+  const transactions = useMemo(
+    () => transactionsData?.transactions ?? EMPTY_TRANSACTIONS,
+    [transactionsData?.transactions]
   )
+  const pagination = transactionsData?.pagination
+
+  const formatCurrency = (value: number) => {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 2,
+      }).format(value)
+    } catch {
+      return value.toLocaleString('en-US', { maximumFractionDigits: 2 })
+    }
+  }
+
+  const totalReceived = 0
+  const totalWithdrawn = 0
+  const hasTransactions = transactions.length > 0
+  const isLoadingTransactions = transactionsQuery.isLoading
+  const hasTransactionsError = transactionsQuery.isError
+  const hasActiveFilters = Boolean(
+    debouncedSearch || typeFilter !== 'all' || statusFilter !== 'all'
+  )
+
+  const formattedBalance = formatCurrency(availableBalance)
+
+  const totalCount = pagination?.total ?? 0
+  const totalPages = pagination?.totalPages ?? 1
+  const startItem = totalCount > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0
+  const endItem =
+    totalCount > 0
+      ? Math.min(startItem + transactions.length - 1, totalCount)
+      : 0
+  const isPrevDisabled = currentPage <= 1 || transactionsQuery.isFetching
+  const isNextDisabled =
+    currentPage >= totalPages || transactionsQuery.isFetching || totalPages <= 1
+  const hasResolvedOverview = detailsQuery.isSuccess || detailsQuery.isError
+  const showOverviewSkeleton = detailsQuery.isLoading && !hasResolvedOverview
+
+  const hasOverviewError =
+    detailsQuery.isError ||
+    detailsQuery.isRefetchError ||
+    (!detailsQuery.isLoading && !walletDetails)
+  const topupError =
+    topupMutation.error instanceof Error
+      ? topupMutation.error.message
+      : topupMutation.isError
+      ? TOPUP_ERROR_MESSAGE
+      : undefined
+
+  const handleTopupSubmit = async (amount: number) => {
+    try {
+      const data = await topupMutation.mutateAsync(amount)
+      if (typeof window !== 'undefined') {
+        window.location.assign(data.authorizationUrl)
+      }
+      setIsTopUpOpen(false)
+    } catch {
+      // Error state is handled in modal via `topupMutation.error`.
+    }
+  }
 
   return (
     <div className='w-full flex flex-col gap-10 lg:gap-6 mt-2 mb-10 lg:mt-0 lg:mb-0'>
-      <WalletSummarySection
-        availableBalance={formattedBalance}
-        totalReceived={formatCurrency(totalReceived)}
-        totalWithdrawn={formatCurrency(totalWithdrawn)}
-        onTopUp={() => setIsTopUpOpen(true)}
-        onWithdraw={() => setIsWithdrawOpen(true)}
-      />
+      {showOverviewSkeleton ? (
+        <WalletSummarySkeleton />
+      ) : (
+        <WalletSummarySection
+          availableBalance={formattedBalance}
+          totalReceived={formatCurrency(totalReceived)}
+          totalWithdrawn={formatCurrency(totalWithdrawn)}
+          onTopUp={() => setIsTopUpOpen(true)}
+          onWithdraw={() => setIsWithdrawOpen(true)}
+          hasError={hasOverviewError}
+          isRetrying={hasOverviewError && detailsQuery.isFetching}
+          onRetry={() => detailsQuery.refetch()}
+        />
+      )}
 
       <div className='bg-white lg:rounded-[20px] lg:shadow-[0px_10px_18px_-2px_#10192812] pb-3 flex flex-col gap-1'>
         <WalletTransactionsHeader
           searchQuery={searchQuery}
           typeFilter={typeFilter}
           statusFilter={statusFilter}
-          onSearchChange={setSearchQuery}
-          onTypeChange={setTypeFilter}
-          onStatusChange={setStatusFilter}
+          onSearchChange={(value) => {
+            setSearchQuery(value)
+            setCurrentPage(1)
+          }}
+          onTypeChange={(value) => {
+            setTypeFilter(value)
+            setCurrentPage(1)
+          }}
+          onStatusChange={(value) => {
+            setStatusFilter(value)
+            setCurrentPage(1)
+          }}
         />
 
         <div className='mt-6 lg:mt-0'>
-          {!hasTransactions ? (
-            <WalletTransactionsEmptyState />
+          {isLoadingTransactions ? (
+            <WalletTransactionsSkeleton />
+          ) : hasTransactionsError ? (
+            <div className='px-4 py-10 text-center'>
+              <p className='text-base font-medium text-error-500'>
+                We couldn&apos;t load your transactions.
+              </p>
+              <p className='mt-1 text-sm text-grey-700'>
+                Check your connection and try again.
+              </p>
+              <button
+                type='button'
+                onClick={() => transactionsQuery.refetch()}
+                disabled={transactionsQuery.isFetching}
+                className='mt-4 inline-flex items-center justify-center px-4 py-2 rounded-[10px] border border-grey-200 text-sm text-grey-800 hover:bg-grey-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200'
+              >
+                {transactionsQuery.isFetching ? 'Retrying...' : 'Retry'}
+              </button>
+            </div>
+          ) : !hasTransactions ? (
+            hasActiveFilters ? (
+              <WalletTransactionsNoResults
+                onReset={() => {
+                  setSearchQuery('')
+                  setTypeFilter('all')
+                  setStatusFilter('all')
+                  setCurrentPage(1)
+                }}
+              />
+            ) : (
+              <WalletTransactionsEmptyState />
+            )
           ) : (
             <>
               <WalletTransactionsTable
@@ -137,11 +216,17 @@ const WalletPageClient = () => {
 
         {hasTransactions && (
           <div className='flex flex-col gap-4 lg:flex-row items-center lg:justify-between px-4 mt-4 text-sm text-grey-700'>
-            <span>Showing 14 of 132</span>
+            <span>
+              Showing {startItem}-{endItem} of {totalCount}
+            </span>
             <div className='flex items-center gap-4'>
               <button
                 type='button'
-                className='w-8 h-8 rounded-[5px] text-grey-700 bg-grey-50 hover:bg-grey-100 transition-colors duration-300 flex items-center justify-center opacity-30'
+                onClick={() =>
+                  setCurrentPage((page) => (page > 1 ? page - 1 : page))
+                }
+                disabled={isPrevDisabled}
+                className='w-8 h-8 rounded-[5px] text-grey-700 bg-grey-50 hover:bg-grey-100 transition-colors duration-300 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed'
                 aria-label='Previous page'
               >
                 <span className='w-6 h-6 block relative'>
@@ -150,13 +235,19 @@ const WalletPageClient = () => {
               </button>
               <div className='flex gap-2 items-center justify-center'>
                 <span className='w-8 h-8 rounded-[5px] bg-base-bg border border-primary-100 text-primary-400 text-sm font-medium flex items-center justify-center'>
-                  1
+                  {currentPage}
                 </span>
-                <span className='text-sm text-gray-700'>of 8</span>
+                <span className='text-sm text-gray-700'>of {totalPages}</span>
               </div>
               <button
                 type='button'
-                className='w-8 h-8 rounded-[5px] text-primary-400 bg-grey-50 hover:bg-grey-100 transition-colors duration-300 flex items-center justify-center'
+                onClick={() =>
+                  setCurrentPage((page) =>
+                    page < totalPages ? page + 1 : page
+                  )
+                }
+                disabled={isNextDisabled}
+                className='w-8 h-8 rounded-[5px] text-primary-400 bg-grey-50 hover:bg-grey-100 transition-colors duration-300 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed'
                 aria-label='Next page'
               >
                 <span className='w-6 h-6 block relative'>
@@ -170,10 +261,13 @@ const WalletPageClient = () => {
 
       <WalletTopUpModal
         isOpen={isTopUpOpen}
-        onClose={() => setIsTopUpOpen(false)}
-        bankName='Sterling Bank'
-        accountName='Giftseon - Adenike Abioye'
-        accountNumber='0123456789'
+        onClose={() => {
+          setIsTopUpOpen(false)
+          topupMutation.reset()
+        }}
+        onSubmit={handleTopupSubmit}
+        isSubmitting={topupMutation.isPending}
+        errorMessage={topupError}
       />
 
       <WalletWithdrawModal

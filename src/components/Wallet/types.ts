@@ -1,22 +1,32 @@
-export type WalletTransactionType = 'Credit' | 'Debit'
-export type WalletTransactionStatus = 'Completed' | 'Pending'
+import type { WalletTransactionStatus, WalletTransactionType } from '@/types/Wallet'
+export type { WalletTransaction, WalletTransactionsData } from '@/types/Wallet'
 
-export type WalletTransaction = {
-  id: string
-  date: string
-  description: string
-  type: WalletTransactionType
-  amount: number
+const capitalize = (value: string): string => {
+  if (!value) return 'Unknown'
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+export const transactionTypeStyles: Record<string, string> = {
+  credit: 'bg-success-50 text-success-500',
+  debit: 'bg-grey-50 text-grey-500',
+}
+
+export const transactionStatusStyles: Record<string, string> = {
+  completed: 'bg-success-50 text-success-500',
+  pending: 'bg-warning-50 text-warning-600',
+  failed: 'bg-error-50 text-error-500',
+}
+
+export const getTransactionTypeStyle = (type: WalletTransactionType): string =>
+  transactionTypeStyles[type] ?? 'bg-grey-50 text-grey-700'
+
+export const getTransactionStatusStyle = (
   status: WalletTransactionStatus
-}
+): string => transactionStatusStyles[status] ?? 'bg-grey-50 text-grey-700'
 
-export const transactionTypeStyles: Record<WalletTransactionType, string> = {
-  Credit: 'bg-success-50 text-success-500',
-  Debit: 'bg-grey-50 text-grey-500',
-}
+export const getTransactionTypeLabel = (type: WalletTransactionType): string =>
+  capitalize(type)
 
-export const transactionStatusStyles: Record<WalletTransactionStatus, string> =
-  {
-    Completed: 'bg-success-50 text-success-500',
-    Pending: 'bg-warning-50 text-warning-600',
-  }
+export const getTransactionStatusLabel = (
+  status: WalletTransactionStatus
+): string => capitalize(status)

@@ -3,77 +3,86 @@
 import { useState } from 'react'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
-import { Copy } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 type WalletTopUpModalProps = {
   isOpen: boolean
   onClose: () => void
-  bankName: string
-  accountName: string
-  accountNumber: string
+  onSubmit: (amount: number) => void
+  isSubmitting?: boolean
+  errorMessage?: string
 }
 
 const WalletTopUpModal = ({
   isOpen,
   onClose,
-  bankName,
-  accountName,
-  accountNumber,
+  onSubmit,
+  isSubmitting = false,
+  errorMessage,
 }: WalletTopUpModalProps) => {
-  const [copied, setCopied] = useState(false)
+  const [amountInput, setAmountInput] = useState('')
 
   if (!isOpen) return null
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(accountNumber)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1400)
-    } catch (error) {
-      setCopied(false)
-    }
+  const formattedAmount = amountInput
+    ? Number(amountInput.replace(/\D/g, '') || '0').toLocaleString('en-US')
+    : ''
+  const amountValue = Number(amountInput.replace(/\D/g, ''))
+  const isDisabled = amountValue <= 0 || isSubmitting
+
+  const handleClose = () => {
+    setAmountInput('')
+    onClose()
   }
 
-  const detailsCard = (
-    <div className='bg-white rounded-[12px] border border-grey-50 px-3 py-5 text-base text-grey-700 space-y-2.5 shadow-[0px_10px_18px_-2px_#10192812]'>
-      <div className='flex items-center justify-between pb-2.5 border-b border-grey-50'>
-        <span>Bank Name:</span>
-        <span className='font-medium text-grey-900'>{bankName}</span>
-      </div>
-      <div className='flex items-center justify-between pb-2.5 border-b border-grey-50'>
-        <span>Account Name:</span>
-        <span className='font-medium text-grey-900'>{accountName}</span>
-      </div>
-      <div className='flex items-center justify-between'>
-        <span>Account Number:</span>
-        <span className='font-medium text-grey-900 flex items-center gap-2'>
-          {accountNumber}
-          <button
-            type='button'
-            onClick={handleCopy}
-            className='text-primary-400 hover:text-primary-600 transition-colors'
-            aria-label='Copy account number'
-          >
-            <Copy className='w-4 h-4' />
-          </button>
-        </span>
-      </div>
-      {copied && <p className='text-xs text-success-500'>Copied!</p>}
+  const handleSubmit = () => {
+    if (isDisabled) return
+    onSubmit(amountValue)
+  }
+
+  const actions = (
+    <div className='flex items-center gap-3'>
+      <button
+        type='button'
+        onClick={handleClose}
+        className='flex-1 py-2.5 rounded-[12px] border border-grey-200 text-grey-700 font-medium bg-grey-50/70 hover:bg-grey-100/70 transition-colors'
+      >
+        Cancel
+      </button>
+      <button
+        type='button'
+        onClick={handleSubmit}
+        disabled={isDisabled}
+        className='flex-1 py-2.5 rounded-[12px] font-medium text-white bg-primary-400 hover:bg-primary-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2'
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className='w-4 h-4 animate-spin' />
+            Initializing...
+          </>
+        ) : (
+          'Continue'
+        )}
+      </button>
     </div>
   )
 
   const body = (
-    <div className='space-y-3'>
-      <div>
-        <p className='text-sm font-medium text-grey-700 mb-1'>
-          YOUR VIRTUAL ACCOUNT DETAILS
-        </p>
-        {detailsCard}
+    <div className='space-y-4'>
+      <div className='space-y-2'>
+        <label className='text-sm text-grey-700'>Amount</label>
+        <input
+          type='text'
+          value={formattedAmount}
+          onChange={(event) => setAmountInput(event.target.value)}
+          placeholder='0'
+          inputMode='numeric'
+          className='w-full px-3 py-3.5 border border-grey-100 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium focus:border-primary-500'
+        />
       </div>
-      <div className='bg-secondary-50 rounded-[12px] p-3 text-sm text-[#143535]'>
-        Once you make a transfer to this account, your wallet will be
-        automatically credited within minutes.
-      </div>
+      {errorMessage ? (
+        <p className='text-sm text-error-500'>{errorMessage}</p>
+      ) : null}
     </div>
   )
 
@@ -81,7 +90,7 @@ const WalletTopUpModal = ({
     <div className='fixed inset-0 z-30 lg:z-50'>
       <div
         className='absolute inset-0 bg-black/40 backdrop-blur-sm hidden lg:block'
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       <div className='hidden lg:flex items-center justify-center h-full px-4'>
@@ -89,7 +98,7 @@ const WalletTopUpModal = ({
           <div className='px-6 sm:px-10 pt-12 pb-3 bg-white sticky top-0 z-10 text-center'>
             <button
               type='button'
-              onClick={onClose}
+              onClick={handleClose}
               className='absolute right-5 top-5 w-9 h-9 rounded-full flex items-center justify-center hover:bg-grey-50'
               aria-label='Close'
             >
@@ -99,38 +108,43 @@ const WalletTopUpModal = ({
             </button>
             <h3 className='text-2xl font-medium text-blackish'>Top Up</h3>
             <p className='text-sm text-grey-600 max-w-[356px] mx-auto mt-1'>
-              Add funds to your wallet easily using your personalized virtual
-              account details.
+              Enter amount to initialize your top-up payment.
             </p>
           </div>
           <div className='px-6 sm:px-10 pb-12 overflow-y-auto flex-1 min-h-0'>
-            {body}
+            <div className='space-y-4'>
+              {body}
+              {actions}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className='lg:hidden fixed inset-x-0 bottom-0 top-[72.5px] bg-white overflow-y-auto'>
-        <div className='pt-8 pb-4 px-4'>
-          <div className='flex flex-col gap-3'>
-            <button
-              type='button'
-              onClick={onClose}
-              className='w-6 h-6'
-              aria-label='Go back'
-            >
-              <span className='text-blackish hover:text-black/70 flex'>
-                <BackLeftIcon />
-              </span>
-            </button>
-            <div className='flex flex-col items-center justify-center gap-1'>
-              <span className='text-2xl font-medium text-blackish'>Top Up</span>
-              <p className='text-sm text-grey-600 text-center'>
-                Add funds to your wallet easily using your personalized virtual
-                account details.
-              </p>
+      <div className='lg:hidden fixed inset-x-0 bottom-0 top-[72.5px] bg-white'>
+        <div className='flex flex-col h-full'>
+          <div className='pt-8 pb-4 px-4'>
+            <div className='flex flex-col gap-3'>
+              <button
+                type='button'
+                onClick={handleClose}
+                className='w-6 h-6'
+                aria-label='Go back'
+              >
+                <span className='text-blackish hover:text-black/70 flex'>
+                  <BackLeftIcon />
+                </span>
+              </button>
+              <div className='flex flex-col items-center justify-center gap-1'>
+                <span className='text-2xl font-medium text-blackish'>Top Up</span>
+                <p className='text-sm text-grey-600 text-center'>
+                  Enter amount to initialize your top-up payment.
+                </p>
+              </div>
             </div>
-
-            <div>{body}</div>
+          </div>
+          <div className='flex-1 overflow-y-auto px-4 pb-4'>{body}</div>
+          <div className='px-4 py-3 shadow-[0px_-10px_18px_5px_#4040401A] bg-white'>
+            {actions}
           </div>
         </div>
       </div>
