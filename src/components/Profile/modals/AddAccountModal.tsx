@@ -19,12 +19,20 @@ type AddAccountModalProps = {
   onClose: () => void
   onSave: (payload: {
     bank: string
-    account: string
+    bankCode: string
+    accountNumber: string
+    accountName: string
     isDefault: boolean
   }) => void
 }
 
 const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
+  const bankOptions = [
+    { label: 'GT Bank', code: '058' },
+    { label: 'Sterling Bank', code: '232' },
+    { label: 'First Bank', code: '011' },
+    { label: 'Opay', code: '044' },
+  ]
   const [bank, setBank] = useState('')
   const [account, setAccount] = useState('')
   const [accountName, setAccountName] = useState('')
@@ -39,9 +47,13 @@ const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
   }
 
   const handleSave = () => {
+    const selectedBank = bankOptions.find((option) => option.label === bank)
+    if (!selectedBank || !account || !accountName) return
     onSave({
-      bank: bank || 'GT Bank',
-      account: account || '12******34',
+      bank: selectedBank.label,
+      bankCode: selectedBank.code,
+      accountNumber: account,
+      accountName,
       isDefault: makeDefault,
     })
     setBank('')
@@ -94,9 +106,11 @@ const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
             <SelectValue placeholder='Select bank' />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='GT Bank'>GT Bank</SelectItem>
-            <SelectItem value='Sterling Bank'>Sterling Bank</SelectItem>
-            <SelectItem value='First Bank'>First Bank</SelectItem>
+            {bankOptions.map((option) => (
+              <SelectItem key={option.code} value={option.label}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -110,7 +124,6 @@ const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
         label='Account Holder Name'
         placeholder='Account name'
         value={accountName}
-        disabled
         onChange={setAccountName}
       />
       <label className='flex items-center gap-2 text-sm text-grey-600 font-medium'>
@@ -136,7 +149,7 @@ const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
         type='button'
         onClick={handleSave}
         className='flex-1 py-3 rounded-[12px] bg-linear-to-b from-[#4848C9] from-[17.5%] to-[#1818AB] enabled:hover:from-primary-600 enabled:hover:to-primary-800 transition-colors duration-300 text-white font-medium disabled:opacity-30'
-        // disabled
+        disabled={!bank || !account || !accountName}
       >
         Save Account
       </button>

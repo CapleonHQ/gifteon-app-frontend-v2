@@ -1,5 +1,6 @@
 import { MoreVertical } from 'lucide-react'
 import DeleteIcon from '@/assets/icons/DeleteIcon'
+import Tick01Icon from '@/assets/icons/Tick01Icon'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +12,14 @@ import type { PaymentMethod } from '@/types/Profile/payment'
 type PaymentMethodCardProps = {
   method: PaymentMethod
   onDelete: (method: PaymentMethod) => void
+  onSetDefault: (method: PaymentMethod) => void
 }
 
-const PaymentMethodCard = ({ method, onDelete }: PaymentMethodCardProps) => {
+const PaymentMethodCard = ({
+  method,
+  onDelete,
+  onSetDefault,
+}: PaymentMethodCardProps) => {
   return (
     <div className='flex items-center justify-between gap-4 rounded-[10px] border border-grey-50 bg-white p-3'>
       <div className='flex items-center gap-2'>
@@ -50,6 +56,17 @@ const PaymentMethodCard = ({ method, onDelete }: PaymentMethodCardProps) => {
             align='end'
             className='rounded-[16px] border border-grey-50 px-2 py-2 shadow-[0px_10px_30px_-10px_#10192833]'
           >
+            {!method.isDefault ? (
+              <DropdownMenuItem
+                className='gap-2 cursor-pointer'
+                onClick={() => onSetDefault(method)}
+              >
+                <span className='w-5 h-5 text-success-500 [&>svg]:size-full! [&_svg]:text-current!'>
+                  <Tick01Icon />
+                </span>
+                Set as Default
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem
               className='gap-2 cursor-pointer text-error-500 focus:text-error-500'
               onClick={() => onDelete(method)}

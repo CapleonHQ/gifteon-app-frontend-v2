@@ -29,6 +29,7 @@ import { usePathname } from 'next/navigation'
 import { MENU_ITEMS } from '@/lib/constants/menu'
 import { NOTIFICATIONS } from '@/lib/constants/dummy'
 import { useAuth } from '@/context/AuthContext'
+import { logout } from '@/api/auth'
 import PolygonIcon from '@/assets/icons/PolygonIcon'
 import Favoriteicon from '@/assets/icons/Favoriteicon'
 import EditIcon02 from '@/assets/icons/EditIcon02'
@@ -52,6 +53,11 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
   const initials =
     `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase() ||
     'U'
+  const handleLogout = () => {
+    setProfileDropdownOpen(false)
+    setIsMobileMenuOpen(false)
+    logout({ redirectTo: '/login' })
+  }
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -283,7 +289,10 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                     </span>
                     Edit Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem className='cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50'>
+                  <DropdownMenuItem
+                    className='cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50'
+                    onClick={handleLogout}
+                  >
                     <span className='w-5 h-5 mr-2 text-grey-500 [&>svg]:size-full! [&_svg]:text-current!'>
                       <LogoutIcon />
                     </span>
@@ -433,7 +442,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                   <div className='pt-3 pb-2 border-y border-grey-50'>
                     <motion.button
                       className='w-full flex items-center gap-2 px-3 py-3 rounded-lg text-left text-grey-600 hover:bg-grey-50 transition-colors'
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={handleLogout}
                       whileTap={{ scale: 0.98 }}
                     >
                       <span className='w-6 h-6'>

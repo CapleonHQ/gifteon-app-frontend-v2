@@ -1,4 +1,3 @@
-import { useMemo, useState } from 'react'
 import EditIcon from '@/assets/icons/EditIcon'
 import SectionCard from '@/components/Profile/components/SectionCard'
 import InputField from '@/components/Profile/components/InputField'
@@ -11,30 +10,30 @@ type PersonalInfoCardProps = {
     lastName: string
     phone: string
     email: string
-    dob: string
+    dob?: Date
     address: string
   }
   isEditing: boolean
+  isSaving?: boolean
+  errorMessage?: string
   onEdit: () => void
   onSave: () => void
+  onPhoneChange: (value: string) => void
+  onAddressChange: (value: string) => void
+  onDobChange: (value?: Date) => void
 }
 
 const PersonalInfoCard = ({
   profile,
   isEditing,
+  isSaving = false,
+  errorMessage,
   onEdit,
   onSave,
+  onPhoneChange,
+  onAddressChange,
+  onDobChange,
 }: PersonalInfoCardProps) => {
-  const parsedDob = useMemo(() => {
-    if (!profile.dob) return undefined
-    const [day, month, year] = profile.dob.split('/')
-    if (!day || !month || !year) return undefined
-    const date = new Date(Number(year), Number(month) - 1, Number(day))
-    return Number.isNaN(date.getTime()) ? undefined : date
-  }, [profile.dob])
-
-  const [dob, setDob] = useState<Date | undefined>(parsedDob)
-
   return (
     <SectionCard
       title='Personal Information'
@@ -44,12 +43,13 @@ const PersonalInfoCard = ({
           <button
             type='button'
             onClick={onSave}
+            disabled={isSaving}
             className='hidden lg:inline-flex items-center gap-1.5 rounded-[8px] bg-primary-50 text-primary-500 px-3 py-1.5 text-sm leading-[18px] hover:bg-primary-100 transition-colors'
           >
             <span className='w-4 h-4'>
               <Tick01Icon />
             </span>
-            Save Changes
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </button>
         ) : (
           <button
@@ -65,38 +65,42 @@ const PersonalInfoCard = ({
         )
       }
     >
+      {' '}
+      {errorMessage ? (
+        <div className='px-3 lg:px-6 pb-4 lg:pb-6'>
+          <p className='text-sm text-error-500'>{errorMessage}</p>
+        </div>
+      ) : null}
       <div className='border-t border-grey-50 px-3 lg:px-6 pb-3 lg:pb-6 pt-3 grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-5 lg:gap-y-6'>
         <InputField
           label='First Name'
-          defaultValue={profile.firstName}
+          value={profile.firstName}
           disabled={true}
         />
         <InputField
           label='Last Name'
-          defaultValue={profile.lastName}
+          value={profile.lastName}
           disabled={true}
         />
         <InputField
           label='Phone Number'
-          defaultValue={profile.phone}
+          value={profile.phone}
+          onChange={onPhoneChange}
           disabled={!isEditing}
         />
-        <InputField
-          label='Email Address'
-          defaultValue={profile.email}
-          disabled
-        />
+        <InputField label='Email Address' value={profile.email} disabled />
         <DatePickerField
           label='Date of Birth'
-          value={dob}
-          onChange={setDob}
+          value={profile.dob}
+          onChange={onDobChange}
           placeholder='Select date'
-          disabled={true}
+          disabled={!isEditing}
           displayFormat='dd/MM/yyyy'
         />
         <InputField
           label='Home Address'
-          defaultValue={profile.address}
+          value={profile.address}
+          onChange={onAddressChange}
           disabled={!isEditing}
         />
       </div>

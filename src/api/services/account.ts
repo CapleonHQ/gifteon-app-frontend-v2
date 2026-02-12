@@ -18,28 +18,24 @@ export const getProfile = async (): Promise<ApiResponse<UserProfile>> => {
 
 export const updateProfile = async (
   data: UpdateProfileRequestBody
-): Promise<ApiResponse<any>> => {
-  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
-    '/account/update',
-    data
-  )
+): Promise<ApiResponse<Record<string, unknown>>> => {
+  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+    await apiService.appPrivate.post('/account/update', data)
   return resp.data
 }
 
-export const setPin = async (data: SetPinRequestBody): Promise<ApiResponse<any>> => {
-  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
-    '/account/set-pin',
-    data
-  )
+export const setPin = async (
+  data: SetPinRequestBody
+): Promise<ApiResponse<Record<string, unknown>>> => {
+  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+    await apiService.appPrivate.post('/account/set-pin', data)
   return resp.data
 }
 
 export const changePin = async (
   data: ChangePinRequestBody
-): Promise<ApiResponse<any>> => {
-  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
-    '/account/change-pin',
-    data
-  )
+): Promise<ApiResponse<Record<string, unknown>>> => {
+  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+    await apiService.appPrivate.post('/account/change-pin', data)
   return resp.data
 }

@@ -88,7 +88,7 @@ const LoginPage = () => {
       } else {
         setError(resp.message || 'Login failed. Please try again.')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const apiError = toApiError(error)
       setError(apiError.message)
       if (apiError.fieldErrors?.email?.length) {
@@ -105,6 +105,7 @@ const LoginPage = () => {
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return
+    if (error) setError('')
 
     const newOtp = [...otp]
     newOtp[index] = value
@@ -117,6 +118,7 @@ const LoginPage = () => {
 
   const handleOtpPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault()
+    if (error) setError('')
     const pastedData = event.clipboardData.getData('text').replace(/\D/g, '')
 
     if (pastedData.length === 6) {
@@ -130,6 +132,7 @@ const LoginPage = () => {
     index: number,
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
+    if (error) setError('')
     const { key } = event
 
     if (key === 'Backspace') {
@@ -165,7 +168,7 @@ const LoginPage = () => {
         await refreshUser()
         router.push('/dashboard')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const apiError = toApiError(error)
       setError(apiError.message)
     } finally {
@@ -180,7 +183,7 @@ const LoginPage = () => {
         await loginUser({ email })
         setCountdown(59)
         setCanResend(false)
-      } catch (error: any) {
+      } catch (error: unknown) {
         const apiError = toApiError(error)
         setError(apiError.message)
       } finally {
@@ -228,12 +231,14 @@ const LoginPage = () => {
             canResend={canResend}
             countdown={countdown}
             isResending={isResending}
+            error={error}
             onOtpChange={handleOtpChange}
             onOtpKeyDown={handleOtpKeyDown}
             onOtpPaste={handleOtpPaste}
             onOtpSubmit={handleOtpSubmit}
             onResend={handleResend}
             onChangeEmail={handleBackToLogin}
+            onDismissError={() => setError('')}
           />
         )
       case 'success':

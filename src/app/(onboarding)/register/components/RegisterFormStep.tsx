@@ -296,7 +296,7 @@ const RegisterFormStep = ({
         transition={{ delay: 0.4 }}
         className='flex flex-col gap-7 w-full max-w-[450px] mx-auto'
       >
-        <SocialAuthButtons onSelect={onSocialRegister} />
+        <SocialAuthButtons onSelect={onSocialRegister} disabled />
 
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Already have an account?{' '}

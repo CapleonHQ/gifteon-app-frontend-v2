@@ -9,29 +9,47 @@ type PersonalInfoSectionProps = {
     lastName: string
     phone: string
     email: string
-    dob: string
+    dob?: Date
     address: string
   }
   interests: { id: string; label: string; icon: string }[]
   isEditingProfile: boolean
+  isSavingProfile?: boolean
+  profileErrorMessage?: string
   onEditProfile: () => void
   onSaveProfile: () => void
+  onPhoneChange: (value: string) => void
+  onAddressChange: (value: string) => void
+  onDobChange: (value?: Date) => void
   onEditInterests: () => void
   paymentMethods: PaymentMethod[]
   onAddAccount: () => void
   onDeletePayment: (method: PaymentMethod) => void
+  onSetDefaultPayment: (method: PaymentMethod) => void
+  isLoadingPaymentMethods?: boolean
+  hasPaymentMethodsError?: boolean
+  onRetryPaymentMethods?: () => void
 }
 
 const PersonalInfoSection = ({
   profile,
   interests,
   isEditingProfile,
+  isSavingProfile = false,
+  profileErrorMessage,
   onEditProfile,
   onSaveProfile,
+  onPhoneChange,
+  onAddressChange,
+  onDobChange,
   onEditInterests,
   paymentMethods,
   onAddAccount,
   onDeletePayment,
+  onSetDefaultPayment,
+  isLoadingPaymentMethods = false,
+  hasPaymentMethodsError = false,
+  onRetryPaymentMethods,
 }: PersonalInfoSectionProps) => {
   return (
     <div
@@ -42,8 +60,13 @@ const PersonalInfoSection = ({
       <PersonalInfoCard
         profile={profile}
         isEditing={isEditingProfile}
+        isSaving={isSavingProfile}
+        errorMessage={profileErrorMessage}
         onEdit={onEditProfile}
         onSave={onSaveProfile}
+        onPhoneChange={onPhoneChange}
+        onAddressChange={onAddressChange}
+        onDobChange={onDobChange}
       />
 
       <div className={isEditingProfile ? 'hidden lg:block' : ''}>
@@ -55,6 +78,10 @@ const PersonalInfoSection = ({
           methods={paymentMethods}
           onAddAccount={onAddAccount}
           onDelete={onDeletePayment}
+          onSetDefault={onSetDefaultPayment}
+          isLoading={isLoadingPaymentMethods}
+          hasError={hasPaymentMethodsError}
+          onRetry={onRetryPaymentMethods}
         />
       </div>
     </div>

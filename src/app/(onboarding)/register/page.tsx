@@ -96,7 +96,7 @@ const RegisterPage = () => {
         country,
       })
       setCurrentStep('verification')
-    } catch (error: any) {
+    } catch (error: unknown) {
       const apiError = toApiError(error)
       setError(apiError.message)
       if (apiError.fieldErrors?.email?.length) {
@@ -113,6 +113,7 @@ const RegisterPage = () => {
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return
+    if (error) setError('')
 
     const newOtp = [...otp]
     newOtp[index] = value
@@ -125,6 +126,7 @@ const RegisterPage = () => {
 
   const handleOtpPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault()
+    if (error) setError('')
     const pastedData = event.clipboardData.getData('text').replace(/\D/g, '')
 
     if (pastedData.length === 6) {
@@ -138,6 +140,7 @@ const RegisterPage = () => {
     index: number,
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
+    if (error) setError('')
     const { key } = event
 
     if (key === 'Backspace') {
@@ -173,7 +176,7 @@ const RegisterPage = () => {
         await refreshUser()
         setCurrentStep('success')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const apiError = toApiError(error)
       setError(apiError.message)
     } finally {
@@ -188,7 +191,7 @@ const RegisterPage = () => {
         await resendVerification({ email })
         setCountdown(59)
         setCanResend(false)
-      } catch (error: any) {
+      } catch (error: unknown) {
         const apiError = toApiError(error)
         setError(apiError.message)
       } finally {
@@ -246,12 +249,14 @@ const RegisterPage = () => {
             canResend={canResend}
             countdown={countdown}
             isResending={isResending}
+            error={error}
             onOtpChange={handleOtpChange}
             onOtpKeyDown={handleOtpKeyDown}
             onOtpPaste={handleOtpPaste}
             onOtpSubmit={handleOtpSubmit}
             onResend={handleResend}
             onChangeEmail={handleBackToRegister}
+            onDismissError={() => setError('')}
           />
         )
       case 'success':

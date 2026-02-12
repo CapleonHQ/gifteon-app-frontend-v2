@@ -8,6 +8,7 @@ import type {
 } from 'react'
 import { motion } from 'framer-motion'
 import OtpInputs from '../../components/OtpInputs'
+import FormErrorAlert from '../../components/FormErrorAlert'
 
 type RegisterVerificationStepProps = {
   maskedEmail: string
@@ -17,6 +18,7 @@ type RegisterVerificationStepProps = {
   canResend: boolean
   countdown: number
   isResending: boolean
+  error: string
   onOtpChange: (index: number, value: string) => void
   onOtpKeyDown: (
     index: number,
@@ -26,6 +28,7 @@ type RegisterVerificationStepProps = {
   onOtpSubmit: (event: SyntheticEvent) => void
   onResend: () => void
   onChangeEmail: () => void
+  onDismissError: () => void
 }
 
 const RegisterVerificationStep = ({
@@ -36,12 +39,14 @@ const RegisterVerificationStep = ({
   canResend,
   countdown,
   isResending,
+  error,
   onOtpChange,
   onOtpKeyDown,
   onOtpPaste,
   onOtpSubmit,
   onResend,
   onChangeEmail,
+  onDismissError,
 }: RegisterVerificationStepProps) => {
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -87,6 +92,14 @@ const RegisterVerificationStep = ({
         transition={{ delay: 0.2 }}
         className='flex flex-col items-center space-y-6 w-full max-w-[450px] mx-auto'
       >
+        {error ? (
+          <FormErrorAlert
+            title='Verification Failed'
+            message={error}
+            onDismiss={onDismissError}
+          />
+        ) : null}
+
         <OtpInputs
           otp={otp}
           inputRefs={inputRefs}

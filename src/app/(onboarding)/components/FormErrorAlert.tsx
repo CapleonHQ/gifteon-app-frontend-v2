@@ -9,17 +9,13 @@ type FormErrorAlertProps = {
   onDismiss: () => void
 }
 
-const FormErrorAlert = ({
-  title,
-  message,
-  onDismiss,
-}: FormErrorAlertProps) => {
+const FormErrorAlert = ({ title, message, onDismiss }: FormErrorAlertProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      className='flex items-start space-x-3 p-4 bg-error-50 border-l-4 border-error-500 rounded-r-lg overflow-hidden'
+      className='flex items-start space-x-3 p-4 bg-error-50 border-l-4 border-error-500 rounded-r-lg overflow-hidden w-full'
     >
       <AlertCircle className='w-5 h-5 text-error-500 shrink-0 mt-0.5' />
       <div className='flex-1'>

@@ -145,7 +145,7 @@ const LoginFormStep = ({
         transition={{ delay: 0.4 }}
         className='flex flex-col gap-7 w-full max-w-[450px] mx-auto'
       >
-        <SocialAuthButtons onSelect={onSocialLogin} />
+        <SocialAuthButtons onSelect={onSocialLogin} disabled />
 
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Don&apos;t have an account?{' '}
