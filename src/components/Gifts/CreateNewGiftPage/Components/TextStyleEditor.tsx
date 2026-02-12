@@ -32,7 +32,7 @@ const TextStyleEditor = ({
     text: string
     font: string
     color: string
-    alignment: 'left' | 'center' | 'right'
+    alignment: 'left' | 'middle' | 'right'
     size: string
     bold: boolean
     italic: boolean
@@ -137,6 +137,8 @@ const TextStyleEditor = ({
               onClick={() =>
                 onChange?.({ ...value, text: localText, alignment: 'left' })
               }
+              title='Left'
+              aria-label='Left'
               className={`flex-1 py-4 ${
                 value.alignment === 'left'
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
@@ -148,10 +150,12 @@ const TextStyleEditor = ({
             <button
               type='button'
               onClick={() =>
-                onChange?.({ ...value, text: localText, alignment: 'center' })
+                onChange?.({ ...value, text: localText, alignment: 'middle' })
               }
+              title='Middle'
+              aria-label='Middle'
               className={`flex-1 py-3 ${
-                value.alignment === 'center'
+                value.alignment === 'middle'
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'
                   : 'text-grey-700 border border-transparent hover:bg-white-100'
               }`}
@@ -163,6 +167,8 @@ const TextStyleEditor = ({
               onClick={() =>
                 onChange?.({ ...value, text: localText, alignment: 'right' })
               }
+              title='Right'
+              aria-label='Right'
               className={`flex-1 py-3 ${
                 value.alignment === 'right'
                   ? 'bg-white text-grey-700 border border-grey-50 rounded-[5px]'

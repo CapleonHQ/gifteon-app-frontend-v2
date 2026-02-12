@@ -2,8 +2,8 @@ import { TEMPLATES } from '@/lib/config/templates/selection'
 import TemplateCard from './TemplateCard'
 
 type TemplateGridProps = {
-  selectedTemplate: number | null
-  onTemplateSelect: (id: number) => void
+  selectedTemplate: string | null
+  onTemplateSelect: (id: string) => void
 }
 
 const TemplateGrid = ({

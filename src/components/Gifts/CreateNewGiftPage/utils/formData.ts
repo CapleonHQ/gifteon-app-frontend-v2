@@ -6,7 +6,7 @@ import { normalizeAmount } from './validation'
 
 type BuildFormDataInput = {
   giftPageData: GiftPageData
-  selectedTemplate: number | null
+  selectedTemplate: string | null
   categoryId: string
   titleFormat: string
   settings: GiftSettingsValues
@@ -70,7 +70,7 @@ export const buildCreatePageFormData = ({
   }
 
   if (selectedTemplate) {
-    appendIf(formData, 'templateId', String(selectedTemplate))
+    appendIf(formData, 'templateId', selectedTemplate)
   }
 
   appendIf(formData, 'categoryId', categoryId)

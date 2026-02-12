@@ -14,16 +14,13 @@ import {
 } from './CreateGiftContext'
 import { createPage } from '@/api/services/pages'
 import type { Step } from './EditingSection'
-import {
-  validateCreateGift,
-  validateCustomizeDraft,
-} from './utils/validation'
+import { validateCreateGift, validateCustomizeDraft } from './utils/validation'
 import { buildCreatePageFormData } from './utils/formData'
 
 interface TemplatingEditingProps {
   handleBack: () => void
   onCreated: (link: string) => void
-  selectedTemplate: number | null
+  selectedTemplate: string | null
 }
 
 const TemplatingEditingContent = ({
@@ -84,10 +81,11 @@ const TemplatingEditingContent = ({
   }, [giftPageData.button.label])
 
   const titleFormat = useMemo(() => {
-    if (giftPageData.title.bold) return 'bold'
-    if (giftPageData.title.italic) return 'italic'
-    if (giftPageData.title.underline) return 'underline'
-    return 'normal'
+    const formats = []
+    if (giftPageData.title.bold) formats.push('bold')
+    if (giftPageData.title.italic) formats.push('italics')
+    if (giftPageData.title.underline) formats.push('underline')
+    return formats.length > 0 ? formats.join(':') : 'none'
   }, [
     giftPageData.title.bold,
     giftPageData.title.italic,
@@ -167,12 +165,12 @@ const TemplatingEditingContent = ({
   const scrollToFirstError = () => {
     if (typeof window === 'undefined') return
     requestAnimationFrame(() => {
-      const formError = document.querySelector('[data-form-error=\"true\"]')
+      const formError = document.querySelector('[data-form-error="true"]')
       if (formError && 'scrollIntoView' in formError) {
         formError.scrollIntoView({ behavior: 'smooth', block: 'center' })
         return
       }
-      const firstError = document.querySelector('[data-error=\"true\"]')
+      const firstError = document.querySelector('[data-error="true"]')
       if (firstError && 'scrollIntoView' in firstError) {
         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
@@ -209,7 +207,7 @@ const TemplatingEditingContent = ({
       const formData = buildCreatePageFormData({
         giftPageData,
         selectedTemplate,
-        categoryId: 'dummy-category-id',
+        categoryId: '8fc7b8c1-5468-46dd-b2c8-e3f09bbdd60d',
         titleFormat,
         settings,
         customGiftItems,

@@ -31,7 +31,7 @@ export type GiftSettingsValues = {
 
 export type CreateGiftValidationInput = {
   giftPageData: GiftPageData
-  selectedTemplate: number | null
+  selectedTemplate: string | null
   settings: GiftSettingsValues
   recipients: Recipient[]
   recipientForm: Recipient

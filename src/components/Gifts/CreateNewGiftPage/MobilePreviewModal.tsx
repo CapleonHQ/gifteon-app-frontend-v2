@@ -7,7 +7,7 @@ import { useGiftPageData } from './CreateGiftContext'
 type MobilePreviewModalProps = {
   isOpen: boolean
   onClose: () => void
-  selectedTemplate: number | null
+  selectedTemplate: string | null
   showPreview?: boolean
 }
 

@@ -7,7 +7,7 @@ import type { Step } from './EditingSection'
 
 type DesktopEditingLayoutProps = {
   customizationOpen: boolean
-  selectedTemplate: number | null
+  selectedTemplate: string | null
   onCloseCustomization: () => void
   onSave: () => void
   isSaving?: boolean

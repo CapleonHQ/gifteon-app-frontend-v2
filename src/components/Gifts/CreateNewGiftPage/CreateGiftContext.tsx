@@ -22,7 +22,9 @@ type GiftPageDataContextValue = {
   updateDescription: (description: GiftPageData['description']) => void
   updateButton: (button: GiftPageData['button']) => void
   updateSocialLink: (key: keyof GiftPageData['socialLinks'], value: string) => void
-  handleMediaUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
+  handleMediaUpload: (
+    event: React.ChangeEvent<HTMLInputElement> | File
+  ) => void
   handleMediaRemove: () => void
 }
 
@@ -145,8 +147,8 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
   } = useCustomGifts()
 
   const handleMediaUpload = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
+    (event: React.ChangeEvent<HTMLInputElement> | File) => {
+      const file = event instanceof File ? event : event.target.files?.[0]
       if (!file) return
       const reader = new FileReader()
       reader.onloadend = () => {

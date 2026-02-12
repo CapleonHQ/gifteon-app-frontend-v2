@@ -8,11 +8,11 @@ import SuccessModal from '@/components/Gifts/CreateNewGiftPage/CreateSuccessModa
 
 const CreateNewGiftPage = () => {
   const [step, setStep] = useState<'select' | 'customize'>('select')
-  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [giftPageLink, setGiftPageLink] = useState('')
 
-  const handleTemplateSelect = (templateId: number) => {
+  const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId)
   }
 

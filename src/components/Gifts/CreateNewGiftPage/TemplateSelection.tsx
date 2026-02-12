@@ -9,8 +9,8 @@ const TemplateSelection = ({
   onTemplateSelect,
   onContinue,
 }: {
-  selectedTemplate: number | null
-  onTemplateSelect: (id: number) => void
+  selectedTemplate: string | null
+  onTemplateSelect: (id: string) => void
   onContinue: () => void
 }) => {
   return (

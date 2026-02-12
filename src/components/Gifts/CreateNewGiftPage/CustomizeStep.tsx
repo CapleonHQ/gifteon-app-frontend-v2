@@ -35,13 +35,12 @@ const CustomizeStep = ({
     updateDescription,
     updateButton,
   } = useGiftPageData()
-    useGiftPageData()
   return (
     <>
       <MediaUpload
         media={giftPageData.media}
-        onUpload={(event) => {
-          handleMediaUpload(event)
+        onUpload={(file) => {
+          handleMediaUpload(file)
           onMediaChange()
         }}
         onRemove={() => {

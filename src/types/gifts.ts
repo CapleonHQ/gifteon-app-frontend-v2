@@ -8,7 +8,7 @@ export interface GiftPageData {
     text: string
     font: string
     color: string
-    alignment: 'left' | 'center' | 'right'
+    alignment: 'left' | 'middle' | 'right'
     size: string
     bold: boolean
     italic: boolean
@@ -18,7 +18,7 @@ export interface GiftPageData {
     text: string
     font: string
     color: string
-    alignment: 'left' | 'center' | 'right'
+    alignment: 'left' | 'middle' | 'right'
     size: string
     bold: boolean
     italic: boolean
