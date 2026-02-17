@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import ReviewCard from './ReviewSection/ReviewCard'
+import ReviewCard from './ReviewCard'
 import Link from 'next/link'
-import { useRef } from 'react'
 
 const AUTO_PLAY_MS = 4500
 const AUTO_PLAY_RESUME_IDLE_MS = 6000
