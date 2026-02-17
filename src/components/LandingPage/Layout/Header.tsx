@@ -107,6 +107,18 @@ const Header = () => {
     }
   }, [isMobileMenuOpen])
 
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false)
+        setIsMobileCelebrationOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', onResize, { passive: true })
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   const openDesktopDropdown = () => {
     if (closeDropdownTimeoutRef.current) {
       clearTimeout(closeDropdownTimeoutRef.current)
@@ -131,7 +143,9 @@ const Header = () => {
       <motion.header
         className={`sticky top-0 z-50 border-b-[0.2px] border-grey-50 bg-base-bg transition-[box-shadow,backdrop-filter,background-color] duration-300 ${
           isScrolled
-            ? 'shadow-[0px_8px_26px_-14px_#10192833] backdrop-blur-md'
+            ? isMobileMenuOpen
+              ? 'shadow-[0px_8px_26px_-14px_#10192833]'
+              : 'shadow-[0px_8px_26px_-14px_#10192833] backdrop-blur-md'
             : 'shadow-[0px_1.5px_4px_-1px_#10192812]'
         }`}
         initial='hidden'
