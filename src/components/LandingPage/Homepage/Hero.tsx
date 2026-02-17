@@ -2,7 +2,12 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 
 const Hero = () => {
@@ -41,7 +46,7 @@ const Hero = () => {
         },
       }}
     >
-      <div className='mx-auto grid w-full max-w-[1320px] items-center gap-8 lg:grid-cols-[601fr_639fr] lg:gap-8'>
+      <div className='mx-auto grid w-full max-w-[1600px] items-center gap-8 lg:grid-cols-[601fr_639fr] lg:gap-8'>
         <motion.div
           className='px-4 lg:flex lg:flex-col lg:justify-center'
           variants={{
@@ -56,7 +61,9 @@ const Hero = () => {
           <motion.h1
             className='text-[40px] sm:text-[50px] xl:text-[60px] font-bold leading-[52px] sm:leading-[60px] xl:leading-[68px] text-blackish sm:text-center lg:text-left'
             variants={{
-              hidden: shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 },
+              hidden: shouldReduceMotion
+                ? { opacity: 1 }
+                : { opacity: 0, y: 10 },
               show: {
                 opacity: 1,
                 y: 0,
@@ -72,7 +79,9 @@ const Hero = () => {
           <motion.p
             className='mt-2 lg:mt-5 max-w-[600px] sm:mx-auto lg:mx-0 text-sm sm:text-lg lg:text-xl leading-[22px] sm:leading-6 lg:leading-8 tracking-[2%] text-grey-600 sm:text-center lg:text-left'
             variants={{
-              hidden: shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 },
+              hidden: shouldReduceMotion
+                ? { opacity: 1 }
+                : { opacity: 0, y: 10 },
               show: {
                 opacity: 1,
                 y: 0,
@@ -88,7 +97,9 @@ const Hero = () => {
           <motion.div
             className='mt-5 lg:mt-8 flex gap-5 sm:justify-center lg:justify-normal'
             variants={{
-              hidden: shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 },
+              hidden: shouldReduceMotion
+                ? { opacity: 1 }
+                : { opacity: 0, y: 10 },
               show: {
                 opacity: 1,
                 y: 0,

@@ -99,7 +99,7 @@ const ReviewSection = () => {
         </h6>
       </div>
 
-      <div className='hidden lg:block overflow-hidden mask-[linear-gradient(to_right,transparent,black_8%,black_92%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]'>
+      <div className='w-full max-w-[1600px] mx-auto hidden lg:block overflow-hidden mask-[linear-gradient(to_right,transparent,black_8%,black_92%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]'>
         <div
           className={`review-marquee-track ${
             shouldReduceMotion ? 'review-marquee-track-paused' : ''

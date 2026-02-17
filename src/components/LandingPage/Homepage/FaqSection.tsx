@@ -67,7 +67,7 @@ const FaqSection = () => {
         </h6>
       </div>
 
-      <div className='w-full max-w-[1280px] mx-auto border-t border-grey-50'>
+      <div className='w-full max-w-[1600px] mx-auto border-t border-grey-50'>
         {faqItems.map((item, index) => {
           const isOpen = openItem === index
           return (

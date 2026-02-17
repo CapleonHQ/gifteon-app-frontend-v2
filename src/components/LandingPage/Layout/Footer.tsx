@@ -62,7 +62,7 @@ const Footer = () => {
         </div>
 
         <motion.div
-          className='relative z-10 mx-auto w-full max-w-7xl px-4 pt-5 md:px-10 lg:px-20'
+          className='relative z-10 mx-auto w-full max-w-[1600px] px-4 pt-5 md:px-10 lg:px-20'
           variants={staggerVariants}
         >
           <div className='flex flex-col gap-8 py-[60px] lg:py-[72px]'>
@@ -89,7 +89,10 @@ const Footer = () => {
                   </p>
                 </motion.div>
 
-                <motion.div className='flex flex-col gap-4' variants={itemVariants}>
+                <motion.div
+                  className='flex flex-col gap-4'
+                  variants={itemVariants}
+                >
                   <h5 className='text-white text-lg font-semibold'>Product</h5>
                   <ul className='space-y-2'>
                     {productLinks.map((item) => (
@@ -109,7 +112,10 @@ const Footer = () => {
                   </ul>
                 </motion.div>
 
-                <motion.div className='flex flex-col gap-4' variants={itemVariants}>
+                <motion.div
+                  className='flex flex-col gap-4'
+                  variants={itemVariants}
+                >
                   <h5 className='text-white text-lg font-semibold'>Support</h5>
                   <ul className='space-y-2'>
                     {supportLinks.map((item) => (

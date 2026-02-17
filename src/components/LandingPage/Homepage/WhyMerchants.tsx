@@ -2,7 +2,12 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 
 const merchantBenefits = [
@@ -44,7 +49,7 @@ const WhyMerchants = () => {
     >
       <div
         ref={containerRef}
-        className='relative mx-auto w-full max-w-[1320px] h-[862px] lg:h-auto overflow-hidden rounded-[20px] py-5 lg:py-10 px-3 lg:px-10'
+        className='relative mx-auto w-full max-w-[1600px] h-[862px] lg:h-auto overflow-hidden rounded-[20px] py-5 lg:py-10 px-3 lg:px-10'
       >
         <motion.div
           className='absolute inset-0'
@@ -64,7 +69,9 @@ const WhyMerchants = () => {
 
         <motion.div
           className='relative z-10 bg-white/90 backdrop-blur-[2px] lg:mr-auto lg:w-[510px] rounded-[12px] px-3 lg:px-6 py-5 lg:py-6 flex flex-col gap-6'
-          initial={shouldReduceMotion ? false : { opacity: 0, y: 10, scale: 0.985 }}
+          initial={
+            shouldReduceMotion ? false : { opacity: 0, y: 10, scale: 0.985 }
+          }
           whileInView={shouldReduceMotion ? {} : { opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.36, ease: 'easeOut', delay: 0.12 }}
