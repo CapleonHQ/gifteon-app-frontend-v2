@@ -345,3 +345,23 @@ select:-webkit-autofill:focus {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes review-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.review-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: review-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.review-marquee-track:hover {
+  animation-play-state: paused;
+}

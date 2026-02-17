@@ -19,8 +19,6 @@ const AUTH_BASE_URL = normalizeBaseUrl(
   )
 )
 
-console.log(AUTH_BASE_URL)
-
 const APP_BASE_URL = normalizeBaseUrl(
   requireEnv(
     process.env.NEXT_PUBLIC_APPLICATION_API_BASE_URL ??
