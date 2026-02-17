@@ -5,6 +5,7 @@ import EverythingYouNeed from '@/components/LandingPage/Homepage/EverythingYouNe
 import Hero from '@/components/LandingPage/Homepage/Hero'
 import WhyGifteon from '@/components/LandingPage/Homepage/WhyGifteon'
 import HowGiftseonWorks from '@/components/LandingPage/Homepage/HowGiftseonWorks'
+import HowGiftseonWorksMerchant from '@/components/LandingPage/Homepage/HowGifteonWorksMerchant'
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <WhyGifteon />
       <HowGiftseonWorks />
       <EverythingYouNeed />
+      <HowGiftseonWorksMerchant />
       <WhyMerchants />
       <ReviewSection />
       <FaqSection />

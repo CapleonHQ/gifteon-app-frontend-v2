@@ -1,10 +1,10 @@
 'use client'
 
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
-import { UserSteps } from './HowGiftseonWorks/steps'
+import { MerchantSteps, UserSteps } from './HowGiftseonWorks/steps'
 import StepCard from './HowGiftseonWorks/StepCard'
 
-const HowGiftseonWorks = () => {
+const HowGiftseonWorksMerchant = () => {
   const shouldReduceMotion = useReducedMotion()
 
   const dashLineStyle = {
@@ -49,11 +49,11 @@ const HowGiftseonWorks = () => {
           <div className='flex gap-1 items-center'>
             <span className='w-2 h-2 border border-primary-50 bg-[#AEAEFD] rounded-[2px]'></span>
             <h4 className='lg:text-xl leading-6 font-bold'>
-              How Gifteon Works For Gifters & Receivers
+              How Gifteon Works For Merchants
             </h4>
           </div>
           <h6 className='text-[32px] lg:text-[40px] leading-10 lg:leading-[48px] text-grey-800'>
-            Create a gift page that brings people together
+            Sell your products to people shopping for gifts
           </h6>
         </motion.div>
 
@@ -64,7 +64,7 @@ const HowGiftseonWorks = () => {
           whileInView='show'
           viewport={{ once: true, amount: 0.2 }}
         >
-          {UserSteps.map((step, index) => {
+          {MerchantSteps.map((step, index) => {
             return (
               <motion.div
                 key={step.number}
@@ -130,4 +130,4 @@ const HowGiftseonWorks = () => {
   )
 }
 
-export default HowGiftseonWorks
+export default HowGiftseonWorksMerchant
