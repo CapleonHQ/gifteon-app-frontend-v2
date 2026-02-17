@@ -62,7 +62,7 @@ const FaqSection = () => {
           <span className='w-2 h-2 border border-primary-50 bg-[#AEAEFD] rounded-[2px]'></span>
           <h4 className='lg:text-xl leading-6 font-bold'>FAQs</h4>
         </div>
-        <h6 className='text-[40px] leading-[48px] text-grey-800 text-center max-lg:text-[32px] max-lg:leading-10'>
+        <h6 className='text-[40px] leading-[48px] text-grey-800 text-center'>
           We ‘ve answered some questions you may have
         </h6>
       </div>
