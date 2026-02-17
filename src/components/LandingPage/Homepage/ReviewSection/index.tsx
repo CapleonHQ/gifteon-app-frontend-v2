@@ -198,32 +198,6 @@ const ReviewSection = () => {
           Become a Merchant
         </Link>
       </div>
-
-      <style jsx>{`
-        @keyframes review-marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-
-        .review-marquee-track {
-          display: flex;
-          width: max-content;
-          animation: review-marquee 30s linear infinite;
-          will-change: transform;
-        }
-
-        .review-marquee-track:hover {
-          animation-play-state: paused;
-        }
-
-        .review-marquee-track-paused {
-          animation-play-state: paused;
-        }
-      `}</style>
     </motion.section>
   )
 }

@@ -365,3 +365,7 @@ select:-webkit-autofill:focus {
 .review-marquee-track:hover {
   animation-play-state: paused;
 }
+
+.review-marquee-track-paused {
+  animation-play-state: paused;
+}
