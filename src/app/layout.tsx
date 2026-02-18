@@ -61,7 +61,7 @@ export const metadata: Metadata = {
         type: 'image/jpeg',
       },
       {
-        url: '/og-image-square.jpg',
+        url: '/og-image.jpg',
         width: 400,
         height: 400,
         alt: 'Giftseon Logo',
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     title: "Giftseon - Celebrating Life's Special Moments",
     description:
       'Make every celebration unforgettable. Create beautiful gift collections and unite loved ones for special moments.',
-    images: ['/twitter-image.jpg'],
+    images: ['/og-image.jpg'],
     creator: '@giftseon',
     site: '@giftseon',
   },
@@ -99,13 +99,13 @@ export const metadata: Metadata = {
   category: 'technology',
   classification: 'Gift Collection Platform',
   other: {
-    'theme-color': '[#F97316]',
+    'theme-color': '[#1a1abc]',
     'color-scheme': 'light dark',
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': 'Giftseon',
     'mobile-web-app-capable': 'yes',
-    'msapplication-TileColor': '#F97316',
+    'msapplication-TileColor': '#1a1abc',
     'msapplication-config': '/browserconfig.xml',
   },
   manifest: '/manifest.json',

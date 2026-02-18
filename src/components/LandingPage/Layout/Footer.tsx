@@ -14,10 +14,10 @@ const productLinks = [
 ]
 
 const supportLinks = [
-  { label: 'Privacy', href: '#' },
-  { label: 'Help Center', href: '#' },
-  { label: 'Contact', href: 'mailto:support@giftseon.com' },
-  { label: 'Terms and Conditions', href: '#' },
+  { label: 'Privacy', href: '/legal/privacy-policy' },
+  { label: 'Help Center', href: '/help-center' },
+  { label: 'Contact', href: '/contact-us' },
+  { label: 'Terms and Conditions', href: '/legal/terms-and-conditions' },
 ]
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const

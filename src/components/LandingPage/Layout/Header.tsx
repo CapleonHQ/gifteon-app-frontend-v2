@@ -255,7 +255,7 @@ const Header = () => {
           <div className='hidden items-center gap-5 lg:flex'>
             <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
               <Link
-                href='#'
+                href='/login'
                 className='text-base font-medium leading-5 text-primary-500 transition-colors hover:text-primary-600'
               >
                 Log In
@@ -266,7 +266,7 @@ const Header = () => {
               whileTap={{ scale: 0.98 }}
             >
               <Link
-                href='#'
+                href='/register'
                 className='inline-flex py-3.5 w-[100px] xl:w-[200px] items-center justify-center rounded-2xl bg-linear-to-b from-17% from-primary-400 to-primary-600 text-base font-medium leading-5 text-white transition-colors hover:from-primary-500 hover:to-primary-700'
               >
                 Sign Up
@@ -421,7 +421,7 @@ const Header = () => {
                 >
                   <motion.div variants={mobileItemVariants}>
                     <Link
-                      href='#'
+                      href='/register'
                       onClick={closeMobileMenu}
                       className='inline-flex h-[54px] w-full items-center justify-center rounded-2xl bg-linear-to-b from-primary-400 to-primary-600 text-base font-medium leading-6 text-white'
                     >
@@ -430,7 +430,7 @@ const Header = () => {
                   </motion.div>
                   <motion.div variants={mobileItemVariants}>
                     <Link
-                      href='#'
+                      href='/login'
                       onClick={closeMobileMenu}
                       className='inline-flex h-[54px] w-full items-center justify-center rounded-2xl border border-primary-300 text-base font-medium leading-6 text-primary-400'
                     >
