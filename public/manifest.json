@@ -1,0 +1,32 @@
+{
+  "name": "Giftseon - Celebrating Life's Special Moments",
+  "short_name": "Giftseon",
+  "description": "Make every celebration unforgettable with Giftseon. Create elegant gift collections, gather meaningful contributions, and unite loved ones for birthdays, weddings, graduations and more.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#F97316",
+  "lang": "en-US",
+  "categories": ["lifestyle", "shopping", "social"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48 72x72 96x96 128x128 256x256",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/assets/images/logo/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/logo/logo-white.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
