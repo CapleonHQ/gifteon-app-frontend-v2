@@ -106,24 +106,9 @@ const ReviewSection = () => {
           }`}
         >
           {marqueeItems.map((review, index) => (
-            <motion.div
-              key={`${review.name}-${index}`}
-              className='mr-6'
-              initial={
-                shouldReduceMotion ? false : { opacity: 0, y: 8, scale: 0.995 }
-              }
-              whileInView={
-                shouldReduceMotion ? {} : { opacity: 1, y: 0, scale: 1 }
-              }
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{
-                duration: 0.32,
-                ease: 'easeOut',
-                delay: shouldReduceMotion ? 0 : (index % reviews.length) * 0.08,
-              }}
-            >
+            <div key={`${review.name}-${index}`} className='mr-6'>
               <ReviewCard {...review} />
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
