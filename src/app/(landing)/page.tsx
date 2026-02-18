@@ -6,6 +6,7 @@ import Hero from '@/components/LandingPage/Homepage/Hero'
 import WhyGifteon from '@/components/LandingPage/Homepage/WhyGifteon'
 import HowGiftseonWorks from '@/components/LandingPage/Homepage/HowGiftseonWorks'
 import HowGiftseonWorksMerchant from '@/components/LandingPage/Homepage/HowGifteonWorksMerchant'
+import PerfectFor from '@/components/LandingPage/Homepage/PerfectFor'
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <Hero />
       <WhyGifteon />
       <HowGiftseonWorks />
+      <PerfectFor />
       <EverythingYouNeed />
       <HowGiftseonWorksMerchant />
       <WhyMerchants />

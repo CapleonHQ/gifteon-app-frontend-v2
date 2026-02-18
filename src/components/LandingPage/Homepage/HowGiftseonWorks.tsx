@@ -49,7 +49,7 @@ const HowGiftseonWorks = () => {
           <div className='flex gap-1 items-center'>
             <span className='w-2 h-2 border border-primary-50 bg-[#AEAEFD] rounded-[2px]'></span>
             <h4 className='lg:text-xl leading-6 font-bold'>
-              How Gifteon Works For Gifters & Receivers
+              How Giftseon Works For Gifters & Receivers
             </h4>
           </div>
           <h6 className='text-[32px] lg:text-[40px] leading-10 lg:leading-[48px] text-grey-800'>

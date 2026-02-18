@@ -171,7 +171,7 @@ const Footer = () => {
               variants={itemVariants}
             >
               <span className='text-center'>
-                &copy; {new Date().getFullYear()} Gifteon. Made with ❤️ for
+                &copy; {new Date().getFullYear()} Giftseon. Made with ❤️ for
                 celebrations worldwide.
               </span>
             </motion.div>

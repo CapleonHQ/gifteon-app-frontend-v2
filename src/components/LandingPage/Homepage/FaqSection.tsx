@@ -57,7 +57,7 @@ const FaqSection = () => {
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <div className='flex flex-col gap-2 lg:gap-1 items-center justify-center w-full max-w-[640px] mx-auto'>
+      <div className='flex flex-col gap-2 items-center justify-center w-full max-w-[640px] mx-auto'>
         <div className='flex gap-1 items-center'>
           <span className='w-2 h-2 border border-primary-50 bg-[#AEAEFD] rounded-[2px]'></span>
           <h4 className='lg:text-xl leading-6 font-bold'>FAQs</h4>

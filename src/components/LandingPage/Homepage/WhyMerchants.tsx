@@ -85,7 +85,7 @@ const WhyMerchants = () => {
             </div>
 
             <h5 className='text-[32px] lg:text-[40px] leading-10 lg:leading-[48px] text-grey-800'>
-              Gifteon makes every sale seamless
+              Giftseon makes every sale seamless
             </h5>
 
             <motion.ol

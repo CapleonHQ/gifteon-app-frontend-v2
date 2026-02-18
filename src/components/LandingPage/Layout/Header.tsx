@@ -15,7 +15,7 @@ const navLinks = [
   { label: 'Home', href: '#' },
   { label: 'How it Works', href: '#' },
   { label: 'Explore Pages', href: '#' },
-  { label: 'Gifteon for Business', href: '#' },
+  { label: 'Giftseon for Business', href: '#' },
 ]
 
 const celebrationTypes = [
