@@ -5,10 +5,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useQuery } from '@tanstack/react-query'
-import {
-  getTransactionByReference,
-  verifyTransactionByReference,
-} from '@/api/services/payment'
+import { verifyTransactionByReference } from '@/api/services/payment'
 
 type PaystackRedirectResultProps = {
   status: 'success' | 'cancel'
@@ -43,7 +40,7 @@ const getByPath = (source: unknown, path: string[]): unknown => {
   let current: unknown = source
   for (const key of path) {
     if (!isRecord(current) || !(key in current)) return undefined
-    current = current[key]
+    current = (current as Record<string, unknown>)[key]
   }
   return current
 }
@@ -119,12 +116,47 @@ const normalizeFromPayload = (
   }
 }
 
+type VerifyErrorShape = {
+  status?: number
+  response?: { status?: number }
+}
+
+const getStatusCode = (err: unknown): number | undefined => {
+  if (!isRecord(err)) return undefined
+  const e = err as VerifyErrorShape
+  return e.status ?? e.response?.status
+}
+
 const verifyWithFallback = async (
   reference: string,
   redirectStatus: 'success' | 'cancel'
 ): Promise<VerifyResult> => {
-  const verifyResp = await verifyTransactionByReference(reference)
-  return normalizeFromPayload(verifyResp, redirectStatus)
+  try {
+    const verifyResp = await verifyTransactionByReference(reference)
+    return normalizeFromPayload(verifyResp, redirectStatus)
+  } catch (err) {
+    const code = getStatusCode(err)
+
+    if (code === 404) {
+      return {
+        uiStatus: 'invalid',
+        message: 'This payment reference is invalid or does not exist.',
+      }
+    }
+
+    if (code === 400) {
+      return {
+        uiStatus: 'invalid',
+        message: 'This payment reference is invalid.',
+      }
+    }
+
+    return {
+      uiStatus: 'error',
+      message:
+        'We couldn’t verify your payment at the moment. Please try again shortly.',
+    }
+  }
 }
 
 const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
@@ -156,8 +188,6 @@ const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
   const queryUiStatus: UiStatus = reference
     ? verifyQuery.isPending
       ? 'verifying'
-      : verifyQuery.isError
-      ? 'error'
       : verifyQuery.data?.uiStatus ?? 'invalid'
     : missingReferenceStatus
 
@@ -181,9 +211,9 @@ const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
     pending:
       'Your transaction is still processing. We are checking again automatically.',
     invalid:
-      'The transaction reference is missing or invalid for this payment attempt.',
+      'This payment reference is missing, invalid, or does not exist for this payment attempt.',
     error:
-      'We could not reach payment verification services. Please retry shortly.',
+      'We couldn’t verify your payment at the moment. Please try again shortly.',
   }
 
   const lottieByStatus: Record<UiStatus, string> = {
@@ -202,6 +232,9 @@ const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
       : queryUiStatus === 'failed' || queryUiStatus === 'invalid'
       ? 'Try Again'
       : 'Return'
+
+  const description =
+    verifyQuery.data?.message?.trim() || descriptionByStatus[queryUiStatus]
 
   return (
     <main className='bg-base-bg px-4 py-10 sm:px-6 lg:px-10'>
@@ -225,14 +258,8 @@ const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
         </h1>
 
         <p className='mt-3 max-w-[52ch] text-base leading-7 text-grey-700 sm:text-lg'>
-          {descriptionByStatus[queryUiStatus]}
+          {description}
         </p>
-
-        {/* {queryDetails ? (
-          <p className='mt-2 max-w-[62ch] text-sm leading-6 text-grey-700'>
-            {queryDetails}
-          </p>
-        ) : null} */}
 
         {reference && queryUiStatus !== 'verifying' ? (
           <p className='mt-3 rounded-full bg-secondary-50 px-4 py-2 text-sm text-grey-700'>
@@ -249,6 +276,7 @@ const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
             >
               {primaryLabel}
             </Link>
+
             {(queryUiStatus === 'pending' ||
               queryUiStatus === 'error' ||
               queryUiStatus === 'failed') &&
