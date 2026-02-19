@@ -123,13 +123,8 @@ const verifyWithFallback = async (
   reference: string,
   redirectStatus: 'success' | 'cancel'
 ): Promise<VerifyResult> => {
-  try {
-    const verifyResp = await verifyTransactionByReference(reference)
-    return normalizeFromPayload(verifyResp, redirectStatus)
-  } catch {
-    const txnResp = await getTransactionByReference(reference)
-    return normalizeFromPayload(txnResp, redirectStatus)
-  }
+  const verifyResp = await verifyTransactionByReference(reference)
+  return normalizeFromPayload(verifyResp, redirectStatus)
 }
 
 const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
