@@ -58,8 +58,9 @@ export interface VisitSharePoint {
 }
 
 export interface VisitSharesChartData {
-  interval: string
-  data: VisitSharePoint[]
+  chart: {
+    visitTOsharesLineChart: VisitSharePoint[]
+  }
 }
 
 export interface VisitSharesQueryParams {

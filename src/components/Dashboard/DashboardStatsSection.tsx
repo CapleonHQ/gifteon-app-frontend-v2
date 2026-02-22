@@ -158,8 +158,8 @@ const DashboardStatsSection = () => {
   )
 
   const visitPoints = useMemo(
-    () => visitShares.data?.data?.data ?? [],
-    [visitShares.data?.data?.data]
+    () => visitShares.data?.data?.chart?.visitTOsharesLineChart ?? [],
+    [visitShares.data?.data?.chart?.visitTOsharesLineChart]
   )
 
   return (

@@ -7,11 +7,11 @@ import {
   VisitSharesQueryParams,
 } from '@/types/Stats'
 
-export const getStatsOverview = async (): Promise<ApiResponse<StatsOverviewData>> => {
+export const getStatsOverview = async (): Promise<
+  ApiResponse<StatsOverviewData>
+> => {
   const resp: AxiosResponse<ApiResponse<StatsOverviewData>> =
-    await apiService.appPrivate.get(
-    '/stats/overview'
-  )
+    await apiService.appPrivate.get('/stats/overview')
   return resp.data
 }
 
@@ -19,6 +19,6 @@ export const getStatsVisitsSharesChart = async (
   params: VisitSharesQueryParams
 ): Promise<ApiResponse<VisitSharesChartData>> => {
   const resp: AxiosResponse<ApiResponse<VisitSharesChartData>> =
-    await apiService.appPrivate.get('/stats/visits-shares-chart', { params })
+    await apiService.appPrivate.get('/stats/visits-to-shares', { params })
   return resp.data
 }
