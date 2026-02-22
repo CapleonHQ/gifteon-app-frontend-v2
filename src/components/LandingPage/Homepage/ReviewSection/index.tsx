@@ -124,13 +124,13 @@ const ReviewSection = () => {
       >
         <div className='overflow-hidden'>
           <div
-            className='flex transition-opacity duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]'
+            className='flex will-change-transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]'
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
             {reviews.map((review, index) => (
               <div
                 key={review.name}
-                className={`w-full shrink-0 transition-opacity duration-400 ${
+                className={`w-full shrink-0 transition-opacity duration-500 ${
                   index === activeIndex ? 'opacity-100' : 'opacity-90'
                 }`}
               >
