@@ -7,10 +7,6 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useQuery } from '@tanstack/react-query'
 import { verifyTransactionByReference } from '@/api/services/payment'
 
-type PaystackRedirectResultProps = {
-  status: 'success' | 'cancel'
-}
-
 type UiStatus =
   | 'verifying'
   | 'success'
@@ -24,6 +20,8 @@ type VerifyResult = {
   uiStatus: Exclude<UiStatus, 'verifying'>
   message?: string
 }
+
+type RedirectHint = 'success' | 'cancel' | 'unknown'
 
 const POLL_INTERVAL_MS = 2500
 
@@ -66,7 +64,7 @@ const pickBoolean = (
 
 const normalizeFromPayload = (
   payload: unknown,
-  redirectStatus: 'success' | 'cancel'
+  redirectHint: RedirectHint
 ): VerifyResult => {
   const statusValue =
     pickString(payload, [
@@ -111,7 +109,7 @@ const normalizeFromPayload = (
   }
 
   return {
-    uiStatus: redirectStatus === 'cancel' ? 'canceled' : 'invalid',
+    uiStatus: redirectHint === 'cancel' ? 'canceled' : 'invalid',
     message: apiMessage,
   }
 }
@@ -129,11 +127,11 @@ const getStatusCode = (err: unknown): number | undefined => {
 
 const verifyWithFallback = async (
   reference: string,
-  redirectStatus: 'success' | 'cancel'
+  redirectHint: RedirectHint
 ): Promise<VerifyResult> => {
   try {
     const verifyResp = await verifyTransactionByReference(reference)
-    return normalizeFromPayload(verifyResp, redirectStatus)
+    return normalizeFromPayload(verifyResp, redirectHint)
   } catch (err) {
     const code = getStatusCode(err)
 
@@ -159,10 +157,29 @@ const verifyWithFallback = async (
   }
 }
 
-const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
+const getRedirectHint = (searchParams: URLSearchParams): RedirectHint => {
+  const value =
+    (
+      searchParams.get('status') ||
+      searchParams.get('payment_status') ||
+      searchParams.get('result')
+    )?.toLowerCase() ?? ''
+
+  if (!value) return 'unknown'
+  if (/cancel|cancelled|abandon/.test(value)) return 'cancel'
+  if (/success|successful|completed|paid/.test(value)) return 'success'
+  return 'unknown'
+}
+
+const PaystackRedirectResult = () => {
   const searchParams = useSearchParams()
 
-  const reference = searchParams.get('reference')
+  const reference =
+    searchParams.get('reference') ||
+    searchParams.get('trxref') ||
+    searchParams.get('transaction_id')
+
+  const redirectHint = getRedirectHint(searchParams)
 
   const returnPath = useMemo(() => {
     const candidate = searchParams.get('return_to') || searchParams.get('next')
@@ -171,11 +188,15 @@ const PaystackRedirectResult = ({ status }: PaystackRedirectResultProps) => {
   }, [searchParams])
 
   const missingReferenceStatus: Exclude<UiStatus, 'verifying'> =
-    status === 'cancel' ? 'canceled' : 'invalid'
+    redirectHint === 'cancel'
+      ? 'canceled'
+      : redirectHint === 'success'
+      ? 'pending'
+      : 'invalid'
 
   const verifyQuery = useQuery({
-    queryKey: ['paystack-payment-verify', reference, status],
-    queryFn: () => verifyWithFallback(reference as string, status),
+    queryKey: ['paystack-payment-verify', reference, redirectHint],
+    queryFn: () => verifyWithFallback(reference as string, redirectHint),
     enabled: Boolean(reference),
     retry: false,
     refetchInterval: (query) => {
