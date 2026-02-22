@@ -2,10 +2,18 @@ export interface CreateCommentRequestBody {
   comment: string
 }
 
+export interface PageCommentsQueryParams {
+  limit?: number
+  offset?: number
+  sort?: 'asc' | 'desc'
+}
+
 export interface PageCommentUser {
   id: string
-  firstName: string
-  lastName: string
+  fullName?: string | null
+  profilePictureUrl?: string | null
+  firstName?: string
+  lastName?: string
 }
 
 export interface PageComment {

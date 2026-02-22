@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import { format, isValid, parseISO } from 'date-fns'
 import { useMobileBack } from '@/components/Layout/MobileTitleContext'
 import { useParams, useRouter } from 'next/navigation'
 import MessageIcon from '@/assets/icons/MessageIcon'
@@ -33,7 +34,12 @@ import EyeOnIcon from '@/assets/icons/EyeOnIcon'
 import { usePageById } from '@/hooks/tanstack/pages'
 import { toApiError } from '@/api/errorHelpers'
 import GiftDetailsErrorState from './GiftDetailsErrorState'
-import { usePageComments } from '@/hooks/tanstack/pageComments'
+import { flattenWishPages, usePageComments } from '@/hooks/tanstack/pageComments'
+import type { ActivityStatus } from '../GiftsPage/types'
+import {
+  flattenContributionPages,
+  usePageContributions,
+} from '@/hooks/tanstack/pageContributions'
 
 ChartJS.register(
   ArcElement,
@@ -44,67 +50,13 @@ ChartJS.register(
   Legend
 )
 
-const summaryCards: SummaryCard[] = [
-  {
-    id: 'gifts',
-    title: 'Total gifts received',
-    value: '82',
-    icon: GiftIcon,
-    borderColor: 'border-success-50',
-    accent: 'bg-success-50/30',
-    iconColor: 'text-success-400',
-    svgColor: 'text-success-50',
-  },
-  {
-    id: 'wishes',
-    title: 'Wishes',
-    value: '19',
-    icon: MessageIcon,
-    borderColor: 'border-warning-50',
-    accent: 'bg-warning-50/30',
-    iconColor: 'text-warning-400',
-    svgColor: 'text-warning-50',
-  },
-  {
-    id: 'views',
-    title: 'Page views',
-    value: '3,420',
-    icon: EyeOnIcon,
-    borderColor: 'border-[#EDE7FC]',
-    accent: 'bg-[#EDE7FC]/30',
-    iconColor: 'text-[#4B14CB]',
-    svgColor: 'text-[#EDE7FC]',
-  },
-  {
-    id: 'value',
-    title: 'Total value (Cash & Gifts)',
-    value: '₦210,400',
-    icon: CashIcon,
-    borderColor: 'border-[#E8F1FB]',
-    accent: 'bg-[#E8F1FB]/30',
-    iconColor: 'text-information-400',
-    svgColor: 'text-[#E8F1FB]',
-  },
-]
-
-const mockGiftActivity: GiftActivityItem[] = [
-  {
-    id: '1',
-    gift: 'Comfy Couch',
-    type: 'Gifts on Giftseon',
-    sender: 'Paul Akorede',
-    status: 'Unclaimed',
-    worth: '₦169,000',
-  },
-  {
-    id: '2',
-    gift: 'Cash',
-    type: 'Custom',
-    sender: 'Femi Oliemro',
-    status: 'Claimed',
-    worth: '₦35,000',
-  },
-]
+const ACTIVITY_STATUS_MAP: Record<string, ActivityStatus> = {
+  unclaimed: 'Unclaimed',
+  shipped: 'Shipped',
+  claimed: 'Claimed',
+  pending: 'Pending',
+  used: 'Used',
+}
 
 const GiftDetailsPageClient = () => {
   const router = useRouter()
@@ -124,13 +76,114 @@ const GiftDetailsPageClient = () => {
 
   const giftId = typeof params?.id === 'string' ? params.id : '1'
   const pageQuery = usePageById(giftId)
-  const commentsQuery = usePageComments(giftId)
+  const commentsQuery = usePageComments(giftId, wishSort)
+  const contributionsQuery = usePageContributions(giftId)
   const page = pageQuery.data?.data
   const giftTitle = page?.title ?? 'Gift Page'
   const giftUrl = page?.publicUrl ?? `/u/${giftId}`
   const isActive = activeOverrides[giftId] ?? page?.isActive ?? true
-  const activityItems: GiftActivityItem[] = mockGiftActivity
-  const wishItems: WishItem[] = commentsQuery.data?.data ?? []
+  const wishItems: WishItem[] = useMemo(
+    () => flattenWishPages(commentsQuery.data?.pages),
+    [commentsQuery.data?.pages]
+  )
+
+  const formatMoney = (value: number) => {
+    try {
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN',
+        currencyDisplay: 'narrowSymbol',
+        maximumFractionDigits: 0,
+      }).format(value)
+    } catch {
+      return `₦${value}`
+    }
+  }
+
+  const summaryCards = useMemo<SummaryCard[]>(
+    () => [
+      {
+        id: 'gifts',
+        title: 'Total gifts received',
+        value: String(page?.engagement.totalContributions ?? 0),
+        icon: GiftIcon,
+        borderColor: 'border-success-50',
+        accent: 'bg-success-50/30',
+        iconColor: 'text-success-400',
+        svgColor: 'text-success-50',
+      },
+      {
+        id: 'wishes',
+        title: 'Wishes',
+        value: String(page?.engagement.totalWishes ?? 0),
+        icon: MessageIcon,
+        borderColor: 'border-warning-50',
+        accent: 'bg-warning-50/30',
+        iconColor: 'text-warning-400',
+        svgColor: 'text-warning-50',
+      },
+      {
+        id: 'views',
+        title: 'Page views',
+        value: String(page?.engagement.totalViews ?? 0),
+        icon: EyeOnIcon,
+        borderColor: 'border-[#EDE7FC]',
+        accent: 'bg-[#EDE7FC]/30',
+        iconColor: 'text-[#4B14CB]',
+        svgColor: 'text-[#EDE7FC]',
+      },
+      {
+        id: 'value',
+        title: 'Total value (Cash & Gifts)',
+        value: formatMoney(page?.engagement.totalContibutionsValue ?? 0),
+        icon: CashIcon,
+        borderColor: 'border-[#E8F1FB]',
+        accent: 'bg-[#E8F1FB]/30',
+        iconColor: 'text-information-400',
+        svgColor: 'text-[#E8F1FB]',
+      },
+    ],
+    [page]
+  )
+
+  const activityItems: GiftActivityItem[] = useMemo(
+    () =>
+      flattenContributionPages(contributionsQuery.data?.pages).map(
+        (item, index) => {
+        const record = item as Record<string, unknown>
+        const rawStatus = String(record.status ?? 'pending').toLowerCase()
+        const status = ACTIVITY_STATUS_MAP[rawStatus] ?? 'Pending'
+        const worthValue =
+          typeof record.amount === 'number'
+            ? record.amount
+            : typeof record.worth === 'number'
+              ? record.worth
+              : 0
+
+        return {
+          id: String(record.id ?? index),
+          gift: String(record.gift ?? record.title ?? record.name ?? 'Gift'),
+          type: String(record.type ?? 'Contribution'),
+          sender: String(record.sender ?? record.fullName ?? 'Unknown sender'),
+          status,
+          worth:
+            typeof record.amount === 'string' || typeof record.worth === 'string'
+              ? String(record.amount ?? record.worth)
+              : formatMoney(worthValue),
+        }
+      }
+      ),
+    [contributionsQuery.data?.pages]
+  )
+  const isLoadingActivity = contributionsQuery.isLoading && activityItems.length === 0
+  const hasActivityError =
+    (contributionsQuery.isError || contributionsQuery.isRefetchError) &&
+    activityItems.length === 0
+  const canLoadMoreActivity = Boolean(contributionsQuery.hasNextPage)
+  const isLoadingMoreActivity = contributionsQuery.isFetchingNextPage
+
+  const canLoadMoreWishes = Boolean(commentsQuery.hasNextPage)
+  const isLoadingMoreWishes = commentsQuery.isFetchingNextPage
 
   useEffect(() => {
     setOnBack(() => () => {
@@ -142,19 +195,21 @@ const GiftDetailsPageClient = () => {
 
   const barData = useMemo(
     () => ({
-      labels: ['Oct 5', 'Oct 6', 'Oct 7', 'Oct 8', 'Oct 9', 'Oct 10', 'Oct 11'],
+      labels: (page?.chartData.pageVisits ?? []).map((point) => {
+        const parsed = parseISO(point.date)
+        return isValid(parsed) ? format(parsed, 'MMM d') : point.date
+      }),
       datasets: [
         {
           label: 'Visits',
-          data: [120, 60, 55, 90, 150, 80, 40],
-
+          data: (page?.chartData.pageVisits ?? []).map((point) => point.count),
           backgroundColor: '#089BC4',
           borderRadius: 2,
           barThickness: 22,
         },
       ],
     }),
-    []
+    [page?.chartData.pageVisits]
   )
 
   const barOptions = useMemo(
@@ -186,14 +241,18 @@ const GiftDetailsPageClient = () => {
       labels: ['Items', 'Cash', 'Custom Gifts'],
       datasets: [
         {
-          data: [180000, 140000, 210000],
+          data: [
+            page?.chartData.giftDistribution.store ?? 0,
+            page?.chartData.giftDistribution.cash ?? 0,
+            page?.chartData.giftDistribution.custom ?? 0,
+          ],
           backgroundColor: ['#089BC4', '#C19348', '#5AB579'],
           borderWidth: 0,
           hoverOffset: 4,
         },
       ],
     }),
-    []
+    [page?.chartData.giftDistribution]
   )
 
   const doughnutOptions = useMemo(
@@ -279,6 +338,12 @@ const GiftDetailsPageClient = () => {
                 onToggleMobile={(id) =>
                   setOpenMobileId((prev) => (prev === id ? null : id))
                 }
+                isLoading={isLoadingActivity}
+                isError={hasActivityError}
+                onRetry={() => contributionsQuery.refetch()}
+                canLoadMore={canLoadMoreActivity}
+                isLoadingMore={isLoadingMoreActivity}
+                onLoadMore={() => contributionsQuery.fetchNextPage()}
               />
 
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
@@ -303,6 +368,9 @@ const GiftDetailsPageClient = () => {
               isLoading={commentsQuery.isLoading}
               isError={commentsQuery.isError}
               onRetry={() => commentsQuery.refetch()}
+              canLoadMore={canLoadMoreWishes}
+              isLoadingMore={isLoadingMoreWishes}
+              onLoadMore={() => commentsQuery.fetchNextPage()}
             />
           </div>
         </div>

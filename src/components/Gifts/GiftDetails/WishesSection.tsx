@@ -18,6 +18,9 @@ type WishesSectionProps = {
   isLoading?: boolean
   isError?: boolean
   onRetry?: () => void
+  canLoadMore?: boolean
+  isLoadingMore?: boolean
+  onLoadMore?: () => void
 }
 
 const WishesSection = ({
@@ -27,6 +30,9 @@ const WishesSection = ({
   isLoading = false,
   isError = false,
   onRetry,
+  canLoadMore = false,
+  isLoadingMore = false,
+  onLoadMore,
 }: WishesSectionProps) => {
   return (
     <div className='bg-white border border-grey-50 rounded-[20px] shadow-[0px_10px_18px_-2px_#10192812] pb-3 gap-1 flex flex-col xl:sticky xl:top-6 xl:max-w-[364px] xl:w-full xl:justify-self-end xl:max-h-[calc(100vh-160px)]'>
@@ -75,7 +81,23 @@ const WishesSection = ({
             No wishes yet for this page.
           </div>
         ) : (
-          wishes.map((wish) => <WishRow key={wish.id} wish={wish} />)
+          <>
+            {wishes.map((wish) => (
+              <WishRow key={wish.id} wish={wish} />
+            ))}
+            {canLoadMore && onLoadMore ? (
+              <div className='pt-3 pb-1 text-center'>
+                <button
+                  type='button'
+                  onClick={onLoadMore}
+                  disabled={isLoadingMore}
+                  className='inline-flex items-center justify-center px-4 py-2 rounded-[10px] border border-grey-200 text-sm text-grey-800 hover:bg-grey-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200'
+                >
+                  {isLoadingMore ? 'Loading...' : 'Load more wishes'}
+                </button>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </div>

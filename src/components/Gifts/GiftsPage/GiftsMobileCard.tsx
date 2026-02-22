@@ -45,7 +45,9 @@ const GiftsMobileCard = ({
           onToggle()
         }
       }}
-      className={`p-3 transition-colors ${isSelected ? 'bg-success-50/70' : ''}`}
+      className={`p-3 transition-colors ${
+        isSelected ? 'bg-success-50/70' : ''
+      }`}
     >
       <div className='flex items-center justify-between gap-10 pb-3 border-b border-grey-50 text-left'>
         <div className='flex justify-between items-center gap-3 min-w-0 w-full'>
@@ -126,7 +128,10 @@ const GiftsMobileCard = ({
             </div>
           </div>
 
-          <GiftsMobileActionButtons onView={onView} onDeactivate={onDeactivate} />
+          <GiftsMobileActionButtons
+            onView={onView}
+            onDeactivate={onDeactivate}
+          />
         </>
       )}
     </div>

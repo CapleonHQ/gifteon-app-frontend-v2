@@ -2,6 +2,12 @@ export type PageVisibility = 'Public' | 'Shareable' | 'Private'
 export type PageStatus = 'Active' | 'Ended'
 
 export type PageApiPrivacy = 'public' | 'private' | 'shareable'
+export type PageListApiStatus =
+  | 'published'
+  | 'draft'
+  | 'archived'
+  | 'inactive'
+  | string
 
 export type PageApiUser = {
   id: string
@@ -87,6 +93,55 @@ export type PageApiItem = {
   template: PageApiTemplate | null
 }
 
+export type PageListApiItem = {
+  id: string
+  title: string
+  slug: string
+  coverImageUrl: string | null
+  status: PageListApiStatus
+  createdAt: string
+  updatedAt: string
+  categoryName: string | null
+  templateName: string | null
+  contributions: number
+  visibility: PageApiPrivacy
+  totalGifts: number
+  totalWishes: number
+  totalViews: number
+}
+
+export type PageDetailsApiItem = {
+  id: string
+  title: string
+  slug: string
+  coverImageUrl: string | null
+  createdAt: string
+  updatedAt: string
+  active: boolean
+  categoryName: string | null
+  visibility: PageApiPrivacy
+  wishes?: Array<Record<string, unknown>>
+  contributions?: Array<Record<string, unknown>>
+  chartData?: {
+    giftDistribution?: {
+      cash?: number
+      store?: number
+      custom?: number
+    }
+    pageVisits?: Array<{
+      date: string
+      count: string | number
+    }>
+  }
+  engagement?: {
+    totalViews?: number
+    totalShares?: number
+    totalContributions?: number
+    totalWishes?: number
+    totalContibutionsValue?: number
+  }
+}
+
 export type PageSummary = {
   id: string
   title: string
@@ -102,7 +157,35 @@ export type PageSummary = {
   publicUrl: string
 }
 
-export type PageDetails = PageSummary
+export type PageDetailsEngagement = {
+  totalViews: number
+  totalShares: number
+  totalContributions: number
+  totalWishes: number
+  totalContibutionsValue: number
+}
+
+export type PageDetailsVisitPoint = {
+  date: string
+  count: number
+}
+
+export type PageDetailsGiftDistribution = {
+  cash: number
+  store: number
+  custom: number
+}
+
+export type PageDetailsChartData = {
+  giftDistribution: PageDetailsGiftDistribution
+  pageVisits: PageDetailsVisitPoint[]
+}
+
+export type PageDetails = PageSummary & {
+  engagement: PageDetailsEngagement
+  chartData: PageDetailsChartData
+  contributions: Array<Record<string, unknown>>
+}
 
 export type PagesQueryParams = {
   limit?: number
@@ -124,13 +207,13 @@ export type PagesListData = {
 }
 
 export type PagesListApiData = {
-  pages: PageApiItem[]
+  pages: PageListApiItem[]
   total: number
   limit: number
   offset: number
   hasMore: boolean
 }
 
-export type PageDetailsApiData = PageApiItem
+export type PageDetailsApiData = PageDetailsApiItem
 
 export type CreatePageData = PageApiItem
