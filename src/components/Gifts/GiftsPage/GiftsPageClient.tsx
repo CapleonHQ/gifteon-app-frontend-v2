@@ -13,7 +13,7 @@ import GiftsEmptyState from '@/components/Gifts/GiftsPage/GiftsEmptyState'
 import GiftsNoResults from '@/components/Gifts/GiftsPage/GiftsNoResults'
 import GiftsSkeleton from '@/components/Gifts/GiftsPage/GiftsSkeleton'
 import { type GiftPageItem } from '@/components/Gifts/GiftsPage/types'
-import { usePages } from '@/hooks/tanstack/pages'
+import { useArchivePage, usePages } from '@/hooks/tanstack/pages'
 import { useGiftsFilters } from './hooks/useGiftsFilters'
 import { useGiftsSelection } from './hooks/useGiftsSelection'
 
@@ -21,7 +21,9 @@ const GiftsPageClient = () => {
   const router = useRouter()
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false)
   const [deactivateCount, setDeactivateCount] = useState(0)
+  const [deactivateIds, setDeactivateIds] = useState<string[]>([])
   const { openSuccess } = useSuccessModal()
+  const archiveMutation = useArchivePage()
 
   const {
     searchValue,
@@ -64,8 +66,9 @@ const GiftsPageClient = () => {
   const showHeadlessEmpty =
     !isLoading && !hasError && !hasPages && !hasActiveFilters
 
-  const openDeactivate = (count: number) => {
-    setDeactivateCount(count)
+  const openDeactivate = (ids: string[]) => {
+    setDeactivateIds(ids)
+    setDeactivateCount(ids.length)
     setIsDeactivateOpen(true)
   }
 
@@ -138,8 +141,8 @@ const GiftsPageClient = () => {
                   onToggleAll={toggleSelectAll}
                   onToggleOne={toggleSelectOne}
                   onView={handleViewPage}
-                  onDeactivateSelected={() => openDeactivate(selectedIds.size)}
-                  onDeactivateSingle={() => openDeactivate(1)}
+                  onDeactivateSelected={() => openDeactivate([...selectedIds])}
+                  onDeactivateSingle={(id) => openDeactivate([id])}
                 />
 
                 <GiftsMobileList
@@ -150,9 +153,9 @@ const GiftsPageClient = () => {
                   onSelect={toggleSelectOne}
                   onLongPressSelect={selectOne}
                   onView={handleViewPage}
-                  onDeactivateSelected={() => openDeactivate(selectedIds.size)}
+                  onDeactivateSelected={() => openDeactivate([...selectedIds])}
                   onClearSelection={clearSelection}
-                  onDeactivateSingle={() => openDeactivate(1)}
+                  onDeactivateSingle={(id) => openDeactivate([id])}
                 />
 
                 {hasMultiplePages ? (
@@ -173,10 +176,23 @@ const GiftsPageClient = () => {
         isOpen={isDeactivateOpen}
         count={deactivateCount}
         message={deactivateMessage}
-        onClose={() => setIsDeactivateOpen(false)}
-        onConfirm={() => {
+        isSubmitting={archiveMutation.isPending}
+        onClose={() => {
+          if (archiveMutation.isPending) return
           setIsDeactivateOpen(false)
-          openSuccess({ message: successMessage })
+        }}
+        onConfirm={async () => {
+          if (deactivateIds.length === 0) return
+          try {
+            await Promise.all(
+              deactivateIds.map((pageId) => archiveMutation.mutateAsync(pageId))
+            )
+            setIsDeactivateOpen(false)
+            clearSelection()
+            openSuccess({ message: successMessage })
+          } catch {
+            // Query error states will recover via refetch/invalidation.
+          }
         }}
       />
 

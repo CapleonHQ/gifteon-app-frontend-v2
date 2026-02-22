@@ -28,6 +28,7 @@ import { toApiError } from '@/api/errorHelpers'
 import GiftDetailsErrorState from './GiftDetailsErrorState'
 import { useGiftDetailsData } from './hooks/useGiftDetailsData'
 import { useGiftDetailsUiState } from './hooks/useGiftDetailsUiState'
+import { useArchivePage, useUnarchivePage } from '@/hooks/tanstack/pages'
 import {
   giftDistributionChartOptions,
   pageVisitsChartOptions,
@@ -48,6 +49,8 @@ const GiftDetailsPageClient = () => {
   const { setOnBack } = useMobileBack()
   const { openSuccess } = useSuccessModal()
   const giftId = typeof params?.id === 'string' ? params.id : '1'
+  const archiveMutation = useArchivePage()
+  const unarchiveMutation = useUnarchivePage()
   const ui = useGiftDetailsUiState(giftId)
   const data = useGiftDetailsData(giftId, ui.wishSort)
   const {
@@ -84,16 +87,33 @@ const GiftDetailsPageClient = () => {
     window.open(giftUrl, '_blank', 'noopener,noreferrer')
   }
 
-  const handleDeactivateConfirm = () => {
-    ui.setIsDeactivateOpen(false)
-    ui.markInactive()
-    openSuccess({ message: 'Your gift page has been successfully deactivated' })
+  const handleDeactivateConfirm = async () => {
+    try {
+      const response = await archiveMutation.mutateAsync(giftId)
+      ui.setIsDeactivateOpen(false)
+      ui.markInactive()
+      await pageQuery.refetch()
+      openSuccess({
+        message:
+          response.message || 'Your gift page has been successfully deactivated',
+      })
+    } catch {
+      // Query error states will recover via refetch/invalidation.
+    }
   }
 
-  const handleReactivateConfirm = () => {
-    ui.setIsReactivateOpen(false)
-    ui.markActive()
-    openSuccess({ message: 'Your gift page has been successfully activated' })
+  const handleReactivateConfirm = async () => {
+    try {
+      const response = await unarchiveMutation.mutateAsync(giftId)
+      ui.setIsReactivateOpen(false)
+      ui.markActive()
+      await pageQuery.refetch()
+      openSuccess({
+        message: response.message || 'Your gift page has been successfully activated',
+      })
+    } catch {
+      // Query error states will recover via refetch/invalidation.
+    }
   }
 
   const showInitialPageLoader = pageQuery.isLoading && !page
@@ -206,13 +226,21 @@ const GiftDetailsPageClient = () => {
         isOpen={ui.isDeactivateOpen}
         count={1}
         message='This will make this gift page temporarily unavailable to others. People won’t be able to view, send gifts, or leave wishes until you reactivate it.'
-        onClose={() => ui.setIsDeactivateOpen(false)}
+        isSubmitting={archiveMutation.isPending}
+        onClose={() => {
+          if (archiveMutation.isPending) return
+          ui.setIsDeactivateOpen(false)
+        }}
         onConfirm={handleDeactivateConfirm}
       />
 
       <ReactivateModal
         isOpen={ui.isReactivateOpen}
-        onClose={() => ui.setIsReactivateOpen(false)}
+        isSubmitting={unarchiveMutation.isPending}
+        onClose={() => {
+          if (unarchiveMutation.isPending) return
+          ui.setIsReactivateOpen(false)
+        }}
         onConfirm={handleReactivateConfirm}
       />
     </div>

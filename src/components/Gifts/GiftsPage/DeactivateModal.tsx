@@ -9,6 +9,7 @@ type DeactivateModalProps = {
   message: string
   onClose: () => void
   onConfirm: () => void
+  isSubmitting?: boolean
 }
 
 const DeactivateModal = ({
@@ -17,6 +18,7 @@ const DeactivateModal = ({
   message,
   onClose,
   onConfirm,
+  isSubmitting = false,
 }: DeactivateModalProps) => {
   if (!isOpen) return null
 
@@ -58,6 +60,7 @@ const DeactivateModal = ({
             <button
               type='button'
               onClick={onClose}
+              disabled={isSubmitting}
               className='flex-1 py-3.5 rounded-[12px] border border-grey-200 text-grey-800 font-medium bg-grey-50/70 hover:bg-grey-100/70 transition-colors duration-300 order-2 sm:order-1'
             >
               Cancel
@@ -65,9 +68,12 @@ const DeactivateModal = ({
             <button
               type='button'
               onClick={onConfirm}
+              disabled={isSubmitting}
               className='flex-1 py-3.5 rounded-[12px] bg-linear-to-r border border-error-500 from-[#C94C48] to-[#AB1D18] text-white font-medium hover:from-error-400 hover:to-error-600 transition-colors duration-300 order-1 sm:order-2'
             >
-              Deactivate {count === 1 ? 'Page' : 'Pages'}
+              {isSubmitting
+                ? 'Processing...'
+                : `Deactivate ${count === 1 ? 'Page' : 'Pages'}`}
             </button>
           </div>
         </div>
