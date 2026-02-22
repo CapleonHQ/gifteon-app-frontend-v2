@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { format } from 'date-fns'
+import { format, isAfter, isBefore, startOfDay } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -16,6 +16,8 @@ type DatePickerFieldProps = {
   placeholder?: string
   disabled?: boolean
   displayFormat?: string
+  minDate?: Date
+  maxDate?: Date
 }
 
 const DatePickerField = ({
@@ -25,8 +27,12 @@ const DatePickerField = ({
   placeholder = 'Select date',
   disabled = false,
   displayFormat = 'dd-MM-yyyy',
+  minDate,
+  maxDate,
 }: DatePickerFieldProps) => {
   const [open, setOpen] = useState(false)
+  const minDay = minDate ? startOfDay(minDate) : undefined
+  const maxDay = maxDate ? startOfDay(maxDate) : undefined
 
   return (
     <div>
@@ -70,6 +76,12 @@ const DatePickerField = ({
             onSelect={(date) => {
               onChange(date)
               setOpen(false)
+            }}
+            disabled={(date) => {
+              const day = startOfDay(date)
+              if (minDay && isBefore(day, minDay)) return true
+              if (maxDay && isAfter(day, maxDay)) return true
+              return false
             }}
             initialFocus
           />
