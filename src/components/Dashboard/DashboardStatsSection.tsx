@@ -13,7 +13,6 @@ import SummaryCardsSkeleton from './Skeletons/SummaryCardsSkeleton'
 import VisitSharesSkeleton from './Skeletons/VisitSharesSkeleton'
 import GiftTypeDistributionSkeleton from './Skeletons/GiftTypeDistributionSkeleton'
 import {
-  useGiftTypeDistribution,
   useStatsOverview,
   useVisitSharesChart,
 } from '@/hooks/tanstack/stats'
@@ -66,33 +65,40 @@ const DashboardStatsSection = () => {
   const currentRangeMeta = useMemo(() => getRangeMeta(visitRange), [visitRange])
 
   const overview = useStatsOverview()
-  const giftTypes = useGiftTypeDistribution()
   const visitShares = useVisitSharesChart({
     startDate: format(currentRangeMeta.from, 'yyyy-MM-dd'),
     endDate: format(currentRangeMeta.to, 'yyyy-MM-dd'),
     interval: currentRangeMeta.interval,
   })
+  const overviewData = overview.data?.data?.overview
+  const chartData = overview.data?.data?.chart
 
   const formatMoney = (value: number, currency: string) => {
+    const locale = currency === 'NGN' ? 'en-NG' : 'en-US'
     try {
-      return new Intl.NumberFormat('en-US', {
+      return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency,
+        currencyDisplay: currency === 'NGN' ? 'narrowSymbol' : 'symbol',
         maximumFractionDigits: 0,
       }).format(value)
     } catch {
-      return `${value} ${currency}`
+      return currency === 'NGN' ? `₦${value}` : `${value} ${currency}`
     }
   }
 
   const summaryItems = useMemo(() => {
-    if (!overview.data?.data) return emptySummaryCards
-    const currency = overview.data.data.currency || 'USD'
+    if (!overviewData) return emptySummaryCards
+    const currency = overviewData.currency || 'USD'
+    const visibilityMeta = [
+      `${overviewData.visibilityBreakdown?.public ?? 0} public`,
+      `${overviewData.visibilityBreakdown?.private ?? 0} private`,
+    ].join(', ')
     return [
       {
         id: 'claimable',
         title: 'Claimable balance',
-        value: formatMoney(overview.data.data.claimableBalance, currency),
+        value: formatMoney(overviewData.claimableBalance, currency),
         meta: 'Updated today',
         icon: (
           <span className='w-4 h-4 text-[#FF8D28]'>
@@ -104,8 +110,8 @@ const DashboardStatsSection = () => {
       {
         id: 'active',
         title: 'Active pages',
-        value: String(overview.data.data.pages?.total ?? 0),
-        meta: 'Updated today',
+        value: String(overviewData.activePages ?? 0),
+        meta: visibilityMeta,
         icon: (
           <span className='w-4 h-4 text-[#34C759]'>
             <NotificationCircleIcon />
@@ -115,7 +121,7 @@ const DashboardStatsSection = () => {
       {
         id: 'pending',
         title: 'Pending gifts',
-        value: String(overview.data.data.pendingGiftsToClaim?.count ?? 0),
+        value: String(overviewData.pendingContributions ?? 0),
         meta: 'Updated today',
         icon: (
           <span className='w-4 h-4 text-[#00C3D0]'>
@@ -126,8 +132,8 @@ const DashboardStatsSection = () => {
       {
         id: 'views',
         title: 'Page views',
-        value: String(overview.data.data.pageViews?.total ?? 0),
-        meta: `${overview.data.data.pageViews?.trend ?? '0%'} from last period`,
+        value: String(overviewData.pageViews ?? 0),
+        meta: 'Updated today',
         icon: (
           <span className='w-4 h-4 text-[#CB1A14]'>
             <ViewIcon />
@@ -135,7 +141,21 @@ const DashboardStatsSection = () => {
         ),
       },
     ]
-  }, [overview])
+  }, [overviewData])
+
+  const giftDistribution = useMemo(
+    () => [
+      { type: 'Cash', total: chartData?.giftDistribution?.cash ?? 0 },
+      { type: 'Store', total: chartData?.giftDistribution?.store ?? 0 },
+      { type: 'Custom', total: chartData?.giftDistribution?.custom ?? 0 },
+    ],
+    [chartData]
+  )
+
+  const giftDistributionTotal = useMemo(
+    () => giftDistribution.reduce((sum, item) => sum + item.total, 0),
+    [giftDistribution]
+  )
 
   const visitPoints = useMemo(
     () => visitShares.data?.data?.data ?? [],
@@ -161,12 +181,12 @@ const DashboardStatsSection = () => {
             points={visitPoints}
           />
         )}
-        {giftTypes.isLoading ? (
+        {overview.isLoading ? (
           <GiftTypeDistributionSkeleton />
         ) : (
           <GiftTypeDistributionCard
-            distribution={giftTypes.data?.data?.distribution ?? []}
-            total={giftTypes.data?.data?.total ?? 0}
+            distribution={giftDistribution}
+            total={giftDistributionTotal}
           />
         )}
       </div>

@@ -1,23 +1,16 @@
 import { ReactNode } from 'react'
 
-export interface StatsOverviewData {
+export interface DashboardOverviewData {
   claimableBalance: number
   currency: string
-  pages: {
-    total: number
-    categoriesBreakdown: Record<string, number>
+  activePages: number
+  visibilityBreakdown: {
+    public: number
+    private: number
+    shareable: number
   }
-  pendingGiftsToClaim: {
-    count: number
-    totalAmount: number
-    lastUpdated: string | null
-  }
-  pageViews: {
-    total: number
-    trend: string
-    trendDirection: string
-    lastUpdated: string | null
-  }
+  pendingContributions: number
+  pageViews: number
 }
 
 export interface GiftTypeDistributionItem {
@@ -25,9 +18,37 @@ export interface GiftTypeDistributionItem {
   total: number
 }
 
-export interface GiftTypeDistributionData {
-  distribution: GiftTypeDistributionItem[]
-  total: number
+export interface DashboardChartData {
+  visitTOsharesLineChart: VisitSharePoint[]
+  giftDistribution: {
+    cash: number
+    store: number
+    custom: number
+  }
+}
+
+export interface DashboardRecentGift {
+  id?: string | number
+  name?: string
+  giftName?: string
+  title?: string
+  type?: string
+  giftType?: string
+  date?: string
+  createdAt?: string
+  worth?: string
+  amount?: number | string
+  status?: string
+  image?: string
+  imageUrl?: string
+  fromName?: string
+  senderName?: string
+}
+
+export interface StatsOverviewData {
+  overview: DashboardOverviewData
+  chart: DashboardChartData
+  recentGifts: DashboardRecentGift[]
 }
 
 export interface VisitSharePoint {

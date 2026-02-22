@@ -1,22 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import {
-  getStatsGiftTypeDistribution,
   getStatsOverview,
   getStatsVisitsSharesChart,
 } from '@/api/services/stats'
+import type { ApiResponse } from '@/types/Common'
+import type { StatsOverviewData } from '@/types/Stats'
 import type { VisitSharesQueryParams } from '@/types/Stats'
 
 export const useStatsOverview = () => {
-  return useQuery({
+  return useQuery<ApiResponse<StatsOverviewData>>({
     queryKey: ['stats', 'overview'],
     queryFn: getStatsOverview,
-  })
-}
-
-export const useGiftTypeDistribution = () => {
-  return useQuery({
-    queryKey: ['stats', 'gift-type-distribution'],
-    queryFn: getStatsGiftTypeDistribution,
   })
 }
 
