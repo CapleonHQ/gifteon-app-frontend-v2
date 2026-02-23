@@ -127,7 +127,7 @@ const createClient = (
         hasAuthHeader(error?.config)
 
       if (shouldLogout) {
-        logout({ redirectTo: '/login' })
+        logout({ redirectTo: '/login', preserveReturnPath: true })
       }
       return Promise.reject(normalized)
     }

@@ -1,13 +1,48 @@
+'use client'
+
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import HomeIcon from '../../assets/icons/HomeIcon'
 import OnboardingLogo from './components/OnboardingLogo'
+import { useAuth } from '@/context/AuthContext'
 
 const OnboardingLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) => {
+  const router = useRouter()
+  const pathname = usePathname()
+  const { status } = useAuth()
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      const nextPath = new URLSearchParams(window.location.search).get('next')
+      const safeNextPath =
+        nextPath &&
+        nextPath.startsWith('/') &&
+        !nextPath.startsWith('//') &&
+        !nextPath.startsWith('/login')
+          ? nextPath
+          : null
+
+      if (pathname === '/login' && safeNextPath) {
+        router.replace(safeNextPath)
+        return
+      }
+      router.replace('/dashboard')
+    }
+  }, [status, router, pathname])
+
+  if (status !== 'unauthenticated') {
+    return (
+      <div className='w-full min-h-screen flex items-center justify-center bg-white'>
+        <div className='w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin' />
+      </div>
+    )
+  }
+
   return (
     <div className='min-h-screen bg-white flex'>
       <div className='hidden lg:flex lg:flex-1 h-screen sticky top-0'>

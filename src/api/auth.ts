@@ -5,6 +5,7 @@ export const AUTH_LOGOUT_EVENT = 'giftseon:logout'
 export interface LogoutOptions {
   redirectTo?: string
   emitEvent?: boolean
+  preserveReturnPath?: boolean
 }
 
 const isBrowser = (): boolean => typeof window !== 'undefined'
@@ -21,6 +22,18 @@ export const logout = (options: LogoutOptions = {}): void => {
     emitLogoutEvent()
   }
   if (options.redirectTo && isBrowser()) {
+    const shouldPreservePath =
+      options.preserveReturnPath === true &&
+      window.location.pathname !== '/login'
+
+    if (shouldPreservePath) {
+      const currentPath = `${window.location.pathname}${window.location.search}`
+      const url = new URL(options.redirectTo, window.location.origin)
+      url.searchParams.set('next', currentPath)
+      window.location.assign(url.toString())
+      return
+    }
+
     window.location.assign(options.redirectTo)
   }
 }
