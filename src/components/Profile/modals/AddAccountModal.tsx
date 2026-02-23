@@ -19,6 +19,7 @@ import {
   useConnectBank,
   useVerifyBankAccount,
 } from '@/hooks/tanstack/banks'
+import { useProfile } from '@/hooks/tanstack/account'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 
 type AddAccountModalProps = {
@@ -32,6 +33,7 @@ const AddAccountModal = ({
 }: AddAccountModalProps) => {
   const { openSuccess } = useSuccessModal()
   const availableBanksQuery = useAvailableBanks(isOpen)
+  const profileQuery = useProfile()
   const connectBankMutation = useConnectBank()
   const verifyBankAccountMutation = useVerifyBankAccount()
   const verifyRequestIdRef = useRef(0)
@@ -58,6 +60,14 @@ const AddAccountModal = ({
     () => bankOptions.find((option) => option.id === selectedBankId),
     [bankOptions, selectedBankId]
   )
+  const environment = (process.env.NEXT_PUBLIC_ENVIRONMENT ?? '').toLowerCase()
+  const shouldMockResolve = Boolean(environment) && environment !== 'production'
+  const mockAccountName = useMemo(() => {
+    const firstName = profileQuery.data?.data?.firstName?.trim() ?? ''
+    const lastName = profileQuery.data?.data?.lastName?.trim() ?? ''
+    const fullName = `${firstName} ${lastName}`.trim()
+    return `${fullName || 'Account Holder'} [MOCK]`
+  }, [profileQuery.data?.data?.firstName, profileQuery.data?.data?.lastName])
 
   const resetForm = () => {
     verifyRequestIdRef.current += 1
@@ -91,22 +101,33 @@ const AddAccountModal = ({
       return
     }
 
-    if (lastAttemptedResolveKeyRef.current === resolveKey) return
+    if (
+      lastAttemptedResolveKeyRef.current === resolveKey &&
+      (Boolean(resolvedAccountName) || Boolean(resolveErrorMessage))
+    ) {
+      return
+    }
     lastAttemptedResolveKeyRef.current = resolveKey
     setResolvedAccountName('')
     setResolveErrorMessage('')
 
     const requestId = verifyRequestIdRef.current + 1
     verifyRequestIdRef.current = requestId
+    setIsResolvingAccount(true)
 
     const timer = window.setTimeout(async () => {
-      setIsResolvingAccount(true)
       try {
-        const response = await verifyBankAccountMutation.mutateAsync({
-          accountNumber,
-          bankCode: selectedBank.code,
-        })
-        const accountName = response.data?.accountName?.trim()
+        let accountName = ''
+        if (shouldMockResolve) {
+          await new Promise((resolve) => window.setTimeout(resolve, 450))
+          accountName = mockAccountName
+        } else {
+          const response = await verifyBankAccountMutation.mutateAsync({
+            accountNumber,
+            bankCode: selectedBank.code,
+          })
+          accountName = response.data?.accountName?.trim() ?? ''
+        }
         if (!accountName) throw new Error('No account name resolved')
         if (verifyRequestIdRef.current !== requestId) return
         setResolvedAccountName(accountName)
@@ -123,8 +144,21 @@ const AddAccountModal = ({
       }
     }, 350)
 
-    return () => window.clearTimeout(timer)
-  }, [accountNumber, selectedBank, verifyBankAccountMutation])
+    return () => {
+      window.clearTimeout(timer)
+      if (verifyRequestIdRef.current === requestId) {
+        setIsResolvingAccount(false)
+      }
+    }
+  }, [
+    accountNumber,
+    resolveErrorMessage,
+    resolvedAccountName,
+    mockAccountName,
+    selectedBank,
+    shouldMockResolve,
+    verifyBankAccountMutation,
+  ])
 
   const canSave = Boolean(
     selectedBank &&

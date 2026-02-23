@@ -3,6 +3,7 @@ import InputField from '@/components/Profile/components/InputField'
 import { useState } from 'react'
 import { useChangePin } from '@/hooks/tanstack/account'
 import { useSuccessModal } from '@/context/SuccessModalContext'
+import { toApiError } from '@/api/errorHelpers'
 
 type AccountPinSectionProps = {
   pinActivated: boolean
@@ -84,25 +85,10 @@ const AccountPinSection = ({
       })
       handleCancel()
       openSuccess({ message: 'Your PIN has been successfully updated.' })
-    } catch (error) {
-      const apiMessage =
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof (error as { response?: unknown }).response === 'object' &&
-        (error as { response?: unknown }).response !== null &&
-        'data' in ((error as { response?: { data?: unknown } }).response ?? {}) &&
-        typeof (
-          (error as { response?: { data?: { message?: unknown } } }).response
-            ?.data?.message
-        ) === 'string'
-          ? (
-              error as { response?: { data?: { message?: string } } }
-            ).response?.data?.message
-          : undefined
-
+    } catch (error: unknown) {
+      const apiError = toApiError(error)
       setPinErrors({
-        form: apiMessage?.trim() || 'Unable to update PIN. Please try again.',
+        form: apiError.message?.trim() || 'Unable to update PIN. Please try again.',
       })
     }
   }

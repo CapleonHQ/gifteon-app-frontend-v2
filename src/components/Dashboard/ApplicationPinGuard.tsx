@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import { useProfile, useSetPin } from '@/hooks/tanstack/account'
+import { toApiError } from '@/api/errorHelpers'
 import SetPinRequiredModal from './SetPinRequiredModal'
 
 const ApplicationPinGuard = () => {
@@ -13,7 +14,7 @@ const ApplicationPinGuard = () => {
   const [confirmPin, setConfirmPin] = useState('')
   const [pinError, setPinError] = useState('')
   const [isGuardDismissed, setIsGuardDismissed] = useState(false)
-  const mustSetPinFromProfile = profileQuery.data?.data?.pinActivated === true
+  const mustSetPinFromProfile = profileQuery.data?.data?.pinActivated === false
   const mustSetPin = mustSetPinFromProfile && !isGuardDismissed
 
   useEffect(() => {
@@ -48,24 +49,11 @@ const ApplicationPinGuard = () => {
       window.setTimeout(() => {
         openSuccess({ message: 'Your account PIN has been set successfully.' })
       }, 0)
-    } catch (error: any) {
-      console.log(error.message)
-
-      const apiMessage =
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof (error as { response?: unknown }).response === 'object' &&
-        (error as { response?: unknown }).response !== null &&
-        'data' in
-          ((error as { response?: { data?: unknown } }).response ?? {}) &&
-        typeof (error as { response?: { data?: { message?: unknown } } })
-          .response?.data?.message === 'string'
-          ? (error as { response?: { data?: { message?: string } } }).response
-              ?.data?.message
-          : undefined
-
-      setPinError(apiMessage?.trim() || 'Unable to set PIN. Please try again.')
+    } catch (error: unknown) {
+      const apiError = toApiError(error)
+      setPinError(
+        apiError.message?.trim() || 'Unable to set PIN. Please try again.'
+      )
     }
   }
 
