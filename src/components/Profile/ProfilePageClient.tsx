@@ -9,30 +9,13 @@ import PersonalInfoSection from '@/components/Profile/sections/PersonalInfoSecti
 import NotificationsSection from '@/components/Profile/sections/NotificationsSection'
 import AccountPinSection from '@/components/Profile/sections/AccountPinSection'
 import EditInterestsModal from '@/components/Profile/modals/EditInterestsModal'
-import AddAccountModal from '@/components/Profile/modals/AddAccountModal'
-import DeletePaymentModal from '@/components/Profile/modals/DeletePaymentModal'
 import {
-  profileData,
   interestOptions,
   initialNotificationPrefs,
 } from '@/components/Profile/profileData'
 import type { ProfileTabId } from '@/types/Profile'
-import type { PaymentMethod } from '@/types/Profile/payment'
-import {
-  useAvailableBanks,
-  useConnectedBanks,
-  useConnectBank,
-  useDisconnectBank,
-  useSetDefaultConnectedBank,
-} from '@/hooks/tanstack/banks'
 import { useProfile, useUpdateProfile } from '@/hooks/tanstack/account'
 import type { UserProfile } from '@/types/Account'
-
-const maskAccountNumber = (value: string): string => {
-  if (value.length <= 4) return value
-  const suffix = value.slice(-4)
-  return `${'*'.repeat(Math.max(0, value.length - 4))}${suffix}`
-}
 
 type ProfileFormState = {
   firstName: string
@@ -51,25 +34,16 @@ const parseApiDate = (value?: string | null): Date | undefined => {
   return parsed
 }
 
-const parseDisplayDate = (value?: string): Date | undefined => {
-  if (!value) return undefined
-  const [day, month, year] = value.split('/')
-  if (!day || !month || !year) return undefined
-  const parsed = new Date(Number(year), Number(month) - 1, Number(day))
-  if (Number.isNaN(parsed.getTime())) return undefined
-  return parsed
-}
-
 const toProfileForm = (user: UserProfile | undefined): ProfileFormState => {
   if (!user) {
     return {
-      firstName: profileData.firstName,
-      lastName: profileData.lastName,
-      phone: profileData.phone,
-      email: profileData.email,
-      dob: parseDisplayDate(profileData.dob),
-      address: profileData.address,
-      gender: profileData.gender,
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: '',
+      dob: undefined,
+      address: '',
+      gender: '',
     }
   }
 
@@ -88,11 +62,10 @@ const ProfilePageClient = () => {
   const { openSuccess } = useSuccessModal()
   const [activeTab, setActiveTab] = useState<ProfileTabId>('personal')
   const [isEditingProfile, setIsEditingProfile] = useState(false)
-  const [isEditingPin, setIsEditingPin] = useState(false)
   const [isInterestsOpen, setIsInterestsOpen] = useState(false)
-  const [isAddAccountOpen, setIsAddAccountOpen] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<PaymentMethod | null>(null)
-  const [profileDraft, setProfileDraft] = useState<ProfileFormState | null>(null)
+  const [profileDraft, setProfileDraft] = useState<ProfileFormState | null>(
+    null
+  )
   const [profileErrorMessage, setProfileErrorMessage] = useState('')
   const [selectedInterests, setSelectedInterests] = useState<string[]>([
     'birthdays',
@@ -110,46 +83,18 @@ const ProfilePageClient = () => {
     'cash',
   ])
   const [notifications, setNotifications] = useState(initialNotificationPrefs)
-  const availableBanksQuery = useAvailableBanks(isAddAccountOpen)
-  const connectedBanksQuery = useConnectedBanks()
   const profileQuery = useProfile()
+  const profileData = profileQuery.data?.data
   const updateProfileMutation = useUpdateProfile()
-  const connectBankMutation = useConnectBank()
-  const disconnectBankMutation = useDisconnectBank()
-  const setDefaultBankMutation = useSetDefaultConnectedBank()
-
-  const paymentMethods = useMemo<PaymentMethod[]>(
-    () =>
-      (connectedBanksQuery.data?.data?.banks ?? []).map((bank) => ({
-        id: bank.id,
-        bank: bank.bankName,
-        account: maskAccountNumber(bank.accountNumber),
-        accountName: bank.accountName,
-        accountNumber: bank.accountNumber,
-        bankCode: bank.bankCode,
-        isDefault: bank.isDefault,
-      })),
-    [connectedBanksQuery.data?.data?.banks]
-  )
-  const bankOptions = useMemo(
-    () =>
-      (availableBanksQuery.data?.data?.banks ?? []).map((bank) => ({
-        id: bank.id,
-        label: bank.name,
-        code: bank.code,
-      })),
-    [availableBanksQuery.data?.data?.banks]
-  )
 
   const currentInterests = useMemo(
     () => interestOptions.filter((item) => selectedInterests.includes(item.id)),
     [selectedInterests]
   )
-  const profileFromApi = useMemo(
-    () => toProfileForm(profileQuery.data?.data),
-    [profileQuery.data?.data]
-  )
+  const profileFromApi = useMemo(() => toProfileForm(profileData), [profileData])
   const activeProfile = profileDraft ?? profileFromApi
+  const isLoadingProfile = profileQuery.isLoading && !profileData
+  const isKycEnabled = profileData?.kycEnabled ?? false
 
   const handleCancelProfileEdit = () => {
     setIsEditingProfile(false)
@@ -174,63 +119,15 @@ const ProfilePageClient = () => {
     }
   }
 
-  const handleSavePin = () => {
-    setIsEditingPin(false)
-    openSuccess({ message: 'Your PIN has been successfully updated.' })
-  }
-
-  const handleDeletePayment = async () => {
-    if (!deleteTarget) return
-    try {
-      await disconnectBankMutation.mutateAsync(deleteTarget.id)
-      setDeleteTarget(null)
-      openSuccess({
-        message: 'The payment method has been successfully deleted.',
-      })
-    } catch {
-      openSuccess({
-        message: 'Unable to delete payment method. Please try again.',
-      })
-    }
-  }
-
-  const handleAddPayment = async (payload: {
-    bank: string
-    bankCode: string
-    accountNumber: string
-    accountName: string
-    isDefault: boolean
-  }) => {
-    try {
-      await connectBankMutation.mutateAsync({
-        bankName: payload.bank,
-        bankCode: payload.bankCode,
-        accountNumber: payload.accountNumber,
-        accountName: payload.accountName,
-        isDefault: payload.isDefault,
-      })
-      setIsAddAccountOpen(false)
-      openSuccess({
-        message: 'The payment method has been successfully added.',
-      })
-    } catch {
-      openSuccess({
-        message: 'Unable to add payment method. Please try again.',
-      })
-    }
-  }
-
-  const handleSetDefaultPayment = async (method: PaymentMethod) => {
-    try {
-      await setDefaultBankMutation.mutateAsync(method.id)
-      openSuccess({
-        message: 'Default payment method updated successfully.',
-      })
-    } catch {
-      openSuccess({
-        message: 'Unable to update default payment method. Please try again.',
-      })
-    }
+  if (isLoadingProfile) {
+    return (
+      <div className='w-full min-h-[50vh] flex items-center justify-center'>
+        <div className='flex flex-col items-center gap-3'>
+          <div className='h-10 w-10 animate-spin rounded-full border-2 border-primary-200 border-t-primary-500' />
+          <p className='text-sm text-grey-700'>Loading profile...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -242,9 +139,19 @@ const ProfilePageClient = () => {
               firstName: activeProfile.firstName,
               lastName: activeProfile.lastName,
               gender: activeProfile.gender,
+              isVerified: isKycEnabled,
             }}
           />
         </div>
+        {/* {!isKycEnabled && (
+          <div className='lg:pt-4'>
+            <KycBanner
+              message='Please provide your details for optimal experience on Giftseon'
+              actionLabel='Complete your profile'
+              actionHref='#'
+            />
+          </div>
+        )} */}
 
         <div className='px-4 lg:px-10 pb-6'>
           <div className='flex flex-col gap-5'>
@@ -253,7 +160,6 @@ const ProfilePageClient = () => {
               onChange={(tab) => {
                 setActiveTab(tab)
                 handleCancelProfileEdit()
-                setIsEditingPin(false)
               }}
             />
 
@@ -289,13 +195,6 @@ const ProfilePageClient = () => {
                   })
                 }
                 onEditInterests={() => setIsInterestsOpen(true)}
-                paymentMethods={paymentMethods}
-                onAddAccount={() => setIsAddAccountOpen(true)}
-                onDeletePayment={(method) => setDeleteTarget(method)}
-                onSetDefaultPayment={handleSetDefaultPayment}
-                isLoadingPaymentMethods={connectedBanksQuery.isLoading}
-                hasPaymentMethodsError={connectedBanksQuery.isError}
-                onRetryPaymentMethods={() => connectedBanksQuery.refetch()}
               />
             )}
 
@@ -308,9 +207,11 @@ const ProfilePageClient = () => {
 
             {activeTab === 'pin' && (
               <AccountPinSection
-                isEditingPin={isEditingPin}
-                onEdit={() => setIsEditingPin(true)}
-                onSave={handleSavePin}
+                pinActivated={profileData?.pinActivated ?? false}
+                onRequestSetPin={() => {
+                  if (typeof window === 'undefined') return
+                  window.dispatchEvent(new Event('open-transaction-pin-modal'))
+                }}
               />
             )}
           </div>
@@ -348,23 +249,6 @@ const ProfilePageClient = () => {
             message: 'Your interests have been successfully updated.',
           })
         }}
-      />
-
-      <AddAccountModal
-        isOpen={isAddAccountOpen}
-        onClose={() => setIsAddAccountOpen(false)}
-        bankOptions={bankOptions}
-        isLoadingBanks={availableBanksQuery.isLoading}
-        hasBanksError={availableBanksQuery.isError}
-        onRetryBanks={() => availableBanksQuery.refetch()}
-        isSaving={connectBankMutation.isPending}
-        onSave={handleAddPayment}
-      />
-
-      <DeletePaymentModal
-        target={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onDelete={handleDeletePayment}
       />
     </div>
   )

@@ -1,4 +1,5 @@
 import { PaginationParams } from '@/types/Common'
+import { ApiResponse } from '@/types/Common'
 
 export interface WalletTransactionsParams extends PaginationParams {
   type?: string
@@ -20,6 +21,11 @@ export interface WalletTopupInitialization {
   authorizationUrl: string
   accessCode: string
   reference: string
+}
+
+export interface WalletTopupLocalsResponse
+  extends ApiResponse<WalletTopupInitialization> {
+  meta: Record<string, unknown>
 }
 
 export interface WalletDetails {

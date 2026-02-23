@@ -7,6 +7,7 @@ type ProfileHeaderProps = {
     firstName: string
     lastName: string
     gender: string
+    isVerified: boolean
   }
 }
 
@@ -23,13 +24,13 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
               <h2 className='text-xl md:text-2xl font-medium leading-7 text-blackish'>
                 {profile.firstName} {profile.lastName}
               </h2>
-              <p className='text-sm leading-[18px] md:mb-2.5 text-grey-600'>
+              <p className='text-sm leading-[18px] md:mb-2.5 text-grey-600 capitalize'>
                 {profile.gender}
               </p>
             </div>
           </div>
 
-          <VerifiedBadge />
+          <VerifiedBadge isVerified={profile.isVerified} />
         </div>
       </div>
     </div>

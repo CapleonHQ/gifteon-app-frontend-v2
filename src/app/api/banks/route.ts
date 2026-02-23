@@ -3,7 +3,7 @@ import type { ApiResponse } from '@/types/Common'
 import type { AvailableBank, AvailableBanksData } from '@/types/Banks'
 
 export const runtime = 'nodejs'
-export const revalidate = 60 * 60 * 12
+export const revalidate = 43200
 
 const PAYSTACK_BANKS_URL = 'https://api.paystack.co/bank'
 const PAYSTACK_TIMEOUT_MS = 8000

@@ -1,7 +1,6 @@
-import PaymentMethodsSection from '@/components/Profile/sections/PaymentMethodsSection'
+import PaymentMethodsManagerSection from '@/components/Profile/sections/PaymentMethodsManagerSection'
 import PersonalInfoCard from '@/components/Profile/sections/PersonalInfoCard'
 import InterestsSection from '@/components/Profile/sections/InterestsSection'
-import type { PaymentMethod } from '@/types/Profile/payment'
 
 type PersonalInfoSectionProps = {
   profile: {
@@ -22,13 +21,6 @@ type PersonalInfoSectionProps = {
   onAddressChange: (value: string) => void
   onDobChange: (value?: Date) => void
   onEditInterests: () => void
-  paymentMethods: PaymentMethod[]
-  onAddAccount: () => void
-  onDeletePayment: (method: PaymentMethod) => void
-  onSetDefaultPayment: (method: PaymentMethod) => void
-  isLoadingPaymentMethods?: boolean
-  hasPaymentMethodsError?: boolean
-  onRetryPaymentMethods?: () => void
 }
 
 const PersonalInfoSection = ({
@@ -43,13 +35,6 @@ const PersonalInfoSection = ({
   onAddressChange,
   onDobChange,
   onEditInterests,
-  paymentMethods,
-  onAddAccount,
-  onDeletePayment,
-  onSetDefaultPayment,
-  isLoadingPaymentMethods = false,
-  hasPaymentMethodsError = false,
-  onRetryPaymentMethods,
 }: PersonalInfoSectionProps) => {
   return (
     <div
@@ -74,15 +59,7 @@ const PersonalInfoSection = ({
       </div>
 
       <div className={isEditingProfile ? 'hidden lg:block' : ''}>
-        <PaymentMethodsSection
-          methods={paymentMethods}
-          onAddAccount={onAddAccount}
-          onDelete={onDeletePayment}
-          onSetDefault={onSetDefaultPayment}
-          isLoading={isLoadingPaymentMethods}
-          hasError={hasPaymentMethodsError}
-          onRetry={onRetryPaymentMethods}
-        />
+        <PaymentMethodsManagerSection />
       </div>
     </div>
   )
