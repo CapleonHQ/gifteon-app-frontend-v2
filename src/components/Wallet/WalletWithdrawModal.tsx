@@ -10,14 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
+import { formatCurrency } from '@/lib/utils/currency'
 
 const formatAmount = (value: string) => {
   if (!value) return ''
@@ -151,7 +144,10 @@ const WalletWithdrawModal = ({
   const headerSubtitle =
     step === 'pin'
       ? 'Provide your account PIN to move forward'
-      : `Available balance: ${formatCurrency(availableBalance)}`
+      : `Available balance: ${formatCurrency(availableBalance, {
+          currency: 'NGN',
+          maximumFractionDigits: 0,
+        })}`
 
   const renderActions = () => {
     if (step === 'pin') {
@@ -250,7 +246,10 @@ const WalletWithdrawModal = ({
             isBelowMinimum
               ? 'Minimum withdrawal amount is ₦1,000'
               : isInsufficient
-                ? `You have less than ${formatCurrency(amountValue)} in your account`
+                ? `You have less than ${formatCurrency(amountValue, {
+                    currency: 'NGN',
+                    maximumFractionDigits: 0,
+                  })} in your account`
                 : undefined
           }
         />
@@ -274,19 +273,28 @@ const WalletWithdrawModal = ({
             <div className='flex items-center justify-between'>
               <span>Withdrawal amount:</span>
               <span className='font-medium text-grey-800'>
-                {formatCurrency(amountValue)}
+                {formatCurrency(amountValue, {
+                  currency: 'NGN',
+                  maximumFractionDigits: 0,
+                })}
               </span>
             </div>
             <div className='flex items-center justify-between'>
               <span>Processing fee:</span>
               <span className='font-medium text-grey-800'>
-                -{formatCurrency(fee)}
+                -{formatCurrency(fee, {
+                  currency: 'NGN',
+                  maximumFractionDigits: 0,
+                })}
               </span>
             </div>
             <div className='flex items-center justify-between'>
               <span>You will receive:</span>
               <span className='font-medium text-grey-900'>
-                {formatCurrency(receiveAmount)}
+                {formatCurrency(receiveAmount, {
+                  currency: 'NGN',
+                  maximumFractionDigits: 0,
+                })}
               </span>
             </div>
           </div>

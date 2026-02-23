@@ -1,5 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
-import { getPageById, getPages } from '@/api/services/pages'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  archivePage,
+  getPageById,
+  getPages,
+  unarchivePage,
+} from '@/api/services/pages'
 import { ApiResponse } from '@/types/Common'
 import {
   PageDetails,
@@ -38,5 +43,33 @@ export const usePageById = (pageId: string) => {
       ...response,
       data: mapPageDetails(response.data),
     }),
+  })
+}
+
+export const useArchivePage = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: archivePage,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['pages'] }),
+        queryClient.invalidateQueries({ queryKey: ['stats', 'overview'] }),
+      ])
+    },
+  })
+}
+
+export const useUnarchivePage = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: unarchivePage,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['pages'] }),
+        queryClient.invalidateQueries({ queryKey: ['stats', 'overview'] }),
+      ])
+    },
   })
 }

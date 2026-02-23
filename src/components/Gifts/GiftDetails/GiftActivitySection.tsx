@@ -11,6 +11,9 @@ type GiftActivitySectionProps = {
   isLoading?: boolean
   isError?: boolean
   onRetry?: () => void
+  canLoadMore?: boolean
+  isLoadingMore?: boolean
+  onLoadMore?: () => void
 }
 
 const GiftActivitySection = ({
@@ -20,6 +23,9 @@ const GiftActivitySection = ({
   isLoading = false,
   isError = false,
   onRetry,
+  canLoadMore = false,
+  isLoadingMore = false,
+  onLoadMore,
 }: GiftActivitySectionProps) => {
   const handleAction = (actionId: string, item: GiftActivityItem) => {
     console.log(`[GiftActivity] ${actionId} - ${item.id}`)
@@ -87,6 +93,18 @@ const GiftActivitySection = ({
               />
             ))}
           </div>
+          {canLoadMore && onLoadMore ? (
+            <div className='px-4 py-3 text-center'>
+              <button
+                type='button'
+                onClick={onLoadMore}
+                disabled={isLoadingMore}
+                className='inline-flex items-center justify-center px-4 py-2 rounded-[10px] border border-grey-200 text-sm text-grey-800 hover:bg-grey-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200'
+              >
+                {isLoadingMore ? 'Loading...' : 'Load more activity'}
+              </button>
+            </div>
+          ) : null}
         </>
       )}
     </div>

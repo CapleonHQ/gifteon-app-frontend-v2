@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import GiftIcon from '@/assets/icons/GiftIcon'
+import { useEffect } from 'react'
 import {
   Chart as ChartJS,
   ArcElement,
@@ -13,11 +12,7 @@ import {
 } from 'chart.js'
 import { useMobileBack } from '@/components/Layout/MobileTitleContext'
 import { useParams, useRouter } from 'next/navigation'
-import MessageIcon from '@/assets/icons/MessageIcon'
-import CashIcon from '@/assets/icons/CashIcon'
 import CardBgSvg from '@/assets/icons/CardBgSvg'
-import { GiftActivityItem } from '../GiftsPage/types'
-import type { SummaryCard, WishItem } from '@/types/Gifts/giftDetails'
 import EditGiftPageModal from './EditGiftPageModal'
 import ShareGiftPageModal from './ShareGiftPageModal'
 import DeactivateModal from '@/components/Gifts/GiftsPage/DeactivateModal'
@@ -29,11 +24,15 @@ import GiftActivitySection from './GiftActivitySection'
 import PageVisitsCard from './PageVisitsCard'
 import GiftTypeDistributionCard from './GiftTypeDistributionCard'
 import WishesSection from './WishesSection'
-import EyeOnIcon from '@/assets/icons/EyeOnIcon'
-import { usePageById } from '@/hooks/tanstack/pages'
 import { toApiError } from '@/api/errorHelpers'
 import GiftDetailsErrorState from './GiftDetailsErrorState'
-import { usePageComments } from '@/hooks/tanstack/pageComments'
+import { useGiftDetailsData } from './hooks/useGiftDetailsData'
+import { useGiftDetailsUiState } from './hooks/useGiftDetailsUiState'
+import { useArchivePage, useUnarchivePage } from '@/hooks/tanstack/pages'
+import {
+  giftDistributionChartOptions,
+  pageVisitsChartOptions,
+} from './utils/mappers'
 
 ChartJS.register(
   ArcElement,
@@ -44,93 +43,36 @@ ChartJS.register(
   Legend
 )
 
-const summaryCards: SummaryCard[] = [
-  {
-    id: 'gifts',
-    title: 'Total gifts received',
-    value: '82',
-    icon: GiftIcon,
-    borderColor: 'border-success-50',
-    accent: 'bg-success-50/30',
-    iconColor: 'text-success-400',
-    svgColor: 'text-success-50',
-  },
-  {
-    id: 'wishes',
-    title: 'Wishes',
-    value: '19',
-    icon: MessageIcon,
-    borderColor: 'border-warning-50',
-    accent: 'bg-warning-50/30',
-    iconColor: 'text-warning-400',
-    svgColor: 'text-warning-50',
-  },
-  {
-    id: 'views',
-    title: 'Page views',
-    value: '3,420',
-    icon: EyeOnIcon,
-    borderColor: 'border-[#EDE7FC]',
-    accent: 'bg-[#EDE7FC]/30',
-    iconColor: 'text-[#4B14CB]',
-    svgColor: 'text-[#EDE7FC]',
-  },
-  {
-    id: 'value',
-    title: 'Total value (Cash & Gifts)',
-    value: '₦210,400',
-    icon: CashIcon,
-    borderColor: 'border-[#E8F1FB]',
-    accent: 'bg-[#E8F1FB]/30',
-    iconColor: 'text-information-400',
-    svgColor: 'text-[#E8F1FB]',
-  },
-]
-
-const mockGiftActivity: GiftActivityItem[] = [
-  {
-    id: '1',
-    gift: 'Comfy Couch',
-    type: 'Gifts on Giftseon',
-    sender: 'Paul Akorede',
-    status: 'Unclaimed',
-    worth: '₦169,000',
-  },
-  {
-    id: '2',
-    gift: 'Cash',
-    type: 'Custom',
-    sender: 'Femi Oliemro',
-    status: 'Claimed',
-    worth: '₦35,000',
-  },
-]
-
 const GiftDetailsPageClient = () => {
   const router = useRouter()
   const params = useParams()
   const { setOnBack } = useMobileBack()
-  const [openMobileId, setOpenMobileId] = useState<string | null>(null)
-  const [visitRange, setVisitRange] = useState('last-7-days')
-  const [wishSort, setWishSort] = useState('most-recent')
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isShareOpen, setIsShareOpen] = useState(false)
-  const [isDeactivateOpen, setIsDeactivateOpen] = useState(false)
-  const [isReactivateOpen, setIsReactivateOpen] = useState(false)
   const { openSuccess } = useSuccessModal()
-  const [activeOverrides, setActiveOverrides] = useState<
-    Record<string, boolean>
-  >({})
-
   const giftId = typeof params?.id === 'string' ? params.id : '1'
-  const pageQuery = usePageById(giftId)
-  const commentsQuery = usePageComments(giftId)
-  const page = pageQuery.data?.data
-  const giftTitle = page?.title ?? 'Gift Page'
-  const giftUrl = page?.publicUrl ?? `/u/${giftId}`
-  const isActive = activeOverrides[giftId] ?? page?.isActive ?? true
-  const activityItems: GiftActivityItem[] = mockGiftActivity
-  const wishItems: WishItem[] = commentsQuery.data?.data ?? []
+  const archiveMutation = useArchivePage()
+  const unarchiveMutation = useUnarchivePage()
+  const ui = useGiftDetailsUiState(giftId)
+  const data = useGiftDetailsData(giftId, ui.wishSort)
+  const {
+    pageQuery,
+    commentsQuery,
+    contributionsQuery,
+    page,
+    giftTitle,
+    giftUrl,
+    summaryCards,
+    activityItems,
+    wishItems,
+    barData,
+    doughnutData,
+    isLoadingActivity,
+    hasActivityError,
+    canLoadMoreActivity,
+    isLoadingMoreActivity,
+    canLoadMoreWishes,
+    isLoadingMoreWishes,
+  } = data
+  const isActive = ui.isActive ?? page?.isActive ?? true
 
   useEffect(() => {
     setOnBack(() => () => {
@@ -140,90 +82,38 @@ const GiftDetailsPageClient = () => {
     return () => setOnBack(undefined)
   }, [router, setOnBack])
 
-  const barData = useMemo(
-    () => ({
-      labels: ['Oct 5', 'Oct 6', 'Oct 7', 'Oct 8', 'Oct 9', 'Oct 10', 'Oct 11'],
-      datasets: [
-        {
-          label: 'Visits',
-          data: [120, 60, 55, 90, 150, 80, 40],
-
-          backgroundColor: '#089BC4',
-          borderRadius: 2,
-          barThickness: 22,
-        },
-      ],
-    }),
-    []
-  )
-
-  const barOptions = useMemo(
-    () => ({
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: true },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: '#7B7574', font: { size: 11 } },
-          border: { display: false },
-        },
-        y: {
-          grid: { color: '#F3F2F2' },
-          ticks: { color: '#9F9A99', font: { size: 10 }, stepSize: 30 },
-          border: { display: false },
-        },
-      },
-    }),
-    []
-  )
-
-  const doughnutData = useMemo(
-    () => ({
-      labels: ['Items', 'Cash', 'Custom Gifts'],
-      datasets: [
-        {
-          data: [180000, 140000, 210000],
-          backgroundColor: ['#089BC4', '#C19348', '#5AB579'],
-          borderWidth: 0,
-          hoverOffset: 4,
-        },
-      ],
-    }),
-    []
-  )
-
-  const doughnutOptions = useMemo(
-    () => ({
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '60%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: true },
-      },
-    }),
-    []
-  )
-
   const handleViewPage = () => {
     if (typeof window === 'undefined') return
     window.open(giftUrl, '_blank', 'noopener,noreferrer')
   }
 
-  const handleDeactivateConfirm = () => {
-    setIsDeactivateOpen(false)
-    setActiveOverrides((prev) => ({ ...prev, [giftId]: false }))
-    openSuccess({ message: 'Your gift page has been successfully deactivated' })
+  const handleDeactivateConfirm = async () => {
+    try {
+      const response = await archiveMutation.mutateAsync([giftId])
+      ui.setIsDeactivateOpen(false)
+      ui.markInactive()
+      await pageQuery.refetch()
+      openSuccess({
+        message:
+          response.message || 'Your gift page has been successfully deactivated',
+      })
+    } catch {
+      // Query error states will recover via refetch/invalidation.
+    }
   }
 
-  const handleReactivateConfirm = () => {
-    setIsReactivateOpen(false)
-    setActiveOverrides((prev) => ({ ...prev, [giftId]: true }))
-    openSuccess({ message: 'Your gift page has been successfully activated' })
+  const handleReactivateConfirm = async () => {
+    try {
+      const response = await unarchiveMutation.mutateAsync([giftId])
+      ui.setIsReactivateOpen(false)
+      ui.markActive()
+      await pageQuery.refetch()
+      openSuccess({
+        message: response.message || 'Your gift page has been successfully activated',
+      })
+    } catch {
+      // Query error states will recover via refetch/invalidation.
+    }
   }
 
   const showInitialPageLoader = pageQuery.isLoading && !page
@@ -262,10 +152,12 @@ const GiftDetailsPageClient = () => {
             isActive={isActive}
             onBack={() => router.back()}
             onView={handleViewPage}
-            onEdit={() => setIsEditOpen(true)}
-            onShare={() => setIsShareOpen(true)}
+            onEdit={() => ui.setIsEditOpen(true)}
+            onShare={() => ui.setIsShareOpen(true)}
             onToggleActive={() =>
-              isActive ? setIsDeactivateOpen(true) : setIsReactivateOpen(true)
+              isActive
+                ? ui.setIsDeactivateOpen(true)
+                : ui.setIsReactivateOpen(true)
             }
           />
 
@@ -275,65 +167,80 @@ const GiftDetailsPageClient = () => {
             <div className='flex flex-col gap-5'>
               <GiftActivitySection
                 items={activityItems}
-                openMobileId={openMobileId}
-                onToggleMobile={(id) =>
-                  setOpenMobileId((prev) => (prev === id ? null : id))
-                }
+                openMobileId={ui.openMobileId}
+                onToggleMobile={ui.toggleMobileRow}
+                isLoading={isLoadingActivity}
+                isError={hasActivityError}
+                onRetry={() => contributionsQuery.refetch()}
+                canLoadMore={canLoadMoreActivity}
+                isLoadingMore={isLoadingMoreActivity}
+                onLoadMore={() => contributionsQuery.fetchNextPage()}
               />
 
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
                 <PageVisitsCard
-                  visitRange={visitRange}
-                  onVisitRangeChange={setVisitRange}
+                  visitRange={ui.visitRange}
+                  onVisitRangeChange={ui.setVisitRange}
                   data={barData}
-                  options={barOptions}
+                  options={pageVisitsChartOptions}
                 />
 
                 <GiftTypeDistributionCard
                   data={doughnutData}
-                  options={doughnutOptions}
+                  options={giftDistributionChartOptions}
                 />
               </div>
             </div>
 
             <WishesSection
               wishes={wishItems}
-              wishSort={wishSort}
-              onWishSortChange={setWishSort}
+              wishSort={ui.wishSort}
+              onWishSortChange={ui.setWishSort}
               isLoading={commentsQuery.isLoading}
               isError={commentsQuery.isError}
               onRetry={() => commentsQuery.refetch()}
+              canLoadMore={canLoadMoreWishes}
+              isLoadingMore={isLoadingMoreWishes}
+              onLoadMore={() => commentsQuery.fetchNextPage()}
             />
           </div>
         </div>
       )}
 
       <EditGiftPageModal
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
+        isOpen={ui.isEditOpen}
+        onClose={() => ui.setIsEditOpen(false)}
         onSuccess={() => {
           openSuccess({ message: 'Your updates have been saved successfully.' })
         }}
       />
 
       <ShareGiftPageModal
-        isOpen={isShareOpen}
-        onClose={() => setIsShareOpen(false)}
+        isOpen={ui.isShareOpen}
+        onClose={() => ui.setIsShareOpen(false)}
         pageTitle={giftTitle}
         pageUrl={giftUrl}
       />
 
       <DeactivateModal
-        isOpen={isDeactivateOpen}
+        isOpen={ui.isDeactivateOpen}
         count={1}
         message='This will make this gift page temporarily unavailable to others. People won’t be able to view, send gifts, or leave wishes until you reactivate it.'
-        onClose={() => setIsDeactivateOpen(false)}
+        isSubmitting={archiveMutation.isPending}
+        onClose={() => {
+          if (archiveMutation.isPending) return
+          ui.setIsDeactivateOpen(false)
+        }}
         onConfirm={handleDeactivateConfirm}
       />
 
       <ReactivateModal
-        isOpen={isReactivateOpen}
-        onClose={() => setIsReactivateOpen(false)}
+        isOpen={ui.isReactivateOpen}
+        isSubmitting={unarchiveMutation.isPending}
+        onClose={() => {
+          if (unarchiveMutation.isPending) return
+          ui.setIsReactivateOpen(false)
+        }}
         onConfirm={handleReactivateConfirm}
       />
     </div>

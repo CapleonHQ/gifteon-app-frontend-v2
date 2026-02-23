@@ -19,6 +19,7 @@ import {
 import type { ProfileTabId } from '@/types/Profile'
 import type { PaymentMethod } from '@/types/Profile/payment'
 import {
+  useAvailableBanks,
   useConnectedBanks,
   useConnectBank,
   useDisconnectBank,
@@ -109,6 +110,7 @@ const ProfilePageClient = () => {
     'cash',
   ])
   const [notifications, setNotifications] = useState(initialNotificationPrefs)
+  const availableBanksQuery = useAvailableBanks(isAddAccountOpen)
   const connectedBanksQuery = useConnectedBanks()
   const profileQuery = useProfile()
   const updateProfileMutation = useUpdateProfile()
@@ -128,6 +130,15 @@ const ProfilePageClient = () => {
         isDefault: bank.isDefault,
       })),
     [connectedBanksQuery.data?.data?.banks]
+  )
+  const bankOptions = useMemo(
+    () =>
+      (availableBanksQuery.data?.data?.banks ?? []).map((bank) => ({
+        id: bank.id,
+        label: bank.name,
+        code: bank.code,
+      })),
+    [availableBanksQuery.data?.data?.banks]
   )
 
   const currentInterests = useMemo(
@@ -342,6 +353,11 @@ const ProfilePageClient = () => {
       <AddAccountModal
         isOpen={isAddAccountOpen}
         onClose={() => setIsAddAccountOpen(false)}
+        bankOptions={bankOptions}
+        isLoadingBanks={availableBanksQuery.isLoading}
+        hasBanksError={availableBanksQuery.isError}
+        onRetryBanks={() => availableBanksQuery.refetch()}
+        isSaving={connectBankMutation.isPending}
         onSave={handleAddPayment}
       />
 

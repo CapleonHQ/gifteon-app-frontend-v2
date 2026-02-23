@@ -1,5 +1,6 @@
 import type {
-  PageApiItem,
+  PageDetailsApiItem,
+  PageListApiItem,
   PageDetails,
   PageDetailsApiData,
   PagesListApiData,
@@ -26,27 +27,52 @@ const toVisibilityLabel = (privacy: string): PageVisibility => {
   return 'Public'
 }
 
-const toStatusLabel = (active: boolean): PageStatus => {
+const toListStatusLabel = (status: string): PageStatus => {
+  const normalized = status.trim().toLowerCase()
+  return normalized === 'published' || normalized === 'active'
+    ? 'Active'
+    : 'Ended'
+}
+
+const toDetailsStatusLabel = (active: boolean): PageStatus => {
   return active ? 'Active' : 'Ended'
 }
 
 const toPublicUrl = (slug: string): string => `/u/${slug}`
 
-const toSummaryItem = (item: PageApiItem): PageSummary => {
+const toSummaryListItem = (item: PageListApiItem): PageSummary => {
   return {
     id: item.id,
     title: item.title,
-    category: item.EventCategory?.name ?? 'Uncategorized',
-    visibility: toVisibilityLabel(item.settings.privacy),
+    category: item.categoryName ?? 'Uncategorized',
+    visibility: toVisibilityLabel(item.visibility),
+    createdOn: formatCreatedOn(item.createdAt),
+    totalGifts: item.totalGifts ?? 0,
+    totalWishes: item.totalWishes ?? 0,
+    views: item.totalViews ?? 0,
+    status: toListStatusLabel(item.status),
+    image: item.coverImageUrl || '/assets/images/place-holder-image.jpg',
+    isActive: toListStatusLabel(item.status) === 'Active',
+    publicUrl: toPublicUrl(item.slug),
+  }
+}
+
+const toSummaryNewDetailsItem = (item: PageDetailsApiItem): PageSummary => {
+  const summary: PageSummary = {
+    id: item.id,
+    title: item.title,
+    category: item.categoryName ?? 'Uncategorized',
+    visibility: toVisibilityLabel(item.visibility),
     createdOn: formatCreatedOn(item.createdAt),
     totalGifts: 0,
-    totalWishes: 0,
-    views: 0,
-    status: toStatusLabel(item.active),
-    image: item.coverImageUrl || item.media[0]?.url || '/assets/images/place-holder-image.jpg',
+    totalWishes: item.engagement?.totalWishes ?? item.wishes?.length ?? 0,
+    views: item.engagement?.totalViews ?? 0,
+    status: toDetailsStatusLabel(item.active),
+    image: item.coverImageUrl || '/assets/images/place-holder-image.jpg',
     isActive: item.active,
     publicUrl: toPublicUrl(item.slug),
   }
+  return summary
 }
 
 const emptyPagesListData: PagesListData = {
@@ -63,7 +89,7 @@ export const mapPagesListData = (
   if (!data) return emptyPagesListData
 
   return {
-    pages: data.pages.map(toSummaryItem),
+    pages: data.pages.map(toSummaryListItem),
     total: data.total,
     limit: data.limit,
     offset: data.offset,
@@ -75,5 +101,27 @@ export const mapPageDetails = (
   data: PageDetailsApiData | undefined
 ): PageDetails | null => {
   if (!data) return null
-  return toSummaryItem(data)
+  const summary = toSummaryNewDetailsItem(data)
+  return {
+    ...summary,
+    contributions: data.contributions ?? [],
+    engagement: {
+      totalViews: data.engagement?.totalViews ?? 0,
+      totalShares: data.engagement?.totalShares ?? 0,
+      totalContributions: data.engagement?.totalContributions ?? 0,
+      totalWishes: data.engagement?.totalWishes ?? data.wishes?.length ?? 0,
+      totalContibutionsValue: data.engagement?.totalContibutionsValue ?? 0,
+    },
+    chartData: {
+      giftDistribution: {
+        cash: data.chartData?.giftDistribution?.cash ?? 0,
+        store: data.chartData?.giftDistribution?.store ?? 0,
+        custom: data.chartData?.giftDistribution?.custom ?? 0,
+      },
+      pageVisits: (data.chartData?.pageVisits ?? []).map((point) => ({
+        date: point.date,
+        count: Number(point.count) || 0,
+      })),
+    },
+  }
 }

@@ -26,3 +26,19 @@ export interface ConnectedBanksData {
   offset: number
   hasMore: boolean
 }
+
+export interface AvailableBank {
+  id: string
+  name: string
+  code: string
+  slug: string
+  country: string
+  currency: string
+  type: string
+  supportsTransfer: boolean
+}
+
+export interface AvailableBanksData {
+  banks: AvailableBank[]
+  total: number
+}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import { Loader2 } from 'lucide-react'
+import { MIN_WALLET_TOPUP_AMOUNT } from '@/lib/constants/payments'
 
 type WalletTopUpModalProps = {
   isOpen: boolean
@@ -11,6 +12,7 @@ type WalletTopUpModalProps = {
   onSubmit: (amount: number) => void
   isSubmitting?: boolean
   errorMessage?: string
+  minAmount?: number
 }
 
 const WalletTopUpModal = ({
@@ -19,6 +21,7 @@ const WalletTopUpModal = ({
   onSubmit,
   isSubmitting = false,
   errorMessage,
+  minAmount = MIN_WALLET_TOPUP_AMOUNT,
 }: WalletTopUpModalProps) => {
   const [amountInput, setAmountInput] = useState('')
 
@@ -28,7 +31,8 @@ const WalletTopUpModal = ({
     ? Number(amountInput.replace(/\D/g, '') || '0').toLocaleString('en-US')
     : ''
   const amountValue = Number(amountInput.replace(/\D/g, ''))
-  const isDisabled = amountValue <= 0 || isSubmitting
+  const isBelowMinimum = amountValue > 0 && amountValue < minAmount
+  const isDisabled = amountValue <= 0 || isBelowMinimum || isSubmitting
 
   const handleClose = () => {
     setAmountInput('')
@@ -79,7 +83,15 @@ const WalletTopUpModal = ({
           inputMode='numeric'
           className='w-full px-3 py-3.5 border border-grey-100 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium focus:border-primary-500'
         />
+        <p className='text-xs text-grey-600'>
+          Minimum top-up is {minAmount.toLocaleString('en-US')}.
+        </p>
       </div>
+      {isBelowMinimum ? (
+        <p className='text-sm text-error-500'>
+          Enter at least {minAmount.toLocaleString('en-US')} to continue.
+        </p>
+      ) : null}
       {errorMessage ? (
         <p className='text-sm text-error-500'>{errorMessage}</p>
       ) : null}

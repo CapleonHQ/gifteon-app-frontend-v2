@@ -1,7 +1,11 @@
 import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
-import { CreateCommentRequestBody, PageCommentsData } from '@/types/Comments'
+import {
+  CreateCommentRequestBody,
+  PageCommentsData,
+  PageCommentsQueryParams,
+} from '@/types/Comments'
 
 export const createComment = async (
   pageId: string,
@@ -15,10 +19,11 @@ export const createComment = async (
 }
 
 export const getComments = async (
-  pageId: string
+  pageId: string,
+  params?: PageCommentsQueryParams
 ): Promise<ApiResponse<PageCommentsData>> => {
   const resp: AxiosResponse<ApiResponse<PageCommentsData>> =
-    await apiService.appPrivate.get(`/pages/${pageId}/comments`)
+    await apiService.appPrivate.get(`/pages/${pageId}/comments`, { params })
   return resp.data
 }
 

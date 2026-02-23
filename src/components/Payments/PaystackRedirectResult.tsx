@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useQuery } from '@tanstack/react-query'
 import { verifyTransactionByReference } from '@/api/services/payment'
+import { consumePaymentReturnPath } from '@/lib/payments/paystackReturn'
 
 type UiStatus =
   | 'verifying'
@@ -183,9 +184,9 @@ const PaystackRedirectResult = () => {
 
   const returnPath = useMemo(() => {
     const candidate = searchParams.get('return_to') || searchParams.get('next')
-    if (!isSafeInternalPath(candidate)) return '/'
-    return candidate as string
-  }, [searchParams])
+    if (isSafeInternalPath(candidate)) return candidate as string
+    return consumePaymentReturnPath(reference)
+  }, [reference, searchParams])
 
   const missingReferenceStatus: Exclude<UiStatus, 'verifying'> =
     redirectHint === 'cancel'

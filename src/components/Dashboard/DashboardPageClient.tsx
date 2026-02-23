@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { format, isValid, parseISO } from 'date-fns'
 import RecentGiftsSection from './RecentGiftsSection'
 import KycBanner from './KycBanner'
 import ClaimGiftModal from '@/components/Gifts/ClaimGiftModal'
@@ -8,79 +9,86 @@ import MarkAsDeliveredModal from '@/components/Gifts/MarkAsDeliveredModal'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import DashboardStatsSection from './DashboardStatsSection'
 import type { GiftItem } from '@/types/Gifts/index'
+import { useStatsOverview } from '@/hooks/tanstack/stats'
+import type { DashboardRecentGift } from '@/types/Stats'
+import { formatCurrency } from '@/lib/utils/currency'
 
-const recentGifts: GiftItem[] = [
-  {
-    id: '1',
-    name: 'Comfy Couch',
-    type: 'Item',
-    date: '24 Oct, 2025',
-    worth: '₦258,600',
-    status: 'Delivered',
-    image: '/assets/images/place-holder-image.jpg',
-  },
-  {
-    id: '2',
-    name: 'Keyholder',
-    type: 'Item',
-    date: '24 Oct, 2025',
-    worth: '₦2,400',
-    status: 'Fulfilled',
-    actionLabel: 'Claim gift',
-    actionType: 'claim_gift',
-    image: '/assets/images/place-holder-image.jpg',
-    fromName: 'Suleiman Agunde',
-  },
-  {
-    id: '3',
-    name: 'Flight Ticket',
-    type: 'Custom Gift',
-    date: '24 Oct, 2025',
-    worth: '₦12,100',
-    status: 'Fulfilled',
-    actionLabel: 'Claim gift',
-    actionType: 'claim_gift',
-    image: '/assets/images/place-holder-image.jpg',
-    fromName: 'Suleiman Agunde',
-  },
-  {
-    id: '4',
-    name: 'Men suits',
-    type: 'Item',
-    date: '24 Oct, 2025',
-    worth: '₦92,000',
-    status: 'Shipped',
-    actionLabel: 'Mark as delivered',
-    actionType: 'deliver',
-    image: '/assets/images/place-holder-image.jpg',
-  },
-  {
-    id: '5',
-    name: 'Cash',
-    type: 'Cash',
-    date: '24 Oct, 2025',
-    worth: '₦32,000',
-    status: 'Fulfilled',
-    actionLabel: 'Claim gift',
-    actionType: 'claim_cash',
-    image: '/assets/images/place-holder-image.jpg',
-    fromName: 'Suleiman Agunde',
-  },
-  {
-    id: '6',
-    name: 'Comfy Couch',
-    type: 'Item',
-    date: '24 Oct, 2025',
-    worth: '₦258,600',
-    status: 'Not fulfilled',
-    image: '/assets/images/place-holder-image.jpg',
-  },
-]
+const FALLBACK_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
+
+const formatGiftDate = (value?: string) => {
+  if (!value) return '-'
+  const parsed = parseISO(value)
+  if (!isValid(parsed)) return value
+  return format(parsed, 'dd MMM, yyyy')
+}
+
+const normalizeGiftStatus = (
+  value?: string
+): 'Delivered' | 'Fulfilled' | 'Shipped' | 'Not fulfilled' => {
+  const normalized = (value || '').toLowerCase()
+  if (normalized === 'delivered') return 'Delivered'
+  if (normalized === 'fulfilled') return 'Fulfilled'
+  if (normalized === 'shipped') return 'Shipped'
+  return 'Not fulfilled'
+}
+
+const mapRecentGiftItem = (
+  item: DashboardRecentGift,
+  index: number,
+  currency: string
+): GiftItem => {
+  const type = item.type || item.giftType || 'Gift'
+  const amount =
+    typeof item.amount === 'number'
+      ? formatCurrency(item.amount, { currency, maximumFractionDigits: 0 })
+      : item.amount || item.worth || '₦0'
+  const status = normalizeGiftStatus(item.status)
+  const safeType = type.toLowerCase()
+
+  return {
+    id: String(item.id ?? index),
+    name: item.name || item.giftName || item.title || 'Gift',
+    type,
+    date: formatGiftDate(item.date || item.createdAt),
+    worth: amount,
+    status,
+    image: item.image || item.imageUrl || FALLBACK_GIFT_IMAGE,
+    fromName: item.fromName || item.senderName || 'Someone',
+    actionType:
+      status === 'Shipped'
+        ? 'deliver'
+        : status === 'Fulfilled'
+          ? safeType.includes('cash')
+            ? 'claim_cash'
+            : 'claim_gift'
+          : undefined,
+    actionLabel:
+      status === 'Shipped'
+        ? 'Mark as delivered'
+        : status === 'Fulfilled'
+          ? 'Claim gift'
+          : undefined,
+  }
+}
 
 const DashboardPageClient = () => {
   const { openSuccess } = useSuccessModal()
+  const statsOverview = useStatsOverview()
   const [claimItem, setClaimItem] = useState<GiftItem | null>(null)
   const [deliverItem, setDeliverItem] = useState<GiftItem | null>(null)
+  const overviewData = statsOverview.data?.data
+  const currency = overviewData?.overview?.currency || 'NGN'
+  const recentGifts = useMemo(
+    () =>
+      (overviewData?.recentGifts ?? []).map((item, index) =>
+        mapRecentGiftItem(item, index, currency)
+      ),
+    [currency, overviewData?.recentGifts]
+  )
+  const isLoadingRecentGifts = statsOverview.isLoading && recentGifts.length === 0
+  const hasRecentGiftsError =
+    (statsOverview.isError || statsOverview.isRefetchError) &&
+    recentGifts.length === 0
 
   const isCashClaim =
     (claimItem?.actionType || '') === 'claim_cash' ||
@@ -123,7 +131,14 @@ const DashboardPageClient = () => {
       <div className='w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
         <DashboardStatsSection />
 
-        <RecentGiftsSection items={recentGifts} onAction={handleGiftAction} />
+        <RecentGiftsSection
+          items={recentGifts}
+          onAction={handleGiftAction}
+          isLoading={isLoadingRecentGifts}
+          hasError={hasRecentGiftsError}
+          isRetrying={hasRecentGiftsError && statsOverview.isFetching}
+          onRetry={() => statsOverview.refetch()}
+        />
       </div>
 
       <ClaimGiftModal

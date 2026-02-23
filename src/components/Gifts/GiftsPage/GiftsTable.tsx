@@ -14,7 +14,7 @@ type GiftsTableProps = {
   onToggleOne: (id: string) => void
   onView: (id: string) => void
   onDeactivateSelected: () => void
-  onDeactivateSingle: () => void
+  onDeactivateSingle: (id: string) => void
 }
 
 const GiftsTable = ({
@@ -60,7 +60,7 @@ const GiftsTable = ({
               isSelected={selectedIds.has(page.id)}
               onToggle={() => onToggleOne(page.id)}
               onView={() => onView(page.id)}
-              onDeactivate={onDeactivateSingle}
+              onDeactivate={() => onDeactivateSingle(page.id)}
             />
           ))}
         </div>

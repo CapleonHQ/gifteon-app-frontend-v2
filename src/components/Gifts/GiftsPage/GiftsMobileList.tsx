@@ -15,7 +15,7 @@ type GiftsMobileListProps = {
   onView: (id: string) => void
   onDeactivateSelected: () => void
   onClearSelection: () => void
-  onDeactivateSingle: () => void
+  onDeactivateSingle: (id: string) => void
 }
 
 const GiftsMobileList = ({
@@ -67,7 +67,7 @@ const GiftsMobileList = ({
           onToggle={() => onToggle(page.id)}
           onSelect={() => onSelect(page.id)}
           onView={() => onView(page.id)}
-          onDeactivate={onDeactivateSingle}
+          onDeactivate={() => onDeactivateSingle(page.id)}
           onStartPress={() => startPress(page.id)}
           onClearPress={clearPress}
         />

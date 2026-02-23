@@ -23,12 +23,11 @@ export interface WalletTopupInitialization {
 }
 
 export interface WalletDetails {
-  id: string
-  balance: string
+  balance: number
+  totalReceived: number
+  totalWithdrawn: number
   currency: string
   isLocked: boolean
-  createdAt: string
-  updatedAt: string
 }
 
 export interface WalletTransactionApiItem {

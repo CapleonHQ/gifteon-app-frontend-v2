@@ -1,6 +1,5 @@
 'use client'
 
-import { ChevronDownIcon } from '@/assets/icons'
 import {
   Select,
   SelectContent,
@@ -10,6 +9,8 @@ import {
 } from '@/components/ui/select'
 import { Bar } from 'react-chartjs-2'
 import type { ChartData, ChartOptions } from 'chart.js'
+import DashboardEmptyState from '@/components/Dashboard/DashboardEmptyState'
+import EmptyFolderFile from '@/assets/icons/EmptyFolderFile'
 
 type PageVisitsCardProps = {
   visitRange: string
@@ -24,6 +25,14 @@ const PageVisitsCard = ({
   data,
   options,
 }: PageVisitsCardProps) => {
+  const visits =
+    data.datasets.flatMap((dataset) =>
+      dataset.data.map((value) =>
+        typeof value === 'number' ? value : Number(value) || 0
+      )
+    ) ?? []
+  const isEmpty = visits.length === 0 || visits.every((value) => value <= 0)
+
   return (
     <div className='bg-white border lg:border-none border-grey-50 rounded-[12px] shadow-[0px_1.5px_4px_-1px_#10192812] p-4'>
       <div className='flex items-center justify-between'>
@@ -45,9 +54,18 @@ const PageVisitsCard = ({
           </SelectContent>
         </Select>
       </div>
-      <div className='mt-3 h-[298px]'>
-        <Bar data={data} options={options} />
-      </div>
+      {isEmpty ? (
+        <div className='mt-3 h-[298px] flex items-center justify-center'>
+          <DashboardEmptyState
+            message='No page visits yet!'
+            icon={<EmptyFolderFile />}
+          />
+        </div>
+      ) : (
+        <div className='mt-3 h-[298px]'>
+          <Bar data={data} options={options} />
+        </div>
+      )}
     </div>
   )
 }

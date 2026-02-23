@@ -2,18 +2,19 @@
 
 import CloseIcon from '@/assets/icons/CloseIcon'
 import ActivateAnimation from '@/components/common/ActivateAnimation'
-import SuccessConfetti from '@/components/common/SuccessConfetti'
 
 type ReactivateModalProps = {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
+  isSubmitting?: boolean
 }
 
 const ReactivateModal = ({
   isOpen,
   onClose,
   onConfirm,
+  isSubmitting = false,
 }: ReactivateModalProps) => {
   if (!isOpen) return null
 
@@ -51,6 +52,7 @@ const ReactivateModal = ({
             <button
               type='button'
               onClick={onClose}
+              disabled={isSubmitting}
               className='flex-1 py-3.5 rounded-[12px] border border-grey-200 text-grey-800 font-medium bg-grey-50/70 hover:bg-grey-100/70 transition-colors duration-300 order-2 sm:order-1'
             >
               Cancel
@@ -58,9 +60,10 @@ const ReactivateModal = ({
             <button
               type='button'
               onClick={onConfirm}
+              disabled={isSubmitting}
               className='flex-1 py-3.5 rounded-[12px] bg-linear-to-r from-primary-400 to-primary-600 border border-primary-500 text-white font-medium hover:from-primary-500 hover:to-primary-700 transition-colors duration-300 order-1 sm:order-2'
             >
-              Reactivate Page
+              {isSubmitting ? 'Processing...' : 'Reactivate Page'}
             </button>
           </div>
         </div>

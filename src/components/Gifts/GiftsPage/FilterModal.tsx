@@ -4,6 +4,7 @@ import CloseIcon from '@/assets/icons/CloseIcon'
 import DatePickerField from '@/components/Gifts/CreateNewGiftPage/Components/DatePickerField'
 import { type GiftsFilterState } from '@/types/Gifts/filters'
 import { SearchIcon } from '@/assets/icons'
+import { isBefore, startOfDay } from 'date-fns'
 import {
   Select,
   SelectContent,
@@ -34,6 +35,33 @@ const FilterModal = ({
   const update = (next: Partial<GiftsFilterState>) =>
     onChange({ ...values, ...next })
 
+  const handleFromDateChange = (date?: Date) => {
+    if (!date) {
+      update({ fromDate: undefined })
+      return
+    }
+
+    const next: Partial<GiftsFilterState> = { fromDate: date }
+    if (
+      values.toDate &&
+      isBefore(startOfDay(values.toDate), startOfDay(date))
+    ) {
+      next.toDate = undefined
+    }
+    update(next)
+  }
+
+  const handleToDateChange = (date?: Date) => {
+    if (
+      date &&
+      values.fromDate &&
+      isBefore(startOfDay(date), startOfDay(values.fromDate))
+    ) {
+      return
+    }
+    update({ toDate: date })
+  }
+
   const content = (
     <div className='relative w-full sm:max-w-[460px] rounded-[10px] bg-white shadow-[0px_24px_60px_-20px_#10192852]'>
       <div className='flex items-center justify-between px-5 py-[15px] border-b border-grey-50'>
@@ -56,12 +84,14 @@ const FilterModal = ({
             <DatePickerField
               label='From:'
               value={values.fromDate}
-              onChange={(date) => update({ fromDate: date })}
+              onChange={handleFromDateChange}
+              maxDate={values.toDate}
             />
             <DatePickerField
               label='To'
               value={values.toDate}
-              onChange={(date) => update({ toDate: date })}
+              onChange={handleToDateChange}
+              minDate={values.fromDate}
             />
           </div>
         </div>
@@ -184,12 +214,14 @@ const FilterModal = ({
               <DatePickerField
                 label='From:'
                 value={values.fromDate}
-                onChange={(date) => update({ fromDate: date })}
+                onChange={handleFromDateChange}
+                maxDate={values.toDate}
               />
               <DatePickerField
                 label='To'
                 value={values.toDate}
-                onChange={(date) => update({ toDate: date })}
+                onChange={handleToDateChange}
+                minDate={values.fromDate}
               />
             </div>
           </div>

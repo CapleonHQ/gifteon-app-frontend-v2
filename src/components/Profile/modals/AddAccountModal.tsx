@@ -14,9 +14,20 @@ import {
 } from '@/components/ui/select'
 import InputField from '@/components/Profile/components/InputField'
 
+type BankOption = {
+  id: string
+  label: string
+  code: string
+}
+
 type AddAccountModalProps = {
   isOpen: boolean
   onClose: () => void
+  bankOptions: BankOption[]
+  isLoadingBanks?: boolean
+  hasBanksError?: boolean
+  onRetryBanks?: () => void
+  isSaving?: boolean
   onSave: (payload: {
     bank: string
     bankCode: string
@@ -26,38 +37,46 @@ type AddAccountModalProps = {
   }) => void
 }
 
-const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
-  const bankOptions = [
-    { label: 'GT Bank', code: '058' },
-    { label: 'Sterling Bank', code: '232' },
-    { label: 'First Bank', code: '011' },
-    { label: 'Opay', code: '044' },
-  ]
-  const [bank, setBank] = useState('')
-  const [account, setAccount] = useState('')
+const AddAccountModal = ({
+  isOpen,
+  onClose,
+  bankOptions,
+  isLoadingBanks = false,
+  hasBanksError = false,
+  onRetryBanks,
+  isSaving = false,
+  onSave,
+}: AddAccountModalProps) => {
+  const [selectedBankId, setSelectedBankId] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
   const [makeDefault, setMakeDefault] = useState(false)
+  const hasValidAccountNumber = accountNumber.length === 10
 
   const handleClose = () => {
     onClose()
-    setBank('')
-    setAccount('')
+    setSelectedBankId('')
+    setAccountNumber('')
     setAccountName('')
     setMakeDefault(false)
   }
 
   const handleSave = () => {
-    const selectedBank = bankOptions.find((option) => option.label === bank)
-    if (!selectedBank || !account || !accountName) return
+    const selectedBank = bankOptions.find(
+      (option) => option.id === selectedBankId
+    )
+    if (!selectedBank || !hasValidAccountNumber || !accountName.trim()) return
+
     onSave({
       bank: selectedBank.label,
       bankCode: selectedBank.code,
-      accountNumber: account,
-      accountName,
+      accountNumber,
+      accountName: accountName.trim(),
       isDefault: makeDefault,
     })
-    setBank('')
-    setAccount('')
+
+    setSelectedBankId('')
+    setAccountNumber('')
     setAccountName('')
     setMakeDefault(false)
   }
@@ -101,25 +120,58 @@ const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
     <div className='space-y-4'>
       <div>
         <label className='text-sm font-medium text-grey-900'>Bank Name</label>
-        <Select value={bank} onValueChange={setBank}>
-          <SelectTrigger className='mt-1 w-full rounded-[10px] border border-grey-100 bg-grey-50/15 px-3 py-3.5 text-sm text-grey-600 h-[48px]!'>
-            <SelectValue placeholder='Select bank' />
+        <Select
+          value={selectedBankId}
+          onValueChange={setSelectedBankId}
+          disabled={isLoadingBanks || hasBanksError || bankOptions.length === 0}
+        >
+          <SelectTrigger className='mt-1 w-full rounded-[10px] border border-grey-100 bg-grey-50/15 px-3 py-3.5 text-sm text-grey-600 h-[48px]! disabled:opacity-60'>
+            <SelectValue
+              placeholder={isLoadingBanks ? 'Loading banks...' : 'Select bank'}
+            />
           </SelectTrigger>
           <SelectContent>
+            {!isLoadingBanks && bankOptions.length === 0 && (
+              <SelectItem value='no-banks' disabled>
+                No banks available
+              </SelectItem>
+            )}
             {bankOptions.map((option) => (
-              <SelectItem key={option.code} value={option.label}>
+              <SelectItem key={option.id} value={option.id}>
                 {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+
+        {hasBanksError && (
+          <div className='mt-2 rounded-[10px] border border-error-100 bg-error-50 px-3 py-2'>
+            <p className='text-xs text-error-600'>
+              We couldn&apos;t load the bank list.
+            </p>
+            <button
+              type='button'
+              onClick={onRetryBanks}
+              className='mt-1 text-xs font-medium text-error-600 underline underline-offset-2'
+            >
+              Retry
+            </button>
+          </div>
+        )}
       </div>
       <InputField
         label='Account Number'
         placeholder='Enter the account number'
-        value={account}
-        onChange={setAccount}
+        value={accountNumber}
+        onChange={(value) =>
+          setAccountNumber(value.replace(/\D/g, '').slice(0, 10))
+        }
       />
+      {accountNumber.length > 0 && !hasValidAccountNumber && (
+        <p className='text-xs text-error-500 -mt-2'>
+          Account number must be exactly 10 digits.
+        </p>
+      )}
       <InputField
         label='Account Holder Name'
         placeholder='Account name'
@@ -149,9 +201,16 @@ const AddAccountModal = ({ isOpen, onClose, onSave }: AddAccountModalProps) => {
         type='button'
         onClick={handleSave}
         className='flex-1 py-3 rounded-[12px] bg-linear-to-b from-[#4848C9] from-[17.5%] to-[#1818AB] enabled:hover:from-primary-600 enabled:hover:to-primary-800 transition-colors duration-300 text-white font-medium disabled:opacity-30'
-        disabled={!bank || !account || !accountName}
+        disabled={
+          !selectedBankId ||
+          !hasValidAccountNumber ||
+          !accountName.trim() ||
+          isSaving ||
+          isLoadingBanks ||
+          hasBanksError
+        }
       >
-        Save Account
+        {isSaving ? 'Saving...' : 'Save Account'}
       </button>
     </div>
   )

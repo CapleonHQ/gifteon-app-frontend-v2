@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>New Device Login Detected</title>
+    <style>
+      .logo-dark {
+        display: none !important;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body,
+        .email-bg {
+          background-color: #0f1217 !important;
+          color: #f3f2f2 !important;
+        }
+
+        .email-card {
+          background-color: #171c23 !important;
+          border-color: #2a3442 !important;
+        }
+
+        .header-bg,
+        .details-box,
+        .alert-box,
+        .footer-bg {
+          background-color: #111922 !important;
+          border-color: #243142 !important;
+        }
+
+        .text-primary {
+          color: #f3f2f2 !important;
+        }
+
+        .text-secondary {
+          color: #c8c5c4 !important;
+        }
+
+        .text-muted {
+          color: #afaba9 !important;
+        }
+
+        .brand-link {
+          color: #9696e0 !important;
+        }
+
+        .logo-light {
+          display: none !important;
+        }
+
+        .logo-dark {
+          display: inline-block !important;
+        }
+      }
+
+      [data-ogsc] .email-bg,
+      [data-ogsb] .email-bg {
+        background-color: #0f1217 !important;
+      }
+    </style>
+  </head>
+  <body
+    class="email-bg"
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f5fdff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        Helvetica, Arial, sans-serif;
+      color: #393635;
+    "
+  >
+    <div style="display: none; max-height: 0; overflow: hidden; opacity: 0">
+      We detected a new device sign-in on your Giftseon account.
+    </div>
+
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      class="email-bg"
+      style="background-color: #f5fdff; padding: 24px 12px"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            width="100%"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            class="email-card"
+            style="
+              max-width: 620px;
+              background: #ffffff;
+              border: 1px solid #dad8d7;
+              border-radius: 16px;
+              overflow: hidden;
+            "
+          >
+            <tr>
+              <td
+                class="header-bg"
+                style="
+                  background-color: #f6fbfd;
+                  padding: 24px 28px;
+                  border-bottom: 1px solid #e3f4f8;
+                  text-align: center;
+                "
+              >
+                <img
+                  class="logo-light"
+                  src="https://res.cloudinary.com/drvco5ykd/image/upload/v1771746624/lock_up_color_2_u4jxfm.png"
+                  alt="Giftseon"
+                  width="128"
+                  style="
+                    display: inline-block;
+                    width: 128px;
+                    max-width: 128px;
+                    height: auto;
+                    border: 0;
+                    outline: none;
+                    text-decoration: none;
+                  "
+                />
+                <img
+                  class="logo-dark"
+                  src="https://res.cloudinary.com/drvco5ykd/image/upload/v1771746694/lock_up_color_3_l2o8yp.png"
+                  alt="Giftseon"
+                  width="128"
+                  style="
+                    display: none;
+                    width: 128px;
+                    max-width: 128px;
+                    height: auto;
+                    border: 0;
+                    outline: none;
+                    text-decoration: none;
+                  "
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 32px 28px 24px 28px">
+                <h1
+                  class="text-primary"
+                  style="
+                    margin: 0 0 12px 0;
+                    font-size: 28px;
+                    line-height: 36px;
+                    color: #121212;
+                    font-weight: 700;
+                  "
+                >
+                  New Device Login Detected
+                </h1>
+
+                <p
+                  class="text-secondary"
+                  style="
+                    margin: 0 0 16px 0;
+                    font-size: 16px;
+                    line-height: 26px;
+                    color: #605c5a;
+                  "
+                >
+                  Hi {{recipient_name}}, we noticed a sign-in to your Giftseon
+                  account from a new device.
+                </p>
+
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  class="details-box"
+                  style="
+                    background-color: #f6fbfd;
+                    border: 1px solid #e3f4f8;
+                    border-radius: 12px;
+                    margin: 0 0 20px 0;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 16px 18px">
+                      <p
+                        class="text-primary"
+                        style="
+                          margin: 0 0 10px 0;
+                          font-size: 15px;
+                          line-height: 22px;
+                          color: #121212;
+                          font-weight: 700;
+                        "
+                      >
+                        📱 Device Details
+                      </p>
+                      <p
+                        class="text-secondary"
+                        style="
+                          margin: 0 0 6px 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #605c5a;
+                        "
+                      >
+                        <strong>Device:</strong> {{device_name}}
+                      </p>
+                      <p
+                        class="text-secondary"
+                        style="
+                          margin: 0 0 6px 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #605c5a;
+                        "
+                      >
+                        <strong>Browser:</strong> {{browser}}
+                      </p>
+                      <p
+                        class="text-secondary"
+                        style="
+                          margin: 0 0 6px 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #605c5a;
+                        "
+                      >
+                        <strong>Operating System:</strong> {{operating_system}}
+                      </p>
+                      <p
+                        class="text-secondary"
+                        style="
+                          margin: 0 0 6px 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #605c5a;
+                        "
+                      >
+                        <strong>IP Address:</strong> {{ip_address}}
+                      </p>
+                      <p
+                        class="text-secondary"
+                        style="
+                          margin: 0 0 6px 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #605c5a;
+                        "
+                      >
+                        <strong>Location:</strong> {{location}}
+                      </p>
+                      <p
+                        class="text-secondary"
+                        style="
+                          margin: 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #605c5a;
+                        "
+                      >
+                        <strong>Time:</strong> {{login_time}}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  class="alert-box"
+                  style="
+                    background-color: #fcf4e7;
+                    border: 1px solid #f4ddb4;
+                    border-radius: 12px;
+                    margin: 0 0 22px 0;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 16px 18px">
+                      <p
+                        class="text-primary"
+                        style="
+                          margin: 0 0 8px 0;
+                          font-size: 15px;
+                          line-height: 22px;
+                          color: #121212;
+                          font-weight: 700;
+                        "
+                      >
+                        ⚠️ Was this you?
+                      </p>
+                      <p
+                        class="text-secondary"
+                        style="
+                          margin: 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #605c5a;
+                        "
+                      >
+                        If this was you, no action is needed. If you do not
+                        recognize this login, secure your account immediately.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 18px 0">
+                  <tr>
+                    <td
+                      align="center"
+                      bgcolor="#1a1abc"
+                      style="border-radius: 12px"
+                    >
+                      <a
+                        href="{{frontend_url}}/profile/security"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 14px 22px;
+                          font-size: 16px;
+                          line-height: 20px;
+                          font-weight: 600;
+                          color: #ffffff;
+                          text-decoration: none;
+                          border-radius: 12px;
+                          border: 1px solid #1818ab;
+                        "
+                      >
+                        Review Security Settings
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  class="text-muted"
+                  style="
+                    margin: 0 0 10px 0;
+                    font-size: 13px;
+                    line-height: 21px;
+                    color: #7b7574;
+                  "
+                >
+                  🛡️ This is an automated security alert from Giftseon to help
+                  protect your account.
+                </p>
+
+                <p
+                  class="text-secondary"
+                  style="
+                    margin: 0;
+                    font-size: 14px;
+                    line-height: 22px;
+                    color: #605c5a;
+                  "
+                >
+                  Stay secure,<br />
+                  Giftseon Account Security
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                class="footer-bg"
+                style="
+                  background-color: #f6fbfd;
+                  border-top: 1px solid #e3f4f8;
+                  padding: 18px 28px;
+                  text-align: center;
+                "
+              >
+                <p
+                  class="text-muted"
+                  style="
+                    margin: 0;
+                    font-size: 12px;
+                    line-height: 18px;
+                    color: #87817f;
+                  "
+                >
+                  © 2026 Giftseon. Made with love for every celebration.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+
