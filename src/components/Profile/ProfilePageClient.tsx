@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
@@ -83,6 +83,7 @@ const ProfilePageClient = () => {
     'cash',
   ])
   const [notifications, setNotifications] = useState(initialNotificationPrefs)
+  const autoEditHandledRef = useRef(false)
   const profileQuery = useProfile()
   const profileData = profileQuery.data?.data
   const updateProfileMutation = useUpdateProfile()
@@ -95,6 +96,33 @@ const ProfilePageClient = () => {
   const activeProfile = profileDraft ?? profileFromApi
   const isLoadingProfile = profileQuery.isLoading && !profileData
   const isKycEnabled = profileData?.kycEnabled ?? false
+
+  useEffect(() => {
+    if (!profileData) return
+
+    const params = new URLSearchParams(window.location.search)
+    const mode = params.get('mode')
+    if (mode !== 'edit') {
+      autoEditHandledRef.current = false
+      return
+    }
+    if (autoEditHandledRef.current) return
+
+    autoEditHandledRef.current = true
+    const nextDraft = toProfileForm(profileData)
+
+    window.requestAnimationFrame(() => {
+      setActiveTab('personal')
+      setIsEditingProfile(true)
+      setProfileDraft(nextDraft)
+      setProfileErrorMessage('')
+    })
+
+    params.delete('mode')
+    const nextQuery = params.toString()
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`
+    window.history.replaceState(null, '', nextUrl)
+  })
 
   const handleCancelProfileEdit = () => {
     setIsEditingProfile(false)
@@ -179,19 +207,22 @@ const ProfilePageClient = () => {
                 onPhoneChange={(value) =>
                   setProfileDraft((prev) => {
                     setProfileErrorMessage('')
-                    return prev ? { ...prev, phone: value } : prev
+                    const base = prev ?? profileFromApi
+                    return { ...base, phone: value }
                   })
                 }
                 onAddressChange={(value) =>
                   setProfileDraft((prev) => {
                     setProfileErrorMessage('')
-                    return prev ? { ...prev, address: value } : prev
+                    const base = prev ?? profileFromApi
+                    return { ...base, address: value }
                   })
                 }
                 onDobChange={(value) =>
                   setProfileDraft((prev) => {
                     setProfileErrorMessage('')
-                    return prev ? { ...prev, dob: value } : prev
+                    const base = prev ?? profileFromApi
+                    return { ...base, dob: value }
                   })
                 }
                 onEditInterests={() => setIsInterestsOpen(true)}

@@ -29,9 +29,9 @@ const toVisibilityLabel = (privacy: string): PageVisibility => {
 
 const toListStatusLabel = (status: string): PageStatus => {
   const normalized = status.trim().toLowerCase()
-  return normalized === 'published' || normalized === 'active'
-    ? 'Active'
-    : 'Ended'
+  if (normalized === 'published' || normalized === 'active') return 'Active'
+  if (normalized === 'archived') return 'Deactivated'
+  return 'Ended'
 }
 
 const toDetailsStatusLabel = (active: boolean): PageStatus => {
@@ -41,6 +41,7 @@ const toDetailsStatusLabel = (active: boolean): PageStatus => {
 const toPublicUrl = (slug: string): string => `/u/${slug}`
 
 const toSummaryListItem = (item: PageListApiItem): PageSummary => {
+  const statusLabel = toListStatusLabel(item.status)
   return {
     id: item.id,
     title: item.title,
@@ -50,9 +51,9 @@ const toSummaryListItem = (item: PageListApiItem): PageSummary => {
     totalGifts: item.totalGifts ?? 0,
     totalWishes: item.totalWishes ?? 0,
     views: item.totalViews ?? 0,
-    status: toListStatusLabel(item.status),
+    status: statusLabel,
     image: item.coverImageUrl || '/assets/images/place-holder-image.jpg',
-    isActive: toListStatusLabel(item.status) === 'Active',
+    isActive: statusLabel === 'Active',
     publicUrl: toPublicUrl(item.slug),
   }
 }

@@ -7,7 +7,7 @@ export type GiftPageItem = {
   totalGifts: number
   totalWishes: number
   views: number
-  status: 'Active' | 'Ended'
+  status: 'Active' | 'Deactivated' | 'Ended'
   image: string
 }
 
@@ -19,6 +19,7 @@ export const visibilityStyles = {
 
 export const statusStyles = {
   Active: 'bg-success-50 text-success-500',
+  Deactivated: 'bg-error-50 text-error-600',
   Ended: 'bg-grey-50 text-grey-700',
 }
 

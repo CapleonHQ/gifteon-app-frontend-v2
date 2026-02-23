@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DeactivateModal from '@/components/Gifts/GiftsPage/DeactivateModal'
+import ReactivateModal from '@/components/Gifts/GiftDetails/ReactivateModal'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import FilterModal from '@/components/Gifts/GiftsPage/FilterModal'
 import GiftsHeader from '@/components/Gifts/GiftsPage/GiftsHeader'
@@ -13,7 +14,7 @@ import GiftsEmptyState from '@/components/Gifts/GiftsPage/GiftsEmptyState'
 import GiftsNoResults from '@/components/Gifts/GiftsPage/GiftsNoResults'
 import GiftsSkeleton from '@/components/Gifts/GiftsPage/GiftsSkeleton'
 import { type GiftPageItem } from '@/components/Gifts/GiftsPage/types'
-import { useArchivePage, usePages } from '@/hooks/tanstack/pages'
+import { useArchivePage, usePages, useUnarchivePage } from '@/hooks/tanstack/pages'
 import { useGiftsFilters } from './hooks/useGiftsFilters'
 import { useGiftsSelection } from './hooks/useGiftsSelection'
 
@@ -22,8 +23,11 @@ const GiftsPageClient = () => {
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false)
   const [deactivateCount, setDeactivateCount] = useState(0)
   const [deactivateIds, setDeactivateIds] = useState<string[]>([])
+  const [isReactivateOpen, setIsReactivateOpen] = useState(false)
+  const [reactivateId, setReactivateId] = useState<string | null>(null)
   const { openSuccess } = useSuccessModal()
   const archiveMutation = useArchivePage()
+  const unarchiveMutation = useUnarchivePage()
 
   const {
     searchValue,
@@ -96,6 +100,19 @@ const GiftsPageClient = () => {
     router.push(`/gifts/${id}`)
   }
 
+  const handleStatusActionSingle = async (id: string) => {
+    const page = giftPages.find((item) => item.id === id)
+    if (!page) return
+
+    if (page.status === 'Deactivated') {
+      setReactivateId(id)
+      setIsReactivateOpen(true)
+      return
+    }
+
+    openDeactivate([id])
+  }
+
   return (
     <div className='w-full bg-white lg:rounded-[20px] mt-4 lg:mt-0 flex-1 h-full'>
       {showHeadlessEmpty ? (
@@ -142,7 +159,7 @@ const GiftsPageClient = () => {
                   onToggleOne={toggleSelectOne}
                   onView={handleViewPage}
                   onDeactivateSelected={() => openDeactivate([...selectedIds])}
-                  onDeactivateSingle={(id) => openDeactivate([id])}
+                  onStatusActionSingle={handleStatusActionSingle}
                 />
 
                 <GiftsMobileList
@@ -155,7 +172,7 @@ const GiftsPageClient = () => {
                   onView={handleViewPage}
                   onDeactivateSelected={() => openDeactivate([...selectedIds])}
                   onClearSelection={clearSelection}
-                  onDeactivateSingle={(id) => openDeactivate([id])}
+                  onStatusActionSingle={handleStatusActionSingle}
                 />
 
                 {hasMultiplePages ? (
@@ -190,6 +207,28 @@ const GiftsPageClient = () => {
             openSuccess({ message: successMessage })
           } catch {
             // Query error states will recover via refetch/invalidation.
+          }
+        }}
+      />
+      <ReactivateModal
+        isOpen={isReactivateOpen}
+        isSubmitting={unarchiveMutation.isPending}
+        onClose={() => {
+          if (unarchiveMutation.isPending) return
+          setIsReactivateOpen(false)
+          setReactivateId(null)
+        }}
+        onConfirm={async () => {
+          if (!reactivateId) return
+          try {
+            await unarchiveMutation.mutateAsync([reactivateId])
+            setIsReactivateOpen(false)
+            setReactivateId(null)
+            openSuccess({
+              message: 'Selected gift page has been successfully activated.',
+            })
+          } catch {
+            openSuccess({ message: 'Unable to activate gift page. Please try again.' })
           }
         }}
       />

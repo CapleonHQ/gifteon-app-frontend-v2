@@ -149,7 +149,7 @@ const FilterModal = ({
             <SelectContent className='rounded-[12px] border-grey-50'>
               <SelectItem value='all'>All Status</SelectItem>
               <SelectItem value='published'>Published</SelectItem>
-              <SelectItem value='archived'>Archived</SelectItem>
+              <SelectItem value='archived'>Deactivated</SelectItem>
               <SelectItem value='ended'>Ended</SelectItem>
             </SelectContent>
           </Select>

@@ -1,5 +1,5 @@
 export type PageVisibility = 'Public' | 'Shareable' | 'Private'
-export type PageStatus = 'Active' | 'Ended'
+export type PageStatus = 'Active' | 'Deactivated' | 'Ended'
 
 export type PageApiPrivacy = 'public' | 'private' | 'shareable'
 export type PageListApiStatus =

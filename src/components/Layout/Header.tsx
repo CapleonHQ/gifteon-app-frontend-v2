@@ -19,13 +19,11 @@ import {
 } from '@/components/ui/popover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
-  WalletIcon,
-  ProfileIcon,
   LogoutIcon,
   SearchIcon,
   NotificationIcon,
 } from '@/assets/icons'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { MENU_ITEMS } from '@/lib/constants/menu'
 import { NOTIFICATIONS } from '@/lib/constants/dummy'
 import { useAuth } from '@/context/AuthContext'
@@ -43,6 +41,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false)
 
   const pathname = usePathname()
+  const router = useRouter()
   const { user } = useAuth()
 
   const unreadCount = NOTIFICATIONS.filter((n) => n.unread).length
@@ -59,6 +58,22 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
     logout({ redirectTo: '/login' })
   }
 
+  const handleToggleMobileSearch = () => {
+    const nextIsSearchOpen = !isMobileSearchOpen
+    setIsMobileSearchOpen(nextIsSearchOpen)
+    if (nextIsSearchOpen) {
+      setIsMobileMenuOpen(false)
+    }
+  }
+
+  const handleToggleMobileMenu = () => {
+    const nextIsMenuOpen = !isMobileMenuOpen
+    setIsMobileMenuOpen(nextIsMenuOpen)
+    if (nextIsMenuOpen) {
+      setIsMobileSearchOpen(false)
+    }
+  }
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -70,19 +85,6 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
       document.body.style.overflow = 'unset'
     }
   }, [isMobileMenuOpen])
-
-  // Close mobile search when mobile menu opens and vice versa
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      setIsMobileSearchOpen(false)
-    }
-  }, [isMobileMenuOpen])
-
-  useEffect(() => {
-    if (isMobileSearchOpen) {
-      setIsMobileMenuOpen(false)
-    }
-  }, [isMobileSearchOpen])
 
   // Close mobile overlays when crossing into desktop
   useEffect(() => {
@@ -223,7 +225,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
             {/* Search Icon (Mobile) */}
             <motion.button
               className='lg:hidden w-10 h-10 flex items-center justify-center hover:bg-white/80 rounded-full border border-grey-50 bg-white  transition-colors'
-              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              onClick={handleToggleMobileSearch}
               whileTap={{ scale: 0.95 }}
             >
               <span className='w-5 h-5 text-blackish'>
@@ -283,7 +285,13 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                     </span>
                     Favorite Gifts
                   </DropdownMenuItem>
-                  <DropdownMenuItem className='cursor-pointer text-grey-900 focus:text-grey-900 focus:bg-grey-50'>
+                  <DropdownMenuItem
+                    className='cursor-pointer text-grey-900 focus:text-grey-900 focus:bg-grey-50'
+                    onClick={() => {
+                      setProfileDropdownOpen(false)
+                      router.push('/profile?mode=edit')
+                    }}
+                  >
                     <span className='w-5 h-5 mr-2 text-grey-500 [&>svg]:size-full! [&_svg]:text-current!'>
                       <EditIcon02 />
                     </span>
@@ -332,7 +340,7 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                   ? 'bg-primary-50 hover:bg-primary-50/70'
                   : ' bg-white hover:bg-white/80'
               }`}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={handleToggleMobileMenu}
               whileTap={{ scale: 0.95 }}
             >
               {isMobileMenuOpen ? (
