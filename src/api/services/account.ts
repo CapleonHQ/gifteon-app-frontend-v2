@@ -10,9 +10,7 @@ import {
 
 export const getProfile = async (): Promise<ApiResponse<UserProfile>> => {
   const resp: AxiosResponse<ApiResponse<UserProfile>> =
-    await apiService.appPrivate.get(
-    '/account'
-  )
+    await apiService.appPrivate.get('/account')
   return resp.data
 }
 
@@ -26,16 +24,16 @@ export const updateProfile = async (
 
 export const setPin = async (
   data: SetPinRequestBody
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
     await apiService.appPrivate.post('/account/set-pin', data)
   return resp.data
 }
 
 export const changePin = async (
   data: ChangePinRequestBody
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
     await apiService.appPrivate.post('/account/change-pin', data)
   return resp.data
 }

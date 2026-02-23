@@ -9,27 +9,13 @@ import PersonalInfoSection from '@/components/Profile/sections/PersonalInfoSecti
 import NotificationsSection from '@/components/Profile/sections/NotificationsSection'
 import AccountPinSection from '@/components/Profile/sections/AccountPinSection'
 import EditInterestsModal from '@/components/Profile/modals/EditInterestsModal'
-import AddAccountModal from '@/components/Profile/modals/AddAccountModal'
-import DeletePaymentModal from '@/components/Profile/modals/DeletePaymentModal'
 import {
   interestOptions,
   initialNotificationPrefs,
 } from '@/components/Profile/profileData'
 import type { ProfileTabId } from '@/types/Profile'
-import type { PaymentMethod } from '@/types/Profile/payment'
-import {
-  useConnectedBanks,
-  useDisconnectBank,
-  useSetDefaultConnectedBank,
-} from '@/hooks/tanstack/banks'
 import { useProfile, useUpdateProfile } from '@/hooks/tanstack/account'
 import type { UserProfile } from '@/types/Account'
-
-const maskAccountNumber = (value: string): string => {
-  if (value.length <= 4) return value
-  const suffix = value.slice(-4)
-  return `${'*'.repeat(Math.max(0, value.length - 4))}${suffix}`
-}
 
 type ProfileFormState = {
   firstName: string
@@ -76,10 +62,7 @@ const ProfilePageClient = () => {
   const { openSuccess } = useSuccessModal()
   const [activeTab, setActiveTab] = useState<ProfileTabId>('personal')
   const [isEditingProfile, setIsEditingProfile] = useState(false)
-  const [isEditingPin, setIsEditingPin] = useState(false)
   const [isInterestsOpen, setIsInterestsOpen] = useState(false)
-  const [isAddAccountOpen, setIsAddAccountOpen] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<PaymentMethod | null>(null)
   const [profileDraft, setProfileDraft] = useState<ProfileFormState | null>(
     null
   )
@@ -100,26 +83,9 @@ const ProfilePageClient = () => {
     'cash',
   ])
   const [notifications, setNotifications] = useState(initialNotificationPrefs)
-  const connectedBanksQuery = useConnectedBanks()
   const profileQuery = useProfile()
   const profileData = profileQuery.data?.data
   const updateProfileMutation = useUpdateProfile()
-  const disconnectBankMutation = useDisconnectBank()
-  const setDefaultBankMutation = useSetDefaultConnectedBank()
-
-  const paymentMethods = useMemo<PaymentMethod[]>(
-    () =>
-      (connectedBanksQuery.data?.data?.banks ?? []).map((bank) => ({
-        id: bank.id,
-        bank: bank.bankName,
-        account: maskAccountNumber(bank.accountNumber),
-        accountName: bank.accountName,
-        accountNumber: bank.accountNumber,
-        bankCode: bank.bankCode,
-        isDefault: bank.isDefault,
-      })),
-    [connectedBanksQuery.data?.data?.banks]
-  )
 
   const currentInterests = useMemo(
     () => interestOptions.filter((item) => selectedInterests.includes(item.id)),
@@ -150,39 +116,6 @@ const ProfilePageClient = () => {
       openSuccess({ message: 'Your profile has been successfully updated.' })
     } catch {
       setProfileErrorMessage('Unable to update profile. Please try again.')
-    }
-  }
-
-  const handleSavePin = () => {
-    setIsEditingPin(false)
-    openSuccess({ message: 'Your PIN has been successfully updated.' })
-  }
-
-  const handleDeletePayment = async () => {
-    if (!deleteTarget) return
-    try {
-      await disconnectBankMutation.mutateAsync(deleteTarget.id)
-      setDeleteTarget(null)
-      openSuccess({
-        message: 'The payment method has been successfully deleted.',
-      })
-    } catch {
-      openSuccess({
-        message: 'Unable to delete payment method. Please try again.',
-      })
-    }
-  }
-
-  const handleSetDefaultPayment = async (method: PaymentMethod) => {
-    try {
-      await setDefaultBankMutation.mutateAsync(method.id)
-      openSuccess({
-        message: 'Default payment method updated successfully.',
-      })
-    } catch {
-      openSuccess({
-        message: 'Unable to update default payment method. Please try again.',
-      })
     }
   }
 
@@ -227,7 +160,6 @@ const ProfilePageClient = () => {
               onChange={(tab) => {
                 setActiveTab(tab)
                 handleCancelProfileEdit()
-                setIsEditingPin(false)
               }}
             />
 
@@ -263,13 +195,6 @@ const ProfilePageClient = () => {
                   })
                 }
                 onEditInterests={() => setIsInterestsOpen(true)}
-                paymentMethods={paymentMethods}
-                onAddAccount={() => setIsAddAccountOpen(true)}
-                onDeletePayment={(method) => setDeleteTarget(method)}
-                onSetDefaultPayment={handleSetDefaultPayment}
-                isLoadingPaymentMethods={connectedBanksQuery.isLoading}
-                hasPaymentMethodsError={connectedBanksQuery.isError}
-                onRetryPaymentMethods={() => connectedBanksQuery.refetch()}
               />
             )}
 
@@ -282,9 +207,11 @@ const ProfilePageClient = () => {
 
             {activeTab === 'pin' && (
               <AccountPinSection
-                isEditingPin={isEditingPin}
-                onEdit={() => setIsEditingPin(true)}
-                onSave={handleSavePin}
+                pinActivated={profileData?.pinActivated ?? false}
+                onRequestSetPin={() => {
+                  if (typeof window === 'undefined') return
+                  window.dispatchEvent(new Event('open-transaction-pin-modal'))
+                }}
               />
             )}
           </div>
@@ -322,17 +249,6 @@ const ProfilePageClient = () => {
             message: 'Your interests have been successfully updated.',
           })
         }}
-      />
-
-      <AddAccountModal
-        isOpen={isAddAccountOpen}
-        onClose={() => setIsAddAccountOpen(false)}
-      />
-
-      <DeletePaymentModal
-        target={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onDelete={handleDeletePayment}
       />
     </div>
   )

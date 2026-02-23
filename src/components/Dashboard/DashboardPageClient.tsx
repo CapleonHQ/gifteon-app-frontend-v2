@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
 import RecentGiftsSection from './RecentGiftsSection'
-import KycBanner from './KycBanner'
 import ClaimGiftModal from '@/components/Gifts/ClaimGiftModal'
 import MarkAsDeliveredModal from '@/components/Gifts/MarkAsDeliveredModal'
 import { useSuccessModal } from '@/context/SuccessModalContext'
@@ -194,6 +193,7 @@ const DashboardPageClient = () => {
           />
         </div>
       </button>
+
     </>
   )
 }
