@@ -11,22 +11,9 @@ import DashboardStatsSection from './DashboardStatsSection'
 import type { GiftItem } from '@/types/Gifts/index'
 import { useStatsOverview } from '@/hooks/tanstack/stats'
 import type { DashboardRecentGift } from '@/types/Stats'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const FALLBACK_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
-
-const formatCurrency = (amount: number, currency: string) => {
-  const locale = currency === 'NGN' ? 'en-NG' : 'en-US'
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-      currencyDisplay: currency === 'NGN' ? 'narrowSymbol' : 'symbol',
-      maximumFractionDigits: 0,
-    }).format(amount)
-  } catch {
-    return currency === 'NGN' ? `₦${amount}` : `${amount} ${currency}`
-  }
-}
 
 const formatGiftDate = (value?: string) => {
   if (!value) return '-'
@@ -53,7 +40,7 @@ const mapRecentGiftItem = (
   const type = item.type || item.giftType || 'Gift'
   const amount =
     typeof item.amount === 'number'
-      ? formatCurrency(item.amount, currency)
+      ? formatCurrency(item.amount, { currency, maximumFractionDigits: 0 })
       : item.amount || item.worth || '₦0'
   const status = normalizeGiftStatus(item.status)
   const safeType = type.toLowerCase()

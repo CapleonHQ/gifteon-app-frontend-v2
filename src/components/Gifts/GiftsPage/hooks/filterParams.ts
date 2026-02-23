@@ -24,8 +24,8 @@ export const buildFilterParams = (filters: GiftsFilterState): PagesQueryParams =
   const fromDate = toDateParam(filters.fromDate)
   const toDate = toDateParam(filters.toDate)
 
-  if (fromDate) params.fromDate = fromDate
-  if (toDate) params.toDate = toDate
+  if (fromDate) params.startdate = fromDate
+  if (toDate) params.enddate = toDate
 
   return params
 }

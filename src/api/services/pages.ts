@@ -53,17 +53,17 @@ export const createPage = async (
 }
 
 export const archivePage = async (
-  id: string
+  ids: string[]
 ): Promise<ApiResponse<null>> => {
   const resp: AxiosResponse<ApiResponse<null>> =
-    await apiService.appPrivate.post(`/pages/${id}/archive`)
+    await apiService.appPrivate.post('/pages/archive', { ids })
   return resp.data
 }
 
 export const unarchivePage = async (
-  id: string
+  ids: string[]
 ): Promise<ApiResponse<null>> => {
   const resp: AxiosResponse<ApiResponse<null>> =
-    await apiService.appPrivate.post(`/pages/${id}/unarchive`)
+    await apiService.appPrivate.post('/pages/unarchive', { ids })
   return resp.data
 }

@@ -89,7 +89,7 @@ const GiftDetailsPageClient = () => {
 
   const handleDeactivateConfirm = async () => {
     try {
-      const response = await archiveMutation.mutateAsync(giftId)
+      const response = await archiveMutation.mutateAsync([giftId])
       ui.setIsDeactivateOpen(false)
       ui.markInactive()
       await pageQuery.refetch()
@@ -104,7 +104,7 @@ const GiftDetailsPageClient = () => {
 
   const handleReactivateConfirm = async () => {
     try {
-      const response = await unarchiveMutation.mutateAsync(giftId)
+      const response = await unarchiveMutation.mutateAsync([giftId])
       ui.setIsReactivateOpen(false)
       ui.markActive()
       await pageQuery.refetch()

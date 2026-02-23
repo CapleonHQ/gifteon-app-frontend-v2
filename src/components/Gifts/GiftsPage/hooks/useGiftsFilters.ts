@@ -43,8 +43,8 @@ export const useGiftsFilters = () => {
       appliedFilterParams.status ||
       appliedFilterParams.category ||
       appliedFilterParams.visibility ||
-      appliedFilterParams.fromDate ||
-      appliedFilterParams.toDate
+      appliedFilterParams.startdate ||
+      appliedFilterParams.enddate
   )
 
   const resetFilterForm = () => {

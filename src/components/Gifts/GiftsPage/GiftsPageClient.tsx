@@ -184,9 +184,7 @@ const GiftsPageClient = () => {
         onConfirm={async () => {
           if (deactivateIds.length === 0) return
           try {
-            await Promise.all(
-              deactivateIds.map((pageId) => archiveMutation.mutateAsync(pageId))
-            )
+            await archiveMutation.mutateAsync(deactivateIds)
             setIsDeactivateOpen(false)
             clearSelection()
             openSuccess({ message: successMessage })

@@ -8,6 +8,7 @@ import type { GiftActivityItem, ActivityStatus } from '@/components/Gifts/GiftsP
 import type { SummaryCard } from '@/types/Gifts/giftDetails'
 import type { PageContribution } from '@/types/Contributions'
 import type { PageDetails, PageDetailsGiftDistribution, PageDetailsVisitPoint } from '@/types/Pages'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const ACTIVITY_STATUS_MAP: Record<string, ActivityStatus> = {
   unclaimed: 'Unclaimed',
@@ -18,16 +19,7 @@ const ACTIVITY_STATUS_MAP: Record<string, ActivityStatus> = {
 }
 
 export const formatMoney = (value: number) => {
-  try {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-      currencyDisplay: 'narrowSymbol',
-      maximumFractionDigits: 0,
-    }).format(value)
-  } catch {
-    return `₦${value}`
-  }
+  return formatCurrency(value, { currency: 'NGN', maximumFractionDigits: 0 })
 }
 
 export const mapSummaryCards = (page?: PageDetails): SummaryCard[] => {

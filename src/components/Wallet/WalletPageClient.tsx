@@ -22,6 +22,7 @@ import {
 } from '@/hooks/tanstack/wallet'
 import { useDebounce } from '@/hooks/useDebounce'
 import { parseWalletBalance } from '@/lib/wallet/transformers'
+import { formatCurrency } from '@/lib/utils/currency'
 import { type WalletTransaction } from './types'
 
 const bankAccounts = [
@@ -59,6 +60,8 @@ const WalletPageClient = () => {
   const transactionsData = transactionsQuery.data?.data
 
   const availableBalance = parseWalletBalance(walletDetails?.balance)
+  const totalReceived = parseWalletBalance(walletDetails?.totalReceived)
+  const totalWithdrawn = parseWalletBalance(walletDetails?.totalWithdrawn)
   const currency = walletDetails?.currency || 'USD'
   const transactions = useMemo(
     () => transactionsData?.transactions ?? EMPTY_TRANSACTIONS,
@@ -66,20 +69,6 @@ const WalletPageClient = () => {
   )
   const pagination = transactionsData?.pagination
 
-  const formatCurrency = (value: number) => {
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency,
-        maximumFractionDigits: 2,
-      }).format(value)
-    } catch {
-      return value.toLocaleString('en-US', { maximumFractionDigits: 2 })
-    }
-  }
-
-  const totalReceived = 0
-  const totalWithdrawn = 0
   const hasTransactions = transactions.length > 0
   const isLoadingTransactions = transactionsQuery.isLoading
   const hasTransactionsError = transactionsQuery.isError
@@ -87,14 +76,19 @@ const WalletPageClient = () => {
     debouncedSearch || typeFilter !== 'all' || statusFilter !== 'all'
   )
 
-  const formattedBalance = formatCurrency(availableBalance)
+  const formattedBalance = formatCurrency(availableBalance, {
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 
   const totalCount = pagination?.total ?? 0
+  const pageLimit = pagination?.limit ?? PAGE_SIZE
   const totalPages = pagination?.totalPages ?? 1
-  const startItem = totalCount > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0
+  const startItem = totalCount > 0 ? (currentPage - 1) * pageLimit + 1 : 0
   const endItem =
     totalCount > 0
-      ? Math.min(startItem + transactions.length - 1, totalCount)
+      ? Math.min(startItem + pageLimit - 1, totalCount)
       : 0
   const isPrevDisabled = currentPage <= 1 || transactionsQuery.isFetching
   const isNextDisabled =
@@ -132,8 +126,16 @@ const WalletPageClient = () => {
       ) : (
         <WalletSummarySection
           availableBalance={formattedBalance}
-          totalReceived={formatCurrency(totalReceived)}
-          totalWithdrawn={formatCurrency(totalWithdrawn)}
+          totalReceived={formatCurrency(totalReceived, {
+            currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+          totalWithdrawn={formatCurrency(totalWithdrawn, {
+            currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
           onTopUp={() => setIsTopUpOpen(true)}
           onWithdraw={() => setIsWithdrawOpen(true)}
           hasError={hasOverviewError}
@@ -198,7 +200,13 @@ const WalletPageClient = () => {
             <>
               <WalletTransactionsTable
                 items={transactions}
-                formatAmount={formatCurrency}
+                formatAmount={(value) =>
+                  formatCurrency(value, {
+                    currency,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
+                }
                 onReport={() => setIsDisputeOpen(true)}
               />
               <WalletTransactionsMobileList
@@ -207,7 +215,13 @@ const WalletPageClient = () => {
                 onToggle={(id) =>
                   setOpenMobileId((prev) => (prev === id ? null : id))
                 }
-                formatAmount={formatCurrency}
+                formatAmount={(value) =>
+                  formatCurrency(value, {
+                    currency,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
+                }
                 onReport={() => setIsDisputeOpen(true)}
               />
             </>

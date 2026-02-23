@@ -62,6 +62,8 @@ export const mapWalletTransactionsData = (
   }
 }
 
-export const parseWalletBalance = (value: string | undefined): number => {
+export const parseWalletBalance = (
+  value: string | number | undefined
+): number => {
   return toNumber(value)
 }

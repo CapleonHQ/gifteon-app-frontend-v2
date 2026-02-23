@@ -17,6 +17,7 @@ import {
   useVisitSharesChart,
 } from '@/hooks/tanstack/stats'
 import { emptySummaryCards } from './types'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const DashboardStatsSection = () => {
   const [visitRange, setVisitRange] = useState('last-7-days')
@@ -73,20 +74,6 @@ const DashboardStatsSection = () => {
   const overviewData = overview.data?.data?.overview
   const chartData = overview.data?.data?.chart
 
-  const formatMoney = (value: number, currency: string) => {
-    const locale = currency === 'NGN' ? 'en-NG' : 'en-US'
-    try {
-      return new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency,
-        currencyDisplay: currency === 'NGN' ? 'narrowSymbol' : 'symbol',
-        maximumFractionDigits: 0,
-      }).format(value)
-    } catch {
-      return currency === 'NGN' ? `₦${value}` : `${value} ${currency}`
-    }
-  }
-
   const summaryItems = useMemo(() => {
     if (!overviewData) return emptySummaryCards
     const currency = overviewData.currency || 'USD'
@@ -98,7 +85,10 @@ const DashboardStatsSection = () => {
       {
         id: 'claimable',
         title: 'Claimable balance',
-        value: formatMoney(overviewData.claimableBalance, currency),
+        value: formatCurrency(overviewData.claimableBalance, {
+          currency,
+          maximumFractionDigits: 0,
+        }),
         meta: 'Updated today',
         icon: (
           <span className='w-4 h-4 text-[#FF8D28]'>

@@ -194,8 +194,8 @@ export type PagesQueryParams = {
   status?: 'active' | 'ended'
   category?: string
   visibility?: 'public' | 'shareable' | 'private'
-  fromDate?: string
-  toDate?: string
+  startdate?: string
+  enddate?: string
 }
 
 export type PagesListData = {
