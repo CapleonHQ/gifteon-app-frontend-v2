@@ -4,7 +4,7 @@ import { ApiResponse } from '@/types/Common'
 import {
   TopupRequestBody,
   WalletDetails,
-  WalletTopupInitialization,
+  WalletTopupLocalsResponse,
   WalletTransactionsApiData,
   WalletTransactionsParams,
   WithdrawRequestBody,
@@ -44,8 +44,8 @@ export const withdrawFromWallet = async (
 
 export const topupWalletLocals = async (
   data: TopupRequestBody
-): Promise<ApiResponse<WalletTopupInitialization>> => {
-  const resp: AxiosResponse<ApiResponse<WalletTopupInitialization>> =
+): Promise<WalletTopupLocalsResponse> => {
+  const resp: AxiosResponse<WalletTopupLocalsResponse> =
     await apiService.appPrivate.post('/wallet/topup/locals', data)
   return resp.data
 }

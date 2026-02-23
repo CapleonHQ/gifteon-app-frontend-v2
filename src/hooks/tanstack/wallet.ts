@@ -4,13 +4,13 @@ import {
   getWalletTransactions,
   topupWalletLocals,
 } from '@/api/services/wallet'
-import type { ApiResponse } from '@/types/Common'
 import type {
   WalletDetails,
-  WalletTopupInitialization,
+  WalletTopupLocalsResponse,
   WalletTransactionsData,
   WalletTransactionsParams,
 } from '@/types/Wallet'
+import type { ApiResponse } from '@/types/Common'
 import { mapWalletTransactionsData } from '@/lib/wallet/transformers'
 
 type WalletTransactionsResponse = Omit<
@@ -40,7 +40,9 @@ export const useWalletTransactions = (params: WalletTransactionsParams) => {
 
 export const useTopupWalletLocals = () => {
   return useMutation({
-    mutationFn: async (amount: number): Promise<WalletTopupInitialization> => {
+    mutationFn: async (
+      amount: number
+    ): Promise<WalletTopupLocalsResponse['data']> => {
       const response = await topupWalletLocals({ amount })
       const data = response.data
       if (!data?.authorizationUrl) {

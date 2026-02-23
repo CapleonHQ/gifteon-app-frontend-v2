@@ -6,6 +6,17 @@ export interface ConnectBankRequestBody {
   isDefault?: boolean
 }
 
+export interface VerifyBankAccountRequestBody {
+  accountNumber: string
+  bankCode: string
+}
+
+export interface VerifyBankAccountData {
+  accountName: string
+  accountNumber: string
+  bankId: string
+}
+
 export interface ConnectedBank {
   id: string
   bankName: string

@@ -9,20 +9,16 @@ import {
 export const initializePayment = async (
   data: InitializePaymentRequestBody
 ): Promise<ApiResponse<any>> => {
-  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
-    '/payment/initialize',
-    data
-  )
+  const resp: AxiosResponse<ApiResponse<any>> =
+    await apiService.appPrivate.post('/payment/initialize', data)
   return resp.data
 }
 
 export const validateWalletBalance = async (
   data: ValidateWalletBalanceRequestBody
 ): Promise<ApiResponse<any>> => {
-  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPrivate.post(
-    '/payment/check-wallet-balance',
-    data
-  )
+  const resp: AxiosResponse<ApiResponse<any>> =
+    await apiService.appPrivate.post('/payment/check-wallet-balance', data)
   return resp.data
 }
 
@@ -47,8 +43,8 @@ export const getTransactionByReference = async (
 
 export const verifyTransactionByReference = async (
   reference: string
-): Promise<ApiResponse<any>> => {
-  const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.get(
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> = await apiService.appPublic.get(
     `/payment/verify/${reference}`
   )
   return resp.data
