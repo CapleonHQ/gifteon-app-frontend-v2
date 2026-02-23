@@ -197,6 +197,8 @@ const GiftsPageClient = () => {
       <FilterModal
         isOpen={isFilterOpen}
         values={filterValues}
+        searchValue={searchValue}
+        onSearchChange={setSearchAndReset}
         onChange={handleFilterChange}
         onClose={() => setIsFilterOpen(false)}
         onReset={resetAppliedFilters}

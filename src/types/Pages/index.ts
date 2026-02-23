@@ -191,7 +191,8 @@ export type PagesQueryParams = {
   limit?: number
   offset?: number
   search?: string
-  status?: 'active' | 'ended'
+  s?: string
+  status?: 'published' | 'archived' | 'ended' | 'active'
   category?: string
   visibility?: 'public' | 'shareable' | 'private'
   startdate?: string

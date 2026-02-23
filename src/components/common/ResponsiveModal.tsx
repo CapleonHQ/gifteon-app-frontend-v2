@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 
 type ResponsiveModalProps = {
@@ -27,6 +28,30 @@ const ResponsiveModal = ({
   mobilePanelClassName = '',
   contentClassName = '',
 }: ResponsiveModalProps) => {
+  useEffect(() => {
+    if (!isOpen) return
+
+    const body = document.body
+    const currentCount = Number(body.dataset.modalOpenCount ?? '0')
+    body.dataset.modalOpenCount = String(currentCount + 1)
+
+    if (currentCount === 0) {
+      body.dataset.modalPrevOverflow = body.style.overflow
+      body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      const nextCount = Number(body.dataset.modalOpenCount ?? '1') - 1
+      if (nextCount <= 0) {
+        body.style.overflow = body.dataset.modalPrevOverflow ?? ''
+        delete body.dataset.modalOpenCount
+        delete body.dataset.modalPrevOverflow
+        return
+      }
+      body.dataset.modalOpenCount = String(nextCount)
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   return (

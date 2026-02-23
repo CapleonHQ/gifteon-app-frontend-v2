@@ -115,7 +115,8 @@ const AddAccountModal = ({
     verifyRequestIdRef.current = requestId
     setIsResolvingAccount(true)
 
-    const timer = window.setTimeout(async () => {
+    let isCancelled = false
+    const resolveAccount = async () => {
       try {
         let accountName = ''
         if (shouldMockResolve) {
@@ -129,23 +130,25 @@ const AddAccountModal = ({
           accountName = response.data?.accountName?.trim() ?? ''
         }
         if (!accountName) throw new Error('No account name resolved')
-        if (verifyRequestIdRef.current !== requestId) return
+        if (isCancelled || verifyRequestIdRef.current !== requestId) return
         setResolvedAccountName(accountName)
       } catch {
-        if (verifyRequestIdRef.current !== requestId) return
+        if (isCancelled || verifyRequestIdRef.current !== requestId) return
         setResolveErrorMessage(
           'Invalid account, please check the account information and try again.'
         )
         setResolveErrorShakeKey((prev) => prev + 1)
       } finally {
-        if (verifyRequestIdRef.current === requestId) {
+        if (!isCancelled && verifyRequestIdRef.current === requestId) {
           setIsResolvingAccount(false)
         }
       }
-    }, 350)
+    }
+
+    void resolveAccount()
 
     return () => {
-      window.clearTimeout(timer)
+      isCancelled = true
       if (verifyRequestIdRef.current === requestId) {
         setIsResolvingAccount(false)
       }
