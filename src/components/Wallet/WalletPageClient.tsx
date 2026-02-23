@@ -23,6 +23,8 @@ import {
 import { useDebounce } from '@/hooks/useDebounce'
 import { parseWalletBalance } from '@/lib/wallet/transformers'
 import { formatCurrency } from '@/lib/utils/currency'
+import { storePaymentReturnPath } from '@/lib/payments/paystackReturn'
+import { MIN_WALLET_TOPUP_AMOUNT } from '@/lib/constants/payments'
 import { type WalletTransaction } from './types'
 
 const bankAccounts = [
@@ -108,12 +110,14 @@ const WalletPageClient = () => {
       : undefined
 
   const handleTopupSubmit = async (amount: number) => {
+    if (amount < MIN_WALLET_TOPUP_AMOUNT) return
+
     try {
       const data = await topupMutation.mutateAsync(amount)
       if (typeof window !== 'undefined') {
+        storePaymentReturnPath(data.reference)
         window.location.assign(data.authorizationUrl)
       }
-      setIsTopUpOpen(false)
     } catch {
       // Error state is handled in modal via `topupMutation.error`.
     }
@@ -282,6 +286,7 @@ const WalletPageClient = () => {
         onSubmit={handleTopupSubmit}
         isSubmitting={topupMutation.isPending}
         errorMessage={topupError}
+        minAmount={MIN_WALLET_TOPUP_AMOUNT}
       />
 
       <WalletWithdrawModal
