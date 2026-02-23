@@ -5,12 +5,33 @@ import {
   listConnectedBanks,
   setDefaultConnectedBank,
 } from '@/api/services/banks'
-import type { ConnectBankRequestBody } from '@/types/Banks'
+import type { ApiResponse } from '@/types/Common'
+import type { AvailableBanksData, ConnectBankRequestBody } from '@/types/Banks'
+
+const listAvailableBanks = async (): Promise<ApiResponse<AvailableBanksData>> => {
+  const response = await fetch('/api/banks')
+  if (!response.ok) {
+    throw new Error('Unable to load banks')
+  }
+
+  return (await response.json()) as ApiResponse<AvailableBanksData>
+}
 
 export const useConnectedBanks = () => {
   return useQuery({
     queryKey: ['connected-banks'],
     queryFn: listConnectedBanks,
+  })
+}
+
+export const useAvailableBanks = (enabled = true) => {
+  return useQuery({
+    queryKey: ['available-banks'],
+    queryFn: listAvailableBanks,
+    enabled,
+    staleTime: 1000 * 60 * 60 * 6,
+    gcTime: 1000 * 60 * 60 * 12,
+    retry: 1,
   })
 }
 
