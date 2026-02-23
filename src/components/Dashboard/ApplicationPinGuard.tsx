@@ -1,0 +1,80 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useSuccessModal } from '@/context/SuccessModalContext'
+import { useProfile, useSetPin } from '@/hooks/tanstack/account'
+import { toApiError } from '@/api/errorHelpers'
+import SetPinRequiredModal from './SetPinRequiredModal'
+
+const ApplicationPinGuard = () => {
+  const { openSuccess } = useSuccessModal()
+  const profileQuery = useProfile()
+  const setPinMutation = useSetPin()
+  const [pin, setPin] = useState('')
+  const [confirmPin, setConfirmPin] = useState('')
+  const [pinError, setPinError] = useState('')
+  const [isGuardDismissed, setIsGuardDismissed] = useState(false)
+  const mustSetPinFromProfile = profileQuery.data?.data?.pinActivated === false
+  const mustSetPin = mustSetPinFromProfile && !isGuardDismissed
+
+  useEffect(() => {
+    const handleOpenPinModal = () => {
+      setIsGuardDismissed(false)
+    }
+    window.addEventListener('open-transaction-pin-modal', handleOpenPinModal)
+    return () => {
+      window.removeEventListener(
+        'open-transaction-pin-modal',
+        handleOpenPinModal
+      )
+    }
+  }, [])
+
+  const handleSetPin = async () => {
+    if (pin.length !== 4 || confirmPin.length !== 4) {
+      setPinError('Transaction PIN must be exactly 4 digits.')
+      return
+    }
+    if (pin !== confirmPin) {
+      setPinError('Transaction PINs do not match.')
+      return
+    }
+
+    try {
+      await setPinMutation.mutateAsync({ pin })
+      setIsGuardDismissed(true)
+      setPin('')
+      setConfirmPin('')
+      setPinError('')
+      window.setTimeout(() => {
+        openSuccess({ message: 'Your account PIN has been set successfully.' })
+      }, 0)
+    } catch (error: unknown) {
+      const apiError = toApiError(error)
+      setPinError(
+        apiError.message?.trim() || 'Unable to set PIN. Please try again.'
+      )
+    }
+  }
+
+  return (
+    <SetPinRequiredModal
+      isOpen={mustSetPin}
+      pin={pin}
+      confirmPin={confirmPin}
+      onPinChange={(value) => {
+        setPin(value)
+        setPinError('')
+      }}
+      onConfirmPinChange={(value) => {
+        setConfirmPin(value)
+        setPinError('')
+      }}
+      onSubmit={handleSetPin}
+      isSubmitting={setPinMutation.isPending}
+      errorMessage={pinError}
+    />
+  )
+}
+
+export default ApplicationPinGuard

@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
 import RecentGiftsSection from './RecentGiftsSection'
-import KycBanner from './KycBanner'
 import ClaimGiftModal from '@/components/Gifts/ClaimGiftModal'
 import MarkAsDeliveredModal from '@/components/Gifts/MarkAsDeliveredModal'
 import { useSuccessModal } from '@/context/SuccessModalContext'
@@ -58,16 +57,16 @@ const mapRecentGiftItem = (
       status === 'Shipped'
         ? 'deliver'
         : status === 'Fulfilled'
-          ? safeType.includes('cash')
-            ? 'claim_cash'
-            : 'claim_gift'
-          : undefined,
+        ? safeType.includes('cash')
+          ? 'claim_cash'
+          : 'claim_gift'
+        : undefined,
     actionLabel:
       status === 'Shipped'
         ? 'Mark as delivered'
         : status === 'Fulfilled'
-          ? 'Claim gift'
-          : undefined,
+        ? 'Claim gift'
+        : undefined,
   }
 }
 
@@ -85,7 +84,8 @@ const DashboardPageClient = () => {
       ),
     [currency, overviewData?.recentGifts]
   )
-  const isLoadingRecentGifts = statsOverview.isLoading && recentGifts.length === 0
+  const isLoadingRecentGifts =
+    statsOverview.isLoading && recentGifts.length === 0
   const hasRecentGiftsError =
     (statsOverview.isError || statsOverview.isRefetchError) &&
     recentGifts.length === 0
@@ -123,12 +123,12 @@ const DashboardPageClient = () => {
 
   return (
     <>
-      <KycBanner
+      {/* <KycBanner
         message='You have been sent a huge amount of money. Please update your KYC to access it.'
         actionLabel='Update KYC'
         actionHref='/profile'
-      />
-      <div className='w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
+      /> */}
+      <div className='mt-4 lg:mt-0 w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
         <DashboardStatsSection />
 
         <RecentGiftsSection
@@ -193,6 +193,7 @@ const DashboardPageClient = () => {
           />
         </div>
       </button>
+
     </>
   )
 }

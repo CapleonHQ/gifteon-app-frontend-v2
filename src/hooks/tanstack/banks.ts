@@ -4,9 +4,14 @@ import {
   disconnectBank,
   listConnectedBanks,
   setDefaultConnectedBank,
+  verifyBankAccount,
 } from '@/api/services/banks'
 import type { ApiResponse } from '@/types/Common'
-import type { AvailableBanksData, ConnectBankRequestBody } from '@/types/Banks'
+import type {
+  AvailableBanksData,
+  ConnectBankRequestBody,
+  VerifyBankAccountRequestBody,
+} from '@/types/Banks'
 
 const listAvailableBanks = async (): Promise<ApiResponse<AvailableBanksData>> => {
   const response = await fetch('/api/banks')
@@ -62,5 +67,11 @@ export const useSetDefaultConnectedBank = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['connected-banks'] })
     },
+  })
+}
+
+export const useVerifyBankAccount = () => {
+  return useMutation({
+    mutationFn: (data: VerifyBankAccountRequestBody) => verifyBankAccount(data),
   })
 }

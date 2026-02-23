@@ -5,6 +5,8 @@ import {
   ConnectBankRequestBody,
   ConnectedBank,
   ConnectedBanksData,
+  VerifyBankAccountData,
+  VerifyBankAccountRequestBody,
 } from '@/types/Banks'
 
 export const connectBank = async (
@@ -25,16 +27,24 @@ export const listConnectedBanks = async (): Promise<
 
 export const setDefaultConnectedBank = async (
   bankId: string
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
     await apiService.appPrivate.post(`/connected-banks/${bankId}/set-default`)
   return resp.data
 }
 
 export const disconnectBank = async (
   bankId: string
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
     await apiService.appPrivate.delete(`/connected-banks/${bankId}/disconnect`)
+  return resp.data
+}
+
+export const verifyBankAccount = async (
+  data: VerifyBankAccountRequestBody
+): Promise<ApiResponse<VerifyBankAccountData>> => {
+  const resp: AxiosResponse<ApiResponse<VerifyBankAccountData>> =
+    await apiService.appPrivate.post('/payment/misc/verify-bank-account', data)
   return resp.data
 }

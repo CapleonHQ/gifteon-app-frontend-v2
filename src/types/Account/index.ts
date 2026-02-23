@@ -28,6 +28,7 @@ export interface UserProfile {
   lastLoginAt: string
   createdAt: string
   updatedAt: string
+  pinActivated: boolean
 }
 
 export interface SetPinRequestBody {
