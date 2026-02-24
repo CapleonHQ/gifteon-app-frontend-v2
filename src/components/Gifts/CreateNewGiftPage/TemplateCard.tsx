@@ -1,32 +1,13 @@
-import {
-  Template1Selection,
-  Template2Selection,
-  Template3Selection,
-  Template4Selection,
-} from '@/lib/config/templates/selection'
+import { renderSelectionTemplate } from '@/lib/config/templates/registry'
+import type { TemplateLayout } from '@/lib/config/templates/types'
 
 type TemplateCardProps = {
-  layout: string
+  layout: TemplateLayout
   isSelected: boolean
   onSelect: () => void
 }
 
 const TemplateCard = ({ layout, isSelected, onSelect }: TemplateCardProps) => {
-  const renderLayout = () => {
-    switch (layout) {
-      case 'template1':
-        return <Template1Selection />
-      case 'template2':
-        return <Template2Selection />
-      case 'template3':
-        return <Template3Selection />
-      case 'template4':
-        return <Template4Selection />
-      default:
-        return <Template1Selection />
-    }
-  }
-
   return (
     <div
       className='relative cursor-pointer transition-all'
@@ -57,7 +38,7 @@ const TemplateCard = ({ layout, isSelected, onSelect }: TemplateCardProps) => {
             : 'border-grey-50 hover:border-grey-200'
         }`}
       >
-        {renderLayout()}
+        {renderSelectionTemplate(layout)}
       </div>
     </div>
   )

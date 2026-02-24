@@ -1,6 +1,6 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import Image from 'next/image'
+import type { TemplateMeta } from './types'
 import {
   InstagramColored,
   LinkedinIcon,
@@ -8,7 +8,7 @@ import {
   ChevronDownIcon,
 } from '../../../assets/icons'
 
-export const TEMPLATES = [
+export const TEMPLATES: TemplateMeta[] = [
   {
     id: 'e6f41b22-1594-42d2-8a93-36d33fd955ad',
     title: 'Premium',
