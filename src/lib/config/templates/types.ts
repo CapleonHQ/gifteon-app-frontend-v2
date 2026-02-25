@@ -1,4 +1,5 @@
 import type { GiftPageData } from '@/types/gifts'
+import type { ReactNode } from 'react'
 
 export type TemplateLayout = 'template1' | 'template2' | 'template3' | 'template4'
 
@@ -67,4 +68,5 @@ export type RenderTemplateData = {
 
 export type RenderTemplateProps = {
   data: RenderTemplateData
+  engagementSection?: ReactNode
 }
