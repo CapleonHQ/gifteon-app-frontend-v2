@@ -8,21 +8,70 @@ import type {
 } from '@/types/Comments'
 
 export type PublicPageApiSocial = {
+  id?: string
   provider?: string
   url?: string
 }
 
+export type PublicPageApiMedia = {
+  id?: string
+  url?: string
+  mediaType?: string
+  alt?: string | null
+}
+
+export type PublicPageApiCategory = {
+  id?: string
+  name?: string
+  avatar?: string | null
+}
+
+export type PublicPageApiTemplate = {
+  id?: string
+  name?: string
+}
+
+export type PublicPageApiSettings = {
+  id?: string
+  whoIsFor?: string | null
+  hasMusic?: boolean
+  allowCustomGifts?: boolean
+  privacy?: 'public' | 'private' | 'shareable' | string
+  acceptCashGift?: boolean
+  currency?: string | null
+  allowParticipation?: boolean
+  receiverName?: string | null
+  receiverEmail?: string | null
+  receiverDeliveryAddress?: string | null
+  receiverPhoneNumber?: string | null
+  minimumAmount?: string | null
+  maximumAmount?: string | null
+  amount?: string | null
+  targetAmount?: string | null
+  hasStoreItems?: boolean
+  deletedAt?: string | null
+  socials?: PublicPageApiSocial[]
+  customGifts?: Array<Record<string, unknown>>
+  storeItems?: Array<Record<string, unknown>>
+}
+
 export type PublicPageApiData = {
   id: string
+  status?: string
+  active?: boolean
+  views?: number
+  userId?: string
+  categoryId?: string
   slug: string
   title: string
   content?: string | null
+  createdAt?: string
+  updatedAt?: string
+  deletedAt?: string | null
   coverImageUrl?: string | null
   templateId?: string | null
-  template?: {
-    id?: string
-    name?: string
-  } | null
+  template?: PublicPageApiTemplate | null
+  category?: PublicPageApiCategory | null
   titleFont?: string | null
   titleColor?: string | null
   textAlignment?: 'left' | 'middle' | 'right' | string | null
@@ -34,19 +83,10 @@ export type PublicPageApiData = {
   contentFont?: string | null
   contentColor?: string | null
   contentSize?: number | string | null
-  media?: Array<{
-    id?: string
-    url?: string
-    mediaType?: string
-    alt?: string | null
-  }>
+  media?: PublicPageApiMedia[]
   comments?: Array<Record<string, unknown>>
   activities?: Array<Record<string, unknown>>
-  settings?: {
-    socials?: PublicPageApiSocial[]
-    currency?: string | null
-    receiverName?: string | null
-  } | null
+  settings?: PublicPageApiSettings | null
 }
 
 export const getPublicPageBySlug = async (
@@ -76,6 +116,8 @@ export const createPublicPageComment = async (
   )
   return resp.data
 }
+
+export type { CreateCommentRequestBody }
 
 export const getPublicPageActivities = async (
   pageId: string,

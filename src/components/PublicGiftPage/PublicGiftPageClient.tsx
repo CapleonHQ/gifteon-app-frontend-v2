@@ -1,11 +1,10 @@
 'use client'
 
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
 import { renderRenderTemplate } from '@/lib/config/templates/registry'
 import type { RenderTemplateProps } from '@/lib/config/templates/types'
-import { getPublicPageBySlug } from '@/api/services/publicPages'
+import { usePublicPageBySlug } from '@/hooks/tanstack/publicPage'
 import {
   normalizePublicPageData,
   resolveTemplateOverrideId,
@@ -24,11 +23,7 @@ export default function PublicGiftPageClient({
   slug,
 }: PublicGiftPageClientProps) {
   const searchParams = useSearchParams()
-  const pageQuery = useQuery({
-    queryKey: ['public-page', slug],
-    queryFn: () => getPublicPageBySlug(slug),
-    enabled: slug.length > 0,
-  })
+  const pageQuery = usePublicPageBySlug(slug)
 
   const pageData = pageQuery.data?.data
 
@@ -44,7 +39,7 @@ export default function PublicGiftPageClient({
     return <PublicGiftPageLoadingView />
   }
 
-  if (pageQuery.isError || !normalizedPage) {
+  if (pageQuery.isError || !pageData || !normalizedPage) {
     return <PublicGiftPageErrorView />
   }
 
@@ -53,7 +48,12 @@ export default function PublicGiftPageClient({
       ...normalizedPage,
       templateId: templateOverrideId ?? normalizedPage.templateId,
     },
-    engagementSection: <PublicGiftPageEngagementSection />,
+    engagementSection: (
+      <PublicGiftPageEngagementSection
+        page={pageData}
+        pageTitle={normalizedPage.title}
+      />
+    ),
   }
 
   return (

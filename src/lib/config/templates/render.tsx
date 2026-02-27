@@ -116,7 +116,7 @@ export const RenderTemplate1 = ({
   <>
     <div className='w-full flex flex-col gap-6 relative'>
       <div className='absolute top-0 left-0 right-0 h-52 sm:h-[352px] bg-warning-50' />
-      <div className=' px-5 sm:px-8 lg:px-15 pt-8 lg:pt-18 z-2 max-w-[860px] mx-auto'>
+      <div className=' px-5 sm:px-8 lg:px-15 pt-8 lg:pt-18 z-2 w-full'>
         <h1 className='mb-5' style={titleStyle(data)}>
           {data.title}
         </h1>
@@ -197,7 +197,7 @@ export const RenderTemplate3 = ({
   <>
     <div className='w-full flex flex-col gap-6 relative overflow-hidden'>
       <div className='absolute top-[-90px] lg:top-[-107px] left-0 right-0 h-40 lg:h-[214px] bg-secondary-100 rounded-full blur-[36px]' />
-      <div className='relative px-5 sm:px-8 lg:px-15 pt-8 lg:pt-[68px] max-w-[860px] mx-auto'>
+      <div className='relative px-5 sm:px-8 lg:px-15 pt-8 lg:pt-[68px] w-full'>
         <div className='flex flex-col md:flex-row gap-5 md:gap-8 lg:gap-10 items-center md:items-start mb-2 lg:mb-8'>
           <div className='flex-1 w-full flex flex-col gap-4'>
             <h1 style={titleStyle(data)}>{data.title}</h1>
