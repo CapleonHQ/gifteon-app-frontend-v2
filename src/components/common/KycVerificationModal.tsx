@@ -180,6 +180,9 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
       'Verification was rejected. Please update and resubmit.'
     : undefined
   const isPendingAction = currentActionStatus?.status === 'pending'
+  const isReadOnlyAction =
+    currentActionStatus?.status === 'pending' ||
+    currentActionStatus?.status === 'approved'
 
   const getActionMeta = () => {
     if (kycStatusQuery.isError) {
@@ -450,9 +453,12 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
               faceCaptureStage={faceCaptureStage}
               faceScanProgress={faceScanProgress}
               isPending={isPendingAction}
+              isReadOnlyAction={isReadOnlyAction}
               submittedSummary={
                 requiredAction === 'utility'
-                  ? 'Utility bill submitted. Verification is in progress.'
+                  ? currentActionStatus?.status === 'approved'
+                    ? 'Utility bill is approved.'
+                    : 'Utility bill submitted. Verification is in progress.'
                   : requiredAction === 'face'
                   ? 'Face verification submitted. Verification is in progress.'
                   : `${requiredAction === 'nin' ? 'NIN' : 'BVN'} submitted. Verification is in progress.`

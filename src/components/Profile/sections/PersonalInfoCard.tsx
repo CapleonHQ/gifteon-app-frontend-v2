@@ -3,6 +3,7 @@ import SectionCard from '@/components/Profile/components/SectionCard'
 import InputField from '@/components/Profile/components/InputField'
 import DatePickerField from '@/components/Gifts/CreateNewGiftPage/Components/DatePickerField'
 import Tick01Icon from '@/assets/icons/Tick01Icon'
+import ShakeOnError from '@/components/common/ShakeOnError'
 
 type PersonalInfoCardProps = {
   profile: {
@@ -66,11 +67,13 @@ const PersonalInfoCard = ({
       }
     >
       {' '}
-      {errorMessage ? (
-        <div className='px-3 lg:px-6 pb-4 lg:pb-6'>
-          <p className='text-sm text-error-500'>{errorMessage}</p>
-        </div>
-      ) : null}
+      <ShakeOnError active={Boolean(errorMessage)}>
+        {errorMessage ? (
+          <div className='px-3 lg:px-6 pb-4 lg:pb-6'>
+            <p className='text-sm text-error-500'>{errorMessage}</p>
+          </div>
+        ) : null}
+      </ShakeOnError>
       <div className='border-t border-grey-50 px-3 lg:px-6 pb-3 lg:pb-6 pt-3 grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-5 lg:gap-y-6'>
         <InputField
           label='First Name'

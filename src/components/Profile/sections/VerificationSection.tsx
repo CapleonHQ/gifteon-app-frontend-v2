@@ -1,6 +1,7 @@
 import SectionCard from '@/components/Profile/components/SectionCard'
 import { useKycStatus } from '@/hooks/tanstack/kyc'
 import { formatCurrency } from '@/lib/utils/currency'
+import ShakeOnError from '@/components/common/ShakeOnError'
 
 type VerificationSectionProps = {
   onOpenKyc: () => void
@@ -40,9 +41,11 @@ const VerificationSection = ({ onOpenKyc }: VerificationSectionProps) => {
           </div>
         ) : kycStatusQuery.isError ? (
           <div className='space-y-3'>
-            <p className='text-sm text-error-500'>
-              Unable to load verification status.
-            </p>
+            <ShakeOnError active={true}>
+              <p className='text-sm text-error-500'>
+                Unable to load verification status.
+              </p>
+            </ShakeOnError>
             <button
               type='button'
               onClick={() => kycStatusQuery.refetch()}
