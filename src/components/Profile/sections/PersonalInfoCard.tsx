@@ -3,7 +3,6 @@ import SectionCard from '@/components/Profile/components/SectionCard'
 import InputField from '@/components/Profile/components/InputField'
 import DatePickerField from '@/components/Gifts/CreateNewGiftPage/Components/DatePickerField'
 import Tick01Icon from '@/assets/icons/Tick01Icon'
-import ShakeOnError from '@/components/common/ShakeOnError'
 
 type PersonalInfoCardProps = {
   profile: {
@@ -13,6 +12,8 @@ type PersonalInfoCardProps = {
     email: string
     dob?: Date
     address: string
+    giftseonTag: string
+    temporaryTag: boolean
   }
   isEditing: boolean
   isSaving?: boolean
@@ -22,6 +23,9 @@ type PersonalInfoCardProps = {
   onPhoneChange: (value: string) => void
   onAddressChange: (value: string) => void
   onDobChange: (value?: Date) => void
+  onOpenGiftseonTagModal: () => void
+  canChangeGiftseonTag: boolean
+  giftseonTagMessage?: string
 }
 
 const PersonalInfoCard = ({
@@ -34,6 +38,9 @@ const PersonalInfoCard = ({
   onPhoneChange,
   onAddressChange,
   onDobChange,
+  onOpenGiftseonTagModal,
+  canChangeGiftseonTag,
+  giftseonTagMessage,
 }: PersonalInfoCardProps) => {
   return (
     <SectionCard
@@ -66,14 +73,11 @@ const PersonalInfoCard = ({
         )
       }
     >
-      {' '}
-      <ShakeOnError active={Boolean(errorMessage)}>
-        {errorMessage ? (
-          <div className='px-3 lg:px-6 pb-4 lg:pb-6'>
-            <p className='text-sm text-error-500'>{errorMessage}</p>
-          </div>
-        ) : null}
-      </ShakeOnError>
+      {errorMessage ? (
+        <div className='px-3 lg:px-6 pb-4 lg:pb-6'>
+          <p className='text-sm text-error-500'>{errorMessage}</p>
+        </div>
+      ) : null}
       <div className='border-t border-grey-50 px-3 lg:px-6 pb-3 lg:pb-6 pt-3 grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-5 lg:gap-y-6'>
         <InputField
           label='First Name'
@@ -106,6 +110,28 @@ const PersonalInfoCard = ({
           onChange={onAddressChange}
           disabled={!isEditing}
         />
+        <div className='space-y-2 lg:col-span-2'>
+          <label className='text-sm leading-[145%] font-medium text-grey-900'>
+            Giftseon Tag
+          </label>
+          <div className='w-full px-3 py-3.5 rounded-[12px] leading-[145%] border text-sm font-medium transition-colors flex items-center gap-2 border-grey-100 bg-grey-50/15 text-blackish'>
+            <span className='text-grey-700'>@</span>
+            <span className='flex-1 truncate'>{profile.giftseonTag || '-'}</span>
+            {canChangeGiftseonTag ? (
+              <button
+                type='button'
+                onClick={onOpenGiftseonTagModal}
+                className='shrink-0 inline-flex items-center rounded-[8px] bg-primary-50 text-primary-500 px-2.5 py-1 text-xs font-medium leading-[18px] hover:bg-primary-100 transition-colors'
+              >
+                Change
+              </button>
+            ) : null}
+          </div>
+          <p className='text-xs leading-[18px] text-grey-600'>
+            {giftseonTagMessage ||
+              'You can change your Giftseon tag only once. Choose carefully.'}
+          </p>
+        </div>
       </div>
     </SectionCard>
   )

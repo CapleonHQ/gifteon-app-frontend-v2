@@ -1,10 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { changePin, getProfile, setPin, updateProfile } from '@/api/services/account'
+import {
+  changePin,
+  changeTag,
+  getProfile,
+  setPin,
+  updateProfile,
+  verifyTag,
+} from '@/api/services/account'
 import type { ApiResponse } from '@/types/Common'
 import type {
+  ChangeTagRequestBody,
   ChangePinRequestBody,
+  VerifyTagRequestBody,
+  UpdateProfilePayload,
   SetPinRequestBody,
-  UpdateProfileRequestBody,
 } from '@/types/Account'
 import type { UserProfile } from '@/types/Account'
 
@@ -18,7 +27,7 @@ export const useProfile = () => {
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: UpdateProfileRequestBody) => updateProfile(data),
+    mutationFn: (data: UpdateProfilePayload) => updateProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['account', 'profile'] })
     },
@@ -51,5 +60,21 @@ export const useSetPin = () => {
 export const useChangePin = () => {
   return useMutation({
     mutationFn: (data: ChangePinRequestBody) => changePin(data),
+  })
+}
+
+export const useVerifyTag = () => {
+  return useMutation({
+    mutationFn: (data: VerifyTagRequestBody) => verifyTag(data),
+  })
+}
+
+export const useChangeTag = () => {
+  const queryClient = useQueryClient()
+  return useMutation<ApiResponse<null>, unknown, ChangeTagRequestBody>({
+    mutationFn: (data: ChangeTagRequestBody) => changeTag(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['account', 'profile'] })
+    },
   })
 }

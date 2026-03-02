@@ -7,12 +7,23 @@ type ProfileHeaderProps = {
     firstName: string
     lastName: string
     gender: string
+    profilePicture: string
     verificationLabel: string
     verificationTone?: 'verified' | 'warning' | 'pending' | 'rejected'
   }
+  isUploadingPhoto?: boolean
+  onSelectPhoto: (file: File) => void
 }
 
-const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
+const ProfileHeader = ({
+  profile,
+  isUploadingPhoto = false,
+  onSelectPhoto,
+}: ProfileHeaderProps) => {
+  const initials =
+    `${profile.firstName?.[0] ?? ''}${profile.lastName?.[0] ?? ''}`.toUpperCase() ||
+    'U'
+
   return (
     <div className='relative'>
       <ProfileHeaderBackground />
@@ -20,7 +31,12 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
       <div className='relative px-4 lg:px-10 -mt-[56px] md:-mt-[70px]'>
         <div className='flex flex-col md:flex-row md:justify-between items-center md:items-end gap-4 md:gap-3'>
           <div className='flex flex-col md:flex-row items-center md:items-end gap-3'>
-            <ProfileAvatar />
+            <ProfileAvatar
+              imageUrl={profile.profilePicture}
+              initials={initials}
+              isUploading={isUploadingPhoto}
+              onSelectFile={onSelectPhoto}
+            />
             <div className='flex items-center md:items-start flex-col gap-1'>
               <h2 className='text-xl md:text-2xl font-medium leading-7 text-blackish'>
                 {profile.firstName} {profile.lastName}

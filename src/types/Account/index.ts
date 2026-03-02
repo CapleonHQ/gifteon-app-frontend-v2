@@ -8,6 +8,8 @@ export interface UpdateProfileRequestBody {
   interests?: string[]
 }
 
+export type UpdateProfilePayload = UpdateProfileRequestBody | FormData
+
 export interface UserProfile {
   id: string
   firstName: string
@@ -19,6 +21,8 @@ export interface UserProfile {
   dateOfBirth: string | null
   accountType: string
   homeAddress: string | null
+  giftseonTag?: string | null
+  temporaryTag?: boolean
   country: string
   profilePicture: string | null
   interests: string[] | null
@@ -39,4 +43,16 @@ export interface SetPinRequestBody {
 export interface ChangePinRequestBody {
   oldPin: string
   newPin: string
+}
+
+export interface VerifyTagRequestBody {
+  tag: string
+}
+
+export interface VerifyTagResponseData {
+  exists: boolean
+}
+
+export interface ChangeTagRequestBody {
+  tag: string
 }

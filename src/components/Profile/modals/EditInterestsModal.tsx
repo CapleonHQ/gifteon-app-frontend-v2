@@ -11,6 +11,7 @@ type EditInterestsModalProps = {
   selected: string[]
   onChange: (value: string[]) => void
   onSave: () => void
+  isSaving?: boolean
 }
 
 const EditInterestsModal = ({
@@ -19,6 +20,7 @@ const EditInterestsModal = ({
   selected,
   onChange,
   onSave,
+  isSaving = false,
 }: EditInterestsModalProps) => {
   const current = interestOptions.filter((item) => selected.includes(item.id))
   const others = interestOptions.filter((item) => !selected.includes(item.id))
@@ -66,23 +68,29 @@ const EditInterestsModal = ({
         <p className='font-medium text-grey-900 tracking-[0]'>
           Current Interests
         </p>
-        <div className='flex flex-wrap gap-3'>
-          {current.map((interest) => (
-            <InterestChip
-              key={interest.id}
-              label={interest.label}
-              icon={interest.icon}
-              onClick={() =>
-                onChange(selected.filter((item) => item !== interest.id))
-              }
-              suffix={
-                <span className='bg-error-50 w-[14px] h-[14px] flex items-center justify-center rounded-full text-error-400 hover:bg-error-100 transition-colors duration-300'>
-                  <X className='w-2.5 h-2.5' />
-                </span>
-              }
-            />
-          ))}
-        </div>
+        {current.length > 0 ? (
+          <div className='flex flex-wrap gap-3'>
+            {current.map((interest) => (
+              <InterestChip
+                key={interest.id}
+                label={interest.label}
+                icon={interest.icon}
+                onClick={() =>
+                  onChange(selected.filter((item) => item !== interest.id))
+                }
+                suffix={
+                  <span className='bg-error-50 w-[14px] h-[14px] flex items-center justify-center rounded-full text-error-400 hover:bg-error-100 transition-colors duration-300'>
+                    <X className='w-2.5 h-2.5' />
+                  </span>
+                }
+              />
+            ))}
+          </div>
+        ) : (
+          <p className='text-sm text-grey-600'>
+            No interests selected yet. Choose from Others below.
+          </p>
+        )}
       </div>
       <div className='space-y-2'>
         <p className='font-medium text-grey-900 tracking-[0]'>Others</p>
@@ -112,9 +120,10 @@ const EditInterestsModal = ({
       <button
         type='button'
         onClick={onSave}
-        className='flex-1 py-3 rounded-[12px] bg-linear-to-r from-primary-400 to-primary-600 border border-primary-500 text-white font-medium'
+        disabled={isSaving}
+        className='flex-1 py-3 rounded-[12px] bg-linear-to-r from-primary-400 to-primary-600 border border-primary-500 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed'
       >
-        Save Changes
+        {isSaving ? 'Saving...' : 'Save Changes'}
       </button>
     </div>
   )

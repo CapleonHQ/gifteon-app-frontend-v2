@@ -27,15 +27,21 @@ const InterestsSection = ({ interests, onEdit }: InterestsSectionProps) => {
     >
       <div className='border-t border-grey-50 px-3 lg:px-6 pb-3 lg:pb-6 pt-3 space-y-1'>
         <p className='text-sm text-grey-900 font-medium'>Interest Selection</p>
-        <div className='flex flex-wrap gap-3'>
-          {interests.map((interest) => (
-            <InterestChip
-              key={interest.id}
-              label={interest.label}
-              icon={interest.icon}
-            />
-          ))}
-        </div>
+        {interests.length > 0 ? (
+          <div className='flex flex-wrap gap-3'>
+            {interests.map((interest) => (
+              <InterestChip
+                key={interest.id}
+                label={interest.label}
+                icon={interest.icon}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className='text-sm text-grey-600'>
+            No interests selected yet. Tap Edit to add your interests.
+          </p>
+        )}
       </div>
     </SectionCard>
   )

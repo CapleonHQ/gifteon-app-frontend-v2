@@ -11,6 +11,8 @@ type PersonalInfoSectionProps = {
     email: string
     dob?: Date
     address: string
+    giftseonTag: string
+    temporaryTag: boolean
   }
   interests: { id: string; label: string; icon: string }[]
   isEditingProfile: boolean
@@ -21,6 +23,9 @@ type PersonalInfoSectionProps = {
   onPhoneChange: (value: string) => void
   onAddressChange: (value: string) => void
   onDobChange: (value?: Date) => void
+  onOpenGiftseonTagModal: () => void
+  canChangeGiftseonTag: boolean
+  giftseonTagMessage?: string
   onEditInterests: () => void
   onOpenKyc: () => void
 }
@@ -36,6 +41,9 @@ const PersonalInfoSection = ({
   onPhoneChange,
   onAddressChange,
   onDobChange,
+  onOpenGiftseonTagModal,
+  canChangeGiftseonTag,
+  giftseonTagMessage,
   onEditInterests,
   onOpenKyc,
 }: PersonalInfoSectionProps) => {
@@ -55,6 +63,9 @@ const PersonalInfoSection = ({
         onPhoneChange={onPhoneChange}
         onAddressChange={onAddressChange}
         onDobChange={onDobChange}
+        onOpenGiftseonTagModal={onOpenGiftseonTagModal}
+        canChangeGiftseonTag={canChangeGiftseonTag}
+        giftseonTagMessage={giftseonTagMessage}
       />
 
       <div className={isEditingProfile ? 'hidden lg:block' : ''}>

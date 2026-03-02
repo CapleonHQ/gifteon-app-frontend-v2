@@ -8,6 +8,9 @@ export type ProfileFormState = {
   dob?: Date
   address: string
   gender: string
+  profilePicture: string
+  giftseonTag: string
+  temporaryTag: boolean
 }
 
 const parseApiDate = (value?: string | null): Date | undefined => {
@@ -27,6 +30,9 @@ export const toProfileForm = (user: UserProfile | undefined): ProfileFormState =
       dob: undefined,
       address: '',
       gender: '',
+      profilePicture: '',
+      giftseonTag: '',
+      temporaryTag: false,
     }
   }
 
@@ -38,5 +44,8 @@ export const toProfileForm = (user: UserProfile | undefined): ProfileFormState =
     dob: parseApiDate(user.dateOfBirth),
     address: user.homeAddress || '',
     gender: user.gender || '',
+    profilePicture: user.profilePicture || '',
+    giftseonTag: (user.giftseonTag || '').replace(/^@+/, ''),
+    temporaryTag: Boolean(user.temporaryTag),
   }
 }

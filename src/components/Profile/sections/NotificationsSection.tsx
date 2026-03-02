@@ -14,11 +14,14 @@ const NotificationsSection = ({
   notifications,
   onChange,
 }: NotificationsSectionProps) => {
+  const isReadOnly = true
+
   const updatePref = (
     id: string,
     field: 'email' | 'inApp' | 'sms',
     value: boolean
   ) => {
+    if (isReadOnly) return
     onChange({
       ...notifications,
       [id]: {
@@ -41,6 +44,7 @@ const NotificationsSection = ({
               key={group.title}
               group={group}
               notifications={notifications}
+              isReadOnly={isReadOnly}
               onUpdate={updatePref}
             />
           ))}
@@ -53,6 +57,7 @@ const NotificationsSection = ({
             key={group.title}
             group={group}
             notifications={notifications}
+            isReadOnly={isReadOnly}
             onUpdate={updatePref}
           />
         ))}
