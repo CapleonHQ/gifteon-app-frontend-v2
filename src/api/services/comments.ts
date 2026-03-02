@@ -11,10 +11,8 @@ export const createComment = async (
   pageId: string,
   data: CreateCommentRequestBody
 ): Promise<ApiResponse<object>> => {
-  const resp: AxiosResponse<ApiResponse<object>> = await apiService.appPrivate.post(
-    `/pages/${pageId}/comments`,
-    data
-  )
+  const resp: AxiosResponse<ApiResponse<object>> =
+    await apiService.appPrivate.post(`/pages/${pageId}/comments`, data)
   return resp.data
 }
 
