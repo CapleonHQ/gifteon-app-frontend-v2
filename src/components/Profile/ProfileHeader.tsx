@@ -7,7 +7,8 @@ type ProfileHeaderProps = {
     firstName: string
     lastName: string
     gender: string
-    isVerified: boolean
+    verificationLabel: string
+    verificationTone?: 'verified' | 'warning' | 'pending' | 'rejected'
   }
 }
 
@@ -30,7 +31,10 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
             </div>
           </div>
 
-          <VerifiedBadge isVerified={profile.isVerified} />
+          <VerifiedBadge
+            label={profile.verificationLabel}
+            tone={profile.verificationTone}
+          />
         </div>
       </div>
     </div>

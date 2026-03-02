@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import WalletSummarySection from './WalletSummarySection'
 import KeyboardLeftIcon from '@/assets/icons/KeyboardLeftIcon'
 import KeyboardRightIcon from '@/assets/icons/KeyboardRightIcon'
@@ -51,6 +52,7 @@ const WalletPageClient = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const { openSuccess } = useSuccessModal()
+  const router = useRouter()
   const debouncedSearch = useDebounce(searchQuery.trim(), 400)
 
   const detailsQuery = useWalletDetails()
@@ -135,6 +137,17 @@ const WalletPageClient = () => {
     withdrawMutation.isError
       ? toApiError(withdrawMutation.error).message || WITHDRAWAL_ERROR_MESSAGE
       : undefined
+  const withdrawalApiError = withdrawMutation.isError
+    ? toApiError(withdrawMutation.error)
+    : null
+  const showWithdrawalKycCta = Boolean(
+    withdrawalApiError &&
+      (withdrawalApiError.code === 'FORBIDDEN' ||
+        withdrawalApiError.message.toLowerCase().includes('verify your identity') ||
+        withdrawalApiError.message.toLowerCase().includes('kyc') ||
+        withdrawalApiError.message.toLowerCase().includes('nin') ||
+        withdrawalApiError.message.toLowerCase().includes('bvn'))
+  )
 
   const handleTopupSubmit = async (amount: number) => {
     if (amount < MIN_WALLET_TOPUP_AMOUNT) return
@@ -345,6 +358,12 @@ const WalletPageClient = () => {
         isSubmitting={withdrawMutation.isPending}
         errorMessage={withdrawalError}
         isLoadingBanks={connectedBanksQuery.isLoading}
+        showKycCta={showWithdrawalKycCta}
+        onKycCta={() => {
+          setIsWithdrawOpen(false)
+          withdrawMutation.reset()
+          router.push('/profile?modal=kyc&source=wallet')
+        }}
       />
 
       <WalletDisputeModal

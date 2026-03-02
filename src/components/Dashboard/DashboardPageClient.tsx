@@ -13,7 +13,7 @@ import type { DashboardRecentGift } from '@/types/Stats'
 import { formatCurrency } from '@/lib/utils/currency'
 import KycBanner from './KycBanner'
 import Image from 'next/image'
-import KycVerificationModal from '../common/KycVerificationModal'
+import { useRouter } from 'next/navigation'
 
 const FALLBACK_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
 
@@ -75,10 +75,10 @@ const mapRecentGiftItem = (
 
 const DashboardPageClient = () => {
   const { openSuccess } = useSuccessModal()
+  const router = useRouter()
   const statsOverview = useStatsOverview()
   const [claimItem, setClaimItem] = useState<GiftItem | null>(null)
   const [deliverItem, setDeliverItem] = useState<GiftItem | null>(null)
-  const [showKycOverlay, setShowKycOverlay] = useState(false)
   const overviewData = statsOverview.data?.data
   const currency = overviewData?.overview?.currency || 'NGN'
   const recentGifts = useMemo(
@@ -130,7 +130,7 @@ const DashboardPageClient = () => {
       <KycBanner
         message='You have been sent a huge amount of money. Please update your KYC to access it.'
         actionLabel='Update KYC'
-        onAction={() => setShowKycOverlay(true)}
+        onAction={() => router.push('/profile?modal=kyc&source=dashboard')}
       />
       <div className='mt-4 lg:mt-0 w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
         <DashboardStatsSection />
@@ -144,12 +144,6 @@ const DashboardPageClient = () => {
           onRetry={() => statsOverview.refetch()}
         />
       </div>
-
-      {/* KYC Update Overlay */}
-      <KycVerificationModal
-        isOpen={showKycOverlay}
-        onClose={() => setShowKycOverlay(false)}
-      />
 
       <ClaimGiftModal
         isOpen={Boolean(claimItem)}

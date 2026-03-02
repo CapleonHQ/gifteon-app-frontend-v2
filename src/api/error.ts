@@ -13,6 +13,7 @@ type ServiceKey =
   | 'banks'
   | 'cart'
   | 'wallet'
+  | 'kyc'
   | 'payment'
   | 'paymentMethods'
   | 'stats'
@@ -76,6 +77,7 @@ const SERVICE_PATHS: Array<[ServiceKey, RegExp]> = [
   ['banks', /^\/connected-banks/],
   ['cart', /^\/store\/cart/],
   ['wallet', /^\/wallet/],
+  ['kyc', /^\/kyc/],
   ['payment', /^\/payment/],
   ['paymentMethods', /^\/payment-methods/],
   ['stats', /^\/stats/],
@@ -103,6 +105,7 @@ const SERVICE_DEFAULTS: Record<ServiceKey, string> = {
   banks: 'Unable to process bank request.',
   cart: 'Unable to update your cart.',
   wallet: 'Unable to process wallet request.',
+  kyc: 'Unable to process KYC request.',
   payment: 'Payment failed. Please try again.',
   paymentMethods: 'Unable to update payment methods.',
   stats: 'Unable to load stats.',
@@ -163,9 +166,14 @@ const resolveServiceMessage = (
   return SERVICE_DEFAULTS[serviceKey]
 }
 
-const parseFieldErrors = (data: any): NormalizedApiError['fieldErrors'] => {
+const parseFieldErrors = (data: unknown): NormalizedApiError['fieldErrors'] => {
   if (!data || typeof data !== 'object') return undefined
-  const errors = data.errors ?? data.fieldErrors ?? data.data?.errors
+  const source = data as Record<string, unknown>
+  const nestedData =
+    source.data && typeof source.data === 'object'
+      ? (source.data as Record<string, unknown>)
+      : undefined
+  const errors = source.errors ?? source.fieldErrors ?? nestedData?.errors
   if (!errors || typeof errors !== 'object') return undefined
   const fieldErrors: Record<string, string[]> = {}
   for (const [key, value] of Object.entries(errors)) {
@@ -181,7 +189,7 @@ const parseFieldErrors = (data: any): NormalizedApiError['fieldErrors'] => {
 export const normalizeApiError = (error: unknown): NormalizedApiError => {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status
-    const data: any = error.response?.data
+    const data = error.response?.data as Record<string, unknown> | undefined
 
     const code = error.code === 'ECONNABORTED'
       ? 'TIMEOUT'
@@ -193,9 +201,9 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
     const serviceMessage = resolveServiceMessage(serviceKey, code)
 
     const message =
-      data?.message ||
-      data?.error ||
-      data?.statusMessage ||
+      (typeof data?.message === 'string' ? data.message : undefined) ||
+      (typeof data?.error === 'string' ? data.error : undefined) ||
+      (typeof data?.statusMessage === 'string' ? data.statusMessage : undefined) ||
       serviceMessage ||
       fallbackMessageFor(code)
 
@@ -208,7 +216,7 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
       code,
       message,
       status,
-      details: data?.details,
+      details: typeof data?.details === 'string' ? data.details : undefined,
       fieldErrors: parseFieldErrors(data),
       requestId,
       endpoint: error.config?.url,

@@ -99,6 +99,8 @@ type WalletWithdrawModalProps = {
   isSubmitting: boolean
   errorMessage?: string
   isLoadingBanks: boolean
+  showKycCta?: boolean
+  onKycCta?: () => void
 }
 
 const WalletWithdrawModal = ({
@@ -113,6 +115,8 @@ const WalletWithdrawModal = ({
   isSubmitting,
   errorMessage,
   isLoadingBanks,
+  showKycCta = false,
+  onKycCta,
 }: WalletWithdrawModalProps) => {
   const [step, setStep] = useState<'form' | 'pin'>('form')
   const [amountInput, setAmountInput] = useState('')
@@ -469,7 +473,18 @@ const WalletWithdrawModal = ({
           </div>
         )}
         {formErrorMessage ? (
-          <p className='text-xs text-error-500'>{formErrorMessage}</p>
+          <div className='space-y-2'>
+            <p className='text-xs text-error-500'>{formErrorMessage}</p>
+            {showKycCta && onKycCta ? (
+              <button
+                type='button'
+                onClick={onKycCta}
+                className='text-xs font-medium text-primary-500 underline underline-offset-2'
+              >
+                Complete verification
+              </button>
+            ) : null}
+          </div>
         ) : null}
         {showActions ? renderActions() : null}
       </div>

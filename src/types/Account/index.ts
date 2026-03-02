@@ -24,6 +24,7 @@ export interface UserProfile {
   interests: string[] | null
   status: string
   kycEnabled: boolean
+  kycLevel?: number
   loggedIn: number
   lastLoginAt: string
   createdAt: string

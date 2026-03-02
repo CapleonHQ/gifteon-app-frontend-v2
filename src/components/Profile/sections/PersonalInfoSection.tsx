@@ -1,6 +1,7 @@
 import PaymentMethodsManagerSection from '@/components/Profile/sections/PaymentMethodsManagerSection'
 import PersonalInfoCard from '@/components/Profile/sections/PersonalInfoCard'
 import InterestsSection from '@/components/Profile/sections/InterestsSection'
+import VerificationSection from '@/components/Profile/sections/VerificationSection'
 
 type PersonalInfoSectionProps = {
   profile: {
@@ -21,6 +22,7 @@ type PersonalInfoSectionProps = {
   onAddressChange: (value: string) => void
   onDobChange: (value?: Date) => void
   onEditInterests: () => void
+  onOpenKyc: () => void
 }
 
 const PersonalInfoSection = ({
@@ -35,6 +37,7 @@ const PersonalInfoSection = ({
   onAddressChange,
   onDobChange,
   onEditInterests,
+  onOpenKyc,
 }: PersonalInfoSectionProps) => {
   return (
     <div
@@ -56,6 +59,10 @@ const PersonalInfoSection = ({
 
       <div className={isEditingProfile ? 'hidden lg:block' : ''}>
         <InterestsSection interests={interests} onEdit={onEditInterests} />
+      </div>
+
+      <div className={isEditingProfile ? 'hidden lg:block' : ''}>
+        <VerificationSection onOpenKyc={onOpenKyc} />
       </div>
 
       <div className={isEditingProfile ? 'hidden lg:block' : ''}>

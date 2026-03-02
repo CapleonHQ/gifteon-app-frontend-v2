@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { format } from 'date-fns'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
 import ProfileTabs from '@/components/Profile/ProfileTabs'
@@ -9,12 +10,14 @@ import PersonalInfoSection from '@/components/Profile/sections/PersonalInfoSecti
 import NotificationsSection from '@/components/Profile/sections/NotificationsSection'
 import AccountPinSection from '@/components/Profile/sections/AccountPinSection'
 import EditInterestsModal from '@/components/Profile/modals/EditInterestsModal'
+import KycVerificationModal from '@/components/common/KycVerificationModal'
 import {
   interestOptions,
   initialNotificationPrefs,
 } from '@/components/Profile/profileData'
 import type { ProfileTabId } from '@/types/Profile'
 import { useProfile, useUpdateProfile } from '@/hooks/tanstack/account'
+import { useKycStatus } from '@/hooks/tanstack/kyc'
 import type { UserProfile } from '@/types/Account'
 
 type ProfileFormState = {
@@ -60,9 +63,13 @@ const toProfileForm = (user: UserProfile | undefined): ProfileFormState => {
 
 const ProfilePageClient = () => {
   const { openSuccess } = useSuccessModal()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<ProfileTabId>('personal')
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [isInterestsOpen, setIsInterestsOpen] = useState(false)
+  const [isLocalKycModalOpen, setIsLocalKycModalOpen] = useState(false)
   const [profileDraft, setProfileDraft] = useState<ProfileFormState | null>(
     null
   )
@@ -86,6 +93,7 @@ const ProfilePageClient = () => {
   const autoEditHandledRef = useRef(false)
   const profileQuery = useProfile()
   const profileData = profileQuery.data?.data
+  const kycStatusQuery = useKycStatus()
   const updateProfileMutation = useUpdateProfile()
 
   const currentInterests = useMemo(
@@ -95,7 +103,42 @@ const ProfilePageClient = () => {
   const profileFromApi = useMemo(() => toProfileForm(profileData), [profileData])
   const activeProfile = profileDraft ?? profileFromApi
   const isLoadingProfile = profileQuery.isLoading && !profileData
-  const isKycEnabled = profileData?.kycEnabled ?? false
+  const isKycModalOpen =
+    isLocalKycModalOpen || searchParams.get('modal') === 'kyc'
+  const kycLevel = kycStatusQuery.data?.data?.kycLevel ?? 0
+  const overallKycStatus = (
+    kycStatusQuery.data?.data?.overallStatus ||
+    (profileData?.kycEnabled ? 'approved' : 'not_started')
+  ).toLowerCase()
+  const verificationLabel =
+    kycLevel < 1
+      ? 'Unverified'
+      : kycLevel >= 3 && overallKycStatus === 'approved'
+      ? 'Verified'
+      : `KYC Level ${kycLevel}`
+  const verificationTone: 'verified' | 'warning' | 'pending' | 'rejected' =
+    kycLevel < 1
+      ? 'warning'
+      : kycLevel >= 3 && overallKycStatus === 'approved'
+      ? 'verified'
+      : overallKycStatus === 'rejected'
+      ? 'rejected'
+      : 'pending'
+
+  const closeKycModal = () => {
+    setIsLocalKycModalOpen(false)
+    if (searchParams.get('modal') !== 'kyc') return
+
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('modal')
+    params.delete('source')
+    const query = params.toString()
+    router.replace(`${pathname}${query ? `?${query}` : ''}`)
+  }
+
+  const openLocalKycModal = () => {
+    setIsLocalKycModalOpen(true)
+  }
 
   useEffect(() => {
     if (!profileData) return
@@ -167,7 +210,8 @@ const ProfilePageClient = () => {
               firstName: activeProfile.firstName,
               lastName: activeProfile.lastName,
               gender: activeProfile.gender,
-              isVerified: isKycEnabled,
+              verificationLabel,
+              verificationTone,
             }}
           />
         </div>
@@ -226,6 +270,7 @@ const ProfilePageClient = () => {
                   })
                 }
                 onEditInterests={() => setIsInterestsOpen(true)}
+                onOpenKyc={openLocalKycModal}
               />
             )}
 
@@ -280,6 +325,11 @@ const ProfilePageClient = () => {
             message: 'Your interests have been successfully updated.',
           })
         }}
+      />
+
+      <KycVerificationModal
+        isOpen={isKycModalOpen}
+        onClose={closeKycModal}
       />
     </div>
   )
