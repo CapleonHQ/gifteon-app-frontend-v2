@@ -1,14 +1,17 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getWalletDetails,
   getWalletTransactions,
   topupWalletLocals,
+  withdrawFromWallet,
 } from '@/api/services/wallet'
 import type {
   WalletDetails,
   WalletTopupInitialization,
+  WalletWithdrawalData,
   WalletTransactionsData,
   WalletTransactionsParams,
+  WithdrawRequestBody,
 } from '@/types/Wallet'
 import type { ApiResponse } from '@/types/Common'
 import { mapWalletTransactionsData } from '@/lib/wallet/transformers'
@@ -47,6 +50,19 @@ export const useTopupWalletLocals = () => {
         throw new Error('Top-up initialization failed')
       }
       return data
+    },
+  })
+}
+
+export const useWithdrawFromWallet = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      data: WithdrawRequestBody
+    ): Promise<ApiResponse<WalletWithdrawalData>> => withdrawFromWallet(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallet', 'details'] })
+      queryClient.invalidateQueries({ queryKey: ['wallet', 'transactions'] })
     },
   })
 }

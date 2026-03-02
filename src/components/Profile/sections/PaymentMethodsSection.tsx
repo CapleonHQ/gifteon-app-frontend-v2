@@ -12,6 +12,8 @@ type PaymentMethodsSectionProps = {
   isLoading?: boolean
   hasError?: boolean
   onRetry?: () => void
+  isSettingDefault?: boolean
+  defaultingMethodId?: string | null
 }
 
 const PaymentMethodsSection = ({
@@ -22,6 +24,8 @@ const PaymentMethodsSection = ({
   isLoading = false,
   hasError = false,
   onRetry,
+  isSettingDefault = false,
+  defaultingMethodId,
 }: PaymentMethodsSectionProps) => {
   const renderContent = () => {
     if (isLoading) {
@@ -87,6 +91,10 @@ const PaymentMethodsSection = ({
             method={method}
             onDelete={onDelete}
             onSetDefault={onSetDefault}
+            isSettingDefault={
+              isSettingDefault && defaultingMethodId === method.id
+            }
+            disableActions={isSettingDefault}
           />
         ))}
       </div>
