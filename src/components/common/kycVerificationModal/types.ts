@@ -6,7 +6,7 @@ export type KycStepMeta = {
   progressCurrent?: number
 }
 
-export type KycRequiredAction = 'nin' | 'bvn' | 'utility' | 'none'
+export type KycRequiredAction = 'nin' | 'bvn' | 'utility' | 'face' | 'none'
 
 export type DocumentTypeOption = {
   label: string

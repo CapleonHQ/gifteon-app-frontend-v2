@@ -58,3 +58,35 @@ export const uploadMultipleFiles = async (
     })
   return resp.data
 }
+
+export const uploadFile = async (
+  data: UploadSingleFileRequestBody
+): Promise<UploadSingleFileResponse> => {
+  const uploadResponse = await uploadMultipleFiles({
+    files: [data.file],
+    folder: data.folder,
+  })
+
+  const firstUploaded = Array.isArray(uploadResponse.data)
+    ? uploadResponse.data[0]
+    : uploadResponse.data.files?.[0]
+
+  if (!firstUploaded) {
+    throw new Error('Unable to upload file. Please try again.')
+  }
+
+  return {
+    success: uploadResponse.success,
+    data: firstUploaded,
+  }
+}
+
+export const uploadDocument = async (
+  data: UploadSingleFileRequestBody
+): Promise<UploadSingleFileResponse> => {
+  if (data.file.type.startsWith('image/')) {
+    return uploadImage(data)
+  }
+
+  return uploadFile(data)
+}

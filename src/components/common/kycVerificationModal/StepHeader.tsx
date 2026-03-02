@@ -1,18 +1,22 @@
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 
-const ProgressBar = ({ current }: { current: number }) => (
+const ProgressBar = ({
+  current,
+  total = 3,
+}: {
+  current: number
+  total?: number
+}) => (
   <div className='flex gap-1.5 w-full'>
-    <div
-      className={`h-2 flex-1 rounded-[10px] transition-colors duration-300 ${
-        current >= 1 ? 'bg-secondary-500' : 'bg-grey-50'
-      }`}
-    />
-    <div
-      className={`h-2 flex-1 rounded-full transition-colors duration-300 ${
-        current >= 2 ? 'bg-secondary-500' : 'bg-grey-50'
-      }`}
-    />
+    {Array.from({ length: total }, (_, i) => i + 1).map((index) => (
+      <div
+        key={index}
+        className={`h-2 flex-1 rounded-[10px] transition-colors duration-300 ${
+          current >= index ? 'bg-secondary-500' : 'bg-grey-50'
+        }`}
+      />
+    ))}
   </div>
 )
 
@@ -20,6 +24,7 @@ type StepHeaderProps = {
   title: string
   subtitle?: string
   progressCurrent?: number
+  progressTotal?: number
   onClose: () => void
   onMobileBack?: () => void
 }
@@ -28,6 +33,7 @@ const StepHeader = ({
   title,
   subtitle,
   progressCurrent,
+  progressTotal,
   onClose,
   onMobileBack,
 }: StepHeaderProps) => {
@@ -61,7 +67,7 @@ const StepHeader = ({
         {subtitle ? <p className='text-sm text-grey-600 mt-1'>{subtitle}</p> : null}
         {progressCurrent ? (
           <div className='w-full mt-5'>
-            <ProgressBar current={progressCurrent} />
+            <ProgressBar current={progressCurrent} total={progressTotal} />
           </div>
         ) : null}
       </div>

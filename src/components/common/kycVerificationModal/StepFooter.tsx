@@ -2,9 +2,11 @@ import { PRIMARY_BTN_CLASS, SECONDARY_BTN_CLASS } from './constants'
 import type { KycStep } from './types'
 
 type StepFooterProps = {
+  hidden?: boolean
   step: KycStep
   canSubmit: boolean
   isSubmitting: boolean
+  isUploading?: boolean
   isRefreshingStatus?: boolean
   primaryLabel: string
   onClose: () => void
@@ -14,9 +16,11 @@ type StepFooterProps = {
 }
 
 const StepFooter = ({
+  hidden = false,
   step,
   canSubmit,
   isSubmitting,
+  isUploading = false,
   isRefreshingStatus = false,
   primaryLabel,
   onClose,
@@ -24,6 +28,8 @@ const StepFooter = ({
   onBack,
   onSubmit,
 }: StepFooterProps) => {
+  if (hidden) return null
+
   if (step === 0) {
     return (
       <div className='flex items-center gap-3'>
@@ -52,7 +58,11 @@ const StepFooter = ({
           {isSubmitting || isRefreshingStatus ? (
             <span className='flex items-center justify-center gap-2'>
               <span className='h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin' />
-              {isRefreshingStatus ? 'Refreshing...' : 'Submitting...'}
+              {isRefreshingStatus
+                ? 'Refreshing...'
+                : isUploading
+                ? 'Uploading...'
+                : 'Submitting...'}
             </span>
           ) : (
             primaryLabel

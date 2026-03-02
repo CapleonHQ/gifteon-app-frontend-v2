@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import ResponsiveModal from './ResponsiveModal'
 import StepHeader from './kycVerificationModal/StepHeader'
@@ -11,10 +11,11 @@ import {
 } from './kycVerificationModal/StepBodies'
 import {
   useKycStatus,
+  useSubmitFaceVerification,
   useSubmitKycDocument,
   useSubmitUtilityBill,
 } from '@/hooks/tanstack/kyc'
-import { uploadMultipleFiles } from '@/api/services/upload'
+import { uploadDocument, uploadImage } from '@/api/services/upload'
 import { toApiError } from '@/api/errorHelpers'
 import type { KycStatusItem } from '@/types/Kyc'
 import type { KycRequiredAction, KycStep } from './kycVerificationModal/types'
@@ -24,25 +25,47 @@ type KycModalProps = {
   onClose: () => void
 }
 
+const ENABLE_FACE_VERIFICATION = false
+
 const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
   const { openSuccess } = useSuccessModal()
   const [step, setStep] = useState<KycStep>(0)
   const [documentNumber, setDocumentNumber] = useState('')
   const [utilityBillFile, setUtilityBillFile] = useState<File | null>(null)
+  const [faceFile, setFaceFile] = useState<File | null>(null)
+  const [faceCaptureStage, setFaceCaptureStage] = useState<
+    'idle' | 'preview' | 'scanning' | 'ready'
+  >('idle')
+  const [faceScanProgress, setFaceScanProgress] = useState(0)
+  const [isUploading, setIsUploading] = useState(false)
   const [formError, setFormError] = useState('')
   const [refreshStatusMessage, setRefreshStatusMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const faceInputRef = useRef<HTMLInputElement>(null)
+  const faceScanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const kycStatusQuery = useKycStatus(isOpen)
   const submitDocumentMutation = useSubmitKycDocument()
   const submitUtilityBillMutation = useSubmitUtilityBill()
+  const submitFaceMutation = useSubmitFaceVerification()
   const isSubmitting =
-    submitDocumentMutation.isPending || submitUtilityBillMutation.isPending
+    isUploading ||
+    submitDocumentMutation.isPending ||
+    submitUtilityBillMutation.isPending ||
+    submitFaceMutation.isPending
   const isRefreshingStatus = kycStatusQuery.isFetching && !isSubmitting
 
   const handleClose = () => {
+    if (faceScanTimerRef.current) {
+      clearInterval(faceScanTimerRef.current)
+      faceScanTimerRef.current = null
+    }
     setStep(0)
     setDocumentNumber('')
     setUtilityBillFile(null)
+    setFaceFile(null)
+    setFaceCaptureStage('idle')
+    setFaceScanProgress(0)
+    setIsUploading(false)
     setFormError('')
     setRefreshStatusMessage('')
     onClose()
@@ -66,6 +89,45 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
     }
   }
 
+  const handleFaceFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setFaceFile(file)
+      setFaceCaptureStage('preview')
+      setFaceScanProgress(0)
+      setFormError('')
+      setRefreshStatusMessage('')
+    }
+  }
+
+  const handleStartFaceScan = () => {
+    if (!faceFile) {
+      faceInputRef.current?.click()
+      return
+    }
+
+    if (faceScanTimerRef.current) {
+      clearInterval(faceScanTimerRef.current)
+      faceScanTimerRef.current = null
+    }
+
+    setFaceCaptureStage('scanning')
+    setFaceScanProgress(0)
+    faceScanTimerRef.current = setInterval(() => {
+      setFaceScanProgress((previous) => {
+        const next = Math.min(previous + 20, 100)
+        if (next >= 100) {
+          if (faceScanTimerRef.current) {
+            clearInterval(faceScanTimerRef.current)
+            faceScanTimerRef.current = null
+          }
+          setFaceCaptureStage('ready')
+        }
+        return next
+      })
+    }, 250)
+  }
+
   const kycStatus = kycStatusQuery.data?.data
   const kycLevel = kycStatus?.kycLevel ?? 0
   const requiredAction: KycRequiredAction =
@@ -74,7 +136,13 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
       : kycLevel < 2
       ? 'bvn'
       : kycLevel < 3
-      ? 'utility'
+      ? !ENABLE_FACE_VERIFICATION
+        ? 'utility'
+        : kycStatus?.utilityBill?.status !== 'approved'
+        ? 'utility'
+        : kycStatus?.faceVerification?.status !== 'approved'
+        ? 'face'
+        : 'none'
       : 'none'
 
   const currentActionStatus: KycStatusItem | undefined =
@@ -84,7 +152,20 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
       ? kycStatus?.bvn
       : requiredAction === 'utility'
       ? kycStatus?.utilityBill
+      : requiredAction === 'face'
+      ? kycStatus?.faceVerification
       : undefined
+
+  useEffect(() => {
+    if (requiredAction !== 'face') {
+      if (faceScanTimerRef.current) {
+        clearInterval(faceScanTimerRef.current)
+        faceScanTimerRef.current = null
+      }
+      setFaceCaptureStage('idle')
+      setFaceScanProgress(0)
+    }
+  }, [requiredAction])
 
   const statusMessage = kycStatusQuery.isLoading
     ? 'Loading KYC status...'
@@ -129,15 +210,23 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
       return {
         title: 'Upload Utility Bill',
         subtitle:
-          'Upload a recent utility bill to complete Level 3 verification.',
-        progressCurrent: 2,
+          'Upload a recent utility bill for address verification.',
+        progressCurrent: 1,
         primaryLabel: 'Submit Utility Bill',
+      }
+    }
+    if (requiredAction === 'face') {
+      return {
+        title: 'Face Recognition',
+        subtitle: 'Complete the second part of Level 3 with face recognition.',
+        progressCurrent: 2,
+        primaryLabel: 'Submit Face Verification',
       }
     }
     return {
       title: 'KYC Completed',
       subtitle: 'You have completed all required KYC steps for now.',
-      progressCurrent: 2,
+      progressCurrent: ENABLE_FACE_VERIFICATION ? 3 : 1,
       primaryLabel: 'Done',
     }
   }
@@ -151,10 +240,12 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
     ? true
     : currentActionStatus?.status === 'pending'
     ? true
+    : requiredAction === 'face'
+    ? faceCaptureStage !== 'scanning'
     : currentActionStatus?.status !== 'approved' &&
-      (requiredAction === 'utility'
-        ? Boolean(utilityBillFile)
-        : documentNumber.trim().length === 11)
+      ((requiredAction === 'utility' && Boolean(utilityBillFile)) ||
+        ((requiredAction === 'nin' || requiredAction === 'bvn') &&
+          documentNumber.trim().length === 11))
 
   const handleSubmitAction = async () => {
     setFormError('')
@@ -180,6 +271,11 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
     }
 
     try {
+      if (requiredAction === 'face' && faceCaptureStage !== 'ready') {
+        handleStartFaceScan()
+        return
+      }
+
       if (requiredAction === 'nin' || requiredAction === 'bvn') {
         if (documentNumber.trim().length !== 11) {
           setFormError(
@@ -205,33 +301,72 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
         return
       }
 
-      if (!utilityBillFile) {
-        setFormError('Please upload a utility bill before submitting.')
+      if (requiredAction === 'utility') {
+        if (!utilityBillFile) {
+          setFormError('Please upload a utility bill before submitting.')
+          return
+        }
+
+        const uploadResponse = await (async () => {
+          setIsUploading(true)
+          try {
+            return await uploadDocument({
+              file: utilityBillFile,
+              folder: 'kyc',
+            })
+          } finally {
+            setIsUploading(false)
+          }
+        })()
+
+        if (!uploadResponse?.data?.url) {
+          throw new Error('Unable to upload utility bill. Please try again.')
+        }
+
+        const response = await submitUtilityBillMutation.mutateAsync({
+          utilityBillUrl: uploadResponse.data.url,
+        })
+
+        openSuccess({
+          title: 'Submitted',
+          message:
+            response.message ||
+            'Utility bill submitted successfully. Verification is in progress.',
+        })
+        handleClose()
         return
       }
 
-      const uploadResponse = await uploadMultipleFiles({
-        files: [utilityBillFile],
-        folder: 'kyc',
-      })
-
-      const firstUploaded = Array.isArray(uploadResponse.data)
-        ? uploadResponse.data[0]
-        : uploadResponse.data.files?.[0]
-
-      if (!firstUploaded?.url) {
-        throw new Error('Unable to upload utility bill. Please try again.')
+      if (!faceFile) {
+        setFormError('Please upload a face image before submitting.')
+        return
       }
 
-      const response = await submitUtilityBillMutation.mutateAsync({
-        utilityBillUrl: firstUploaded.url,
+      const uploadResponse = await (async () => {
+        setIsUploading(true)
+        try {
+          return await uploadImage({
+            file: faceFile,
+            folder: 'kyc',
+          })
+        } finally {
+          setIsUploading(false)
+        }
+      })()
+
+      if (!uploadResponse?.data?.url) {
+        throw new Error('Unable to upload face image. Please try again.')
+      }
+
+      const response = await submitFaceMutation.mutateAsync({
+        faceVerificationUrl: uploadResponse.data.url,
       })
 
       openSuccess({
         title: 'Submitted',
         message:
           response.message ||
-          'Utility bill submitted successfully. Verification is in progress.',
+          'Face verification submitted successfully. Verification is in progress.',
       })
       handleClose()
     } catch (error: unknown) {
@@ -256,9 +391,30 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
         : 'Follow the steps below based on your current KYC level.'
       : actionMeta.subtitle
   const progressCurrent = step === 0 ? undefined : actionMeta.progressCurrent
+  const progressTotal =
+    step === 0
+      ? undefined
+      : !ENABLE_FACE_VERIFICATION &&
+        (requiredAction === 'utility' || requiredAction === 'none')
+      ? 2
+      : requiredAction === 'utility' || requiredAction === 'face'
+      ? 2
+      : 3
 
   const isStatusError =
     kycStatusQuery.isError || currentActionStatus?.status === 'rejected'
+  const primaryLabel =
+    currentActionStatus?.status === 'pending'
+      ? 'Refresh Status'
+      : requiredAction === 'face' && !isPendingAction
+      ? faceCaptureStage === 'idle'
+        ? 'Start Scan'
+        : faceCaptureStage === 'preview'
+        ? 'Start Scanning'
+        : faceCaptureStage === 'scanning'
+        ? 'Scanning...'
+        : 'Submit Face Verification'
+      : actionMeta.primaryLabel
 
   return (
     <ResponsiveModal
@@ -270,6 +426,7 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
           title={headerTitle}
           subtitle={headerSubtitle}
           progressCurrent={progressCurrent}
+          progressTotal={progressTotal}
           onClose={handleClose}
           onMobileBack={step === 0 ? undefined : () => setStep(0)}
         />
@@ -287,11 +444,17 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
               action={requiredAction}
               documentNumber={documentNumber}
               utilityBillFile={utilityBillFile}
+              faceFile={faceFile}
               fileInputRef={fileInputRef}
+              faceInputRef={faceInputRef}
+              faceCaptureStage={faceCaptureStage}
+              faceScanProgress={faceScanProgress}
               isPending={isPendingAction}
               submittedSummary={
                 requiredAction === 'utility'
                   ? 'Utility bill submitted. Verification is in progress.'
+                  : requiredAction === 'face'
+                  ? 'Face verification submitted. Verification is in progress.'
                   : `${requiredAction === 'nin' ? 'NIN' : 'BVN'} submitted. Verification is in progress.`
               }
               statusMessage={refreshStatusMessage || statusMessage}
@@ -303,6 +466,7 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
               }}
               onFileSelect={handleUtilityBillSelect}
               onRemoveFile={handleRemoveUtilityBill}
+              onFaceFileSelect={handleFaceFileSelect}
             />
           ) : null}
         </>
@@ -312,12 +476,9 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
           step={step}
           canSubmit={canSubmitAction}
           isSubmitting={isSubmitting}
+          isUploading={isUploading}
           isRefreshingStatus={isRefreshingStatus}
-          primaryLabel={
-            currentActionStatus?.status === 'pending'
-              ? 'Refresh Status'
-              : actionMeta.primaryLabel
-          }
+          primaryLabel={primaryLabel}
           onClose={handleClose}
           onNext={() => setStep(1)}
           onBack={() => setStep(0)}

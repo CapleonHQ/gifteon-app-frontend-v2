@@ -1,8 +1,11 @@
+import { useEffect, useMemo } from 'react'
 import type { ChangeEvent, RefObject } from 'react'
+import Image from 'next/image'
 import KycIconIllustration from '@/assets/icons/diagrams/KycIconIllustration'
 import DocumentFieldIcon from '@/assets/icons/DocumentFieldIcon'
 import DeleteIcon from '@/assets/icons/DeleteIcon'
 import type { KycRequiredAction } from './types'
+import FaceScanIcon from '@/assets/icons/FaceScanIcon'
 
 type IntroStepState = 'done' | 'current' | 'upcoming'
 type IntroStepItem = {
@@ -12,7 +15,11 @@ type IntroStepItem = {
 }
 
 const getVerificationSteps = (action: KycRequiredAction): IntroStepItem[] => {
-  const allSteps: Array<{ key: 'nin' | 'bvn' | 'utility'; title: string; description: string }> = [
+  const allSteps: Array<{
+    key: 'nin' | 'bvn' | 'level3'
+    title: string
+    description: string
+  }> = [
     {
       key: 'nin',
       title: 'Submit your NIN',
@@ -24,9 +31,9 @@ const getVerificationSteps = (action: KycRequiredAction): IntroStepItem[] => {
       description: 'Enter your 11-digit Bank Verification Number.',
     },
     {
-      key: 'utility',
-      title: 'Upload utility bill',
-      description: 'Upload a recent utility document for address verification.',
+      key: 'level3',
+      title: 'Level 3 verification',
+      description: 'First upload utility bill, then complete face recognition.',
     },
   ]
 
@@ -34,17 +41,23 @@ const getVerificationSteps = (action: KycRequiredAction): IntroStepItem[] => {
     action === 'nin'
       ? 'nin'
       : action === 'bvn'
-        ? 'bvn'
-        : 'utility'
+      ? 'bvn'
+      : action === 'utility'
+      ? 'level3'
+      : action === 'face'
+      ? 'level3'
+      : 'level3'
 
   const doneKeys = new Set(
     action === 'nin'
       ? []
       : action === 'bvn'
-        ? ['nin']
+      ? ['nin']
       : action === 'utility'
-          ? ['nin', 'bvn']
-          : ['nin', 'bvn', 'utility']
+      ? ['nin', 'bvn']
+      : action === 'face'
+      ? ['nin', 'bvn']
+      : ['nin', 'bvn', 'level3']
   )
 
   return allSteps.map((step) => ({
@@ -53,8 +66,8 @@ const getVerificationSteps = (action: KycRequiredAction): IntroStepItem[] => {
     state: doneKeys.has(step.key)
       ? 'done'
       : step.key === currentKey
-        ? 'current'
-        : 'upcoming',
+      ? 'current'
+      : 'upcoming',
   }))
 }
 
@@ -63,13 +76,18 @@ type IntroStepBodyProps = {
   isLoadingStatus?: boolean
 }
 
-export const IntroStepBody = ({ action, isLoadingStatus = false }: IntroStepBodyProps) => {
+export const IntroStepBody = ({
+  action,
+  isLoadingStatus = false,
+}: IntroStepBodyProps) => {
   const verificationSteps = getVerificationSteps(action)
 
   return (
     <div className='space-y-4'>
       <div className='bg-secondary-50 rounded-[12px] p-3 flex flex-col gap-2'>
-        <p className='font-medium leading-[22px] text-[#143535]'>Why do we need this?</p>
+        <p className='font-medium leading-[22px] text-[#143535]'>
+          Why do we need this?
+        </p>
         <p className='text-sm text-secondary-800 leading-[20px]'>
           This helps us comply with financial regulations and keep your account
           secure. Your information is encrypted and never shared.
@@ -81,7 +99,9 @@ export const IntroStepBody = ({ action, isLoadingStatus = false }: IntroStepBody
           Verification process
         </h3>
         {isLoadingStatus ? (
-          <p className='text-sm text-grey-600'>Checking your current KYC level...</p>
+          <p className='text-sm text-grey-600'>
+            Checking your current KYC level...
+          </p>
         ) : (
           <div className='flex flex-col gap-4'>
             {verificationSteps.map((item, i) => (
@@ -91,8 +111,8 @@ export const IntroStepBody = ({ action, isLoadingStatus = false }: IntroStepBody
                   item.state === 'done'
                     ? 'bg-success-50 border-success-100'
                     : item.state === 'current'
-                      ? 'bg-primary-50/40 border-primary-100'
-                      : 'bg-grey-50/20 border-dashed border-grey-100'
+                    ? 'bg-primary-50/40 border-primary-100'
+                    : 'bg-grey-50/20 border-dashed border-grey-100'
                 }`}
               >
                 <div className='flex gap-2 items-center'>
@@ -100,7 +120,9 @@ export const IntroStepBody = ({ action, isLoadingStatus = false }: IntroStepBody
                     <KycIconIllustration />
                   </span>
                   <div className='flex-1 min-w-0'>
-                    <p className='leading-5 font-medium text-blackish'>{item.title}</p>
+                    <p className='leading-5 font-medium text-blackish'>
+                      {item.title}
+                    </p>
                     <p className='text-xs text-grey-600 mt-1 leading-4'>
                       {item.description}
                     </p>
@@ -122,7 +144,11 @@ type ActionStepBodyProps = {
   action: KycRequiredAction
   documentNumber: string
   utilityBillFile: File | null
+  faceFile: File | null
   fileInputRef: RefObject<HTMLInputElement | null>
+  faceInputRef: RefObject<HTMLInputElement | null>
+  faceCaptureStage: 'idle' | 'preview' | 'scanning' | 'ready'
+  faceScanProgress: number
   isPending?: boolean
   submittedSummary?: string
   statusMessage?: string
@@ -131,6 +157,7 @@ type ActionStepBodyProps = {
   onDocumentNumberChange: (value: string) => void
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void
   onRemoveFile: () => void
+  onFaceFileSelect: (event: ChangeEvent<HTMLInputElement>) => void
 }
 
 const getDocumentFieldLabel = (action: KycRequiredAction) =>
@@ -145,7 +172,11 @@ export const ActionStepBody = ({
   action,
   documentNumber,
   utilityBillFile,
+  faceFile,
   fileInputRef,
+  faceInputRef,
+  faceCaptureStage,
+  faceScanProgress,
   isPending = false,
   submittedSummary,
   statusMessage,
@@ -154,7 +185,19 @@ export const ActionStepBody = ({
   onDocumentNumberChange,
   onFileSelect,
   onRemoveFile,
+  onFaceFileSelect,
 }: ActionStepBodyProps) => {
+  const facePreviewUrl = useMemo(() => {
+    if (!faceFile) return ''
+    return URL.createObjectURL(faceFile)
+  }, [faceFile])
+
+  useEffect(() => {
+    return () => {
+      if (facePreviewUrl) URL.revokeObjectURL(facePreviewUrl)
+    }
+  }, [facePreviewUrl])
+
   if (action === 'none') {
     return (
       <div className='rounded-[12px] border border-success-100 bg-success-50 p-4'>
@@ -196,13 +239,17 @@ export const ActionStepBody = ({
           <input
             value={documentNumber}
             onChange={(event) =>
-              onDocumentNumberChange(event.target.value.replace(/\D/g, '').slice(0, 11))
+              onDocumentNumberChange(
+                event.target.value.replace(/\D/g, '').slice(0, 11)
+              )
             }
             inputMode='numeric'
             placeholder='Enter number'
             className='w-full h-[48px] border border-grey-50 rounded-[12px] px-3 text-sm text-blackish font-medium bg-grey-50/15 outline-none focus:border-primary-300'
           />
-          <p className='text-xs text-grey-600 mt-2'>{getDocumentFieldHint(action)}</p>
+          <p className='text-xs text-grey-600 mt-2'>
+            {getDocumentFieldHint(action)}
+          </p>
         </div>
       )}
 
@@ -248,6 +295,102 @@ export const ActionStepBody = ({
               Upload utility bill
             </button>
           )}
+        </div>
+      )}
+
+      {!isPending && action === 'face' && (
+        <div className='space-y-5'>
+          <input
+            ref={faceInputRef}
+            type='file'
+            accept='.jpg,.jpeg,.png'
+            onChange={onFaceFileSelect}
+            className='hidden'
+          />
+
+          <div className='mt-4 lg:mt-0 flex flex-col items-center justify-center gap-8'>
+            {faceCaptureStage === 'idle' ? (
+              <>
+                <div className='lg:h-[250px] flex justify-center items-center'>
+                  <div className='w-[100px] h-[100px] flex items-center justify-center bg-primary-50 rounded-full'>
+                    <div className='w-20 h-20 flex items-center justify-center rounded-full bg-primary-100'>
+                      <div className='w-15 h-15 rounded-full bg-primary-400 flex items-center justify-center'>
+                        <span className='w-6 h-6 rounded-full text-white flex items-center justify-center'>
+                          <FaceScanIcon />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className='text-center text-grey-600 text-sm'>
+                  Scan your face to verify your identity
+                </p>
+              </>
+            ) : (
+              <>
+                <div className='relative'>
+                  <div className='rounded-[20px] border border-dashed border-primary-100 overflow-hidden bg-grey-50'>
+                    {facePreviewUrl ? (
+                      <div className='w-full h-[320px]'>
+                        <Image
+                          src={facePreviewUrl}
+                          alt='Face preview'
+                          width={800}
+                          height={620}
+                          unoptimized
+                          className='w-full h-full object-cover'
+                        />
+                      </div>
+                    ) : (
+                      <div className='h-[310px] flex items-center justify-center text-grey-500 text-sm'>
+                        Face image not available
+                      </div>
+                    )}
+                  </div>
+                  {faceCaptureStage === 'scanning' ? (
+                    <div className='absolute inset-0 pointer-events-none'>
+                      <div className='absolute inset-0 bg-black/10' />
+                      <div className='absolute inset-x-6 top-6 bottom-6 border border-white/60 rounded-[14px]' />
+                    </div>
+                  ) : null}
+                </div>
+                {faceCaptureStage === 'preview' ? (
+                  <>
+                    <p className='text-center text-grey-600 text-sm'>
+                      Please look into the camera and hold still
+                    </p>
+                  </>
+                ) : null}
+                {faceCaptureStage === 'scanning' ||
+                faceCaptureStage === 'ready' ? (
+                  <div className='space-y-2'>
+                    <p className='text-center text-3xl text-blackish font-medium'>
+                      {faceCaptureStage === 'ready'
+                        ? 'Scan Complete'
+                        : 'Scanning...'}
+                    </p>
+                    <div className='h-3 rounded-full bg-grey-100 overflow-hidden'>
+                      <div
+                        className='h-full bg-primary-500 transition-all duration-300'
+                        style={{
+                          width: `${
+                            faceCaptureStage === 'ready'
+                              ? 100
+                              : faceScanProgress
+                          }%`,
+                        }}
+                      />
+                    </div>
+                    <p className='text-center text-grey-600 text-sm'>
+                      {faceCaptureStage === 'ready'
+                        ? 'Your face has been captured successfully.'
+                        : 'Please keep your face centered so we can capture your face.'}
+                    </p>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
         </div>
       )}
 
