@@ -12,8 +12,8 @@ import type { PageCommentsData } from '@/types/Comments'
 const DEFAULT_PUBLIC_COMMENTS_LIMIT = 4
 const DEFAULT_PUBLIC_ACTIVITIES_LIMIT = 8
 
-const toSortParam = (sort: 'most-recent' | 'oldest'): 'asc' | 'desc' =>
-  sort === 'oldest' ? 'asc' : 'desc'
+const toSortParam = (sort: 'most-recent' | 'oldest'): 'ASC' | 'DESC' =>
+  sort === 'oldest' ? 'ASC' : 'DESC'
 
 export const usePublicPageBySlug = (slug: string) => {
   return useQuery({
@@ -34,7 +34,7 @@ export const usePublicPageComments = (
       getPublicPageComments(pageId, {
         limit,
         offset: pageParam as number,
-        sort: toSortParam(sort),
+        sortBy: toSortParam(sort),
       }),
     enabled: pageId.length > 0,
     initialPageParam: 0,

@@ -10,6 +10,8 @@ export default function CommentsList({ comments }: CommentsListProps) {
   return (
     <div className='flex flex-col gap-3'>
       {comments.map((item) => {
+        if (!item) return
+
         const name = getDisplayName(
           item.fullName,
           item.anonymous,

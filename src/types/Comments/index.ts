@@ -1,11 +1,14 @@
 export interface CreateCommentRequestBody {
   comment: string
+  hideIdentity: boolean
+  private: boolean
+  fullName?: string
 }
 
 export interface PageCommentsQueryParams {
   limit?: number
   offset?: number
-  sort?: 'asc' | 'desc'
+  sortBy?: 'DESC' | 'ASC'
 }
 
 export interface PageCommentUser {

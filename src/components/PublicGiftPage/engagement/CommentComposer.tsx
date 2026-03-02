@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
 import ComposerErrorMessage from './comment-composer/ComposerErrorMessage'
 import ComposerSendButton from './comment-composer/ComposerSendButton'
 import ComposerTextarea from './comment-composer/ComposerTextarea'
+import IdentityNameField from './comment-composer/IdentityNameField'
+import IdentityNotice from './comment-composer/IdentityNotice'
 import PreferenceSwitchRow from './comment-composer/PreferenceSwitchRow'
 import { MAX_COMMENT_LENGTH } from './comment-composer/types'
 import { useCreatePublicPageComment } from '@/hooks/tanstack/publicPage'
@@ -17,37 +20,78 @@ export default function CommentComposer({
   pageId,
   onCommentSent,
 }: CommentComposerProps) {
+  const { status, user } = useAuth()
+  const isAuthenticated = status === 'authenticated' && Boolean(user)
+  const profileName =
+    `${user?.firstName || ''} ${user?.lastName || ''}`.trim() ||
+    'your profile'
+
   const [comment, setComment] = useState('')
-  const [hideName, setHideName] = useState(true)
+  const [hideName, setHideName] = useState(false)
   const [ownerOnly, setOwnerOnly] = useState(false)
+  const [useDifferentDisplayName, setUseDifferentDisplayName] = useState(false)
+  const [fullName, setFullName] = useState('')
+  const [nameError, setNameError] = useState<string | null>(null)
 
   const createCommentMutation = useCreatePublicPageComment(pageId)
 
-  const handleCommentSuccess = () => {
-    setComment('')
-    onCommentSent?.()
-  }
-
-  const handleSubmit = () => {
-    const value = comment.trim()
-    if (!value || isCharacterLimitReached) return
-
-    createCommentMutation.mutate(
-      { comment: value },
-      {
-        onSuccess: () => {
-          handleCommentSuccess()
-        },
-      }
-    )
-  }
-
   const characterCount = comment.length
   const isCharacterLimitReached = characterCount >= MAX_COMMENT_LENGTH
+  const shouldShowNameInput =
+    !hideName && (!isAuthenticated || useDifferentDisplayName)
   const isSubmitDisabled =
     comment.trim().length === 0 ||
     createCommentMutation.isPending ||
     isCharacterLimitReached
+
+  const normalizeName = (value: string) =>
+    value
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 60)
+
+  const validateName = (value: string): string | null => {
+    if (!shouldShowNameInput) return null
+    if (!value) return 'Full name is required.'
+    if (value.length < 2) return 'Full name must be at least 2 characters.'
+    return null
+  }
+
+  const handleSubmit = () => {
+    const trimmedComment = comment.trim()
+    if (!trimmedComment || isCharacterLimitReached) return
+
+    const normalizedFullName = normalizeName(fullName)
+    const nextNameError = validateName(normalizedFullName)
+
+    if (nextNameError) {
+      setNameError(nextNameError)
+      return
+    }
+
+    setNameError(null)
+
+    const payload = {
+      comment: trimmedComment,
+      hideIdentity: hideName,
+      private: ownerOnly,
+      ...(shouldShowNameInput && normalizedFullName
+        ? { fullName: normalizedFullName }
+        : {}),
+    }
+
+    createCommentMutation.mutate(
+      payload,
+      {
+        onSuccess: () => {
+          setComment('')
+          setFullName('')
+          setUseDifferentDisplayName(false)
+          onCommentSent?.()
+        },
+      }
+    )
+  }
 
   return (
     <div className='mt-7'>
@@ -60,6 +104,25 @@ export default function CommentComposer({
         value={comment}
         onChange={setComment}
       />
+
+      <IdentityNotice
+        isAuthenticated={isAuthenticated}
+        profileName={profileName}
+        hideIdentity={hideName}
+        useDifferentDisplayName={useDifferentDisplayName}
+        onUseDifferentDisplayNameChange={setUseDifferentDisplayName}
+      />
+
+      {shouldShowNameInput ? (
+        <IdentityNameField
+          value={fullName}
+          error={nameError}
+          onChange={(value) => {
+            setFullName(value)
+            if (nameError) setNameError(null)
+          }}
+        />
+      ) : null}
 
       <div className='mt-2 flex justify-end'>
         <ComposerSendButton

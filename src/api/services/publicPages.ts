@@ -1,5 +1,6 @@
 import { AxiosResponse } from 'axios'
 import apiService from '../'
+import { getAccessToken } from '../token'
 import { ApiResponse } from '@/types/Common'
 import type {
   CreateCommentRequestBody,
@@ -110,9 +111,17 @@ export const createPublicPageComment = async (
   pageId: string,
   data: CreateCommentRequestBody
 ): Promise<ApiResponse<object>> => {
+  const token = getAccessToken()
   const resp: AxiosResponse<ApiResponse<object>> = await apiService.appPublic.post(
     `/pages/${pageId}/comments`,
-    data
+    data,
+    token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : undefined
   )
   return resp.data
 }
