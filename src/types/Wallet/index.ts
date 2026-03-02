@@ -12,6 +12,7 @@ export interface WalletTransactionsParams extends PaginationParams {
 export interface WithdrawRequestBody {
   amount: number
   bankId: string
+  pin: string
 }
 
 export interface WalletWithdrawalData {

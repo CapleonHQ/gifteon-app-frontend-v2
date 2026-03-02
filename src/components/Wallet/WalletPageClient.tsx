@@ -27,6 +27,7 @@ import { parseWalletBalance } from '@/lib/wallet/transformers'
 import { formatCurrency } from '@/lib/utils/currency'
 import { storePaymentReturnPath } from '@/lib/payments/paystackReturn'
 import { MIN_WALLET_TOPUP_AMOUNT } from '@/lib/constants/payments'
+import { toApiError } from '@/api/errorHelpers'
 import { type WalletTransaction } from './types'
 
 const PAGE_SIZE = 10
@@ -70,6 +71,9 @@ const WalletPageClient = () => {
       (connectedBanksQuery.data?.data?.banks ?? []).map((bank) => ({
         id: bank.id,
         label: `${bank.bankName} - ${maskAccountNumber(bank.accountNumber)}`,
+        bankName: bank.bankName,
+        accountNumber: bank.accountNumber,
+        accountName: bank.accountName,
       })),
     [connectedBanksQuery.data?.data?.banks]
   )
@@ -128,11 +132,9 @@ const WalletPageClient = () => {
       ? TOPUP_ERROR_MESSAGE
       : undefined
   const withdrawalError =
-    withdrawMutation.error instanceof Error
-      ? withdrawMutation.error.message
-      : withdrawMutation.isError
-        ? WITHDRAWAL_ERROR_MESSAGE
-        : undefined
+    withdrawMutation.isError
+      ? toApiError(withdrawMutation.error).message || WITHDRAWAL_ERROR_MESSAGE
+      : undefined
 
   const handleTopupSubmit = async (amount: number) => {
     if (amount < MIN_WALLET_TOPUP_AMOUNT) return
@@ -151,6 +153,7 @@ const WalletPageClient = () => {
   const handleWithdrawSubmit = async (payload: {
     amount: number
     bankId: string
+    pin: string
   }) => {
     const response = await withdrawMutation.mutateAsync(payload)
     openSuccess({
