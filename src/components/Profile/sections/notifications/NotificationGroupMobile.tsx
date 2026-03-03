@@ -7,6 +7,7 @@ import type {
 type NotificationGroupMobileProps = {
   group: NotificationGroup
   notifications: NotificationPrefs
+  isReadOnly?: boolean
   onUpdate: (
     id: string,
     field: 'email' | 'inApp' | 'sms',
@@ -17,6 +18,7 @@ type NotificationGroupMobileProps = {
 const NotificationGroupMobile = ({
   group,
   notifications,
+  isReadOnly = false,
   onUpdate,
 }: NotificationGroupMobileProps) => {
   return (
@@ -32,6 +34,7 @@ const NotificationGroupMobile = ({
                 <Checkbox
                   checked={notifications[item.id]?.email}
                   className='w-5 h-5'
+                  disabled={isReadOnly}
                   onCheckedChange={(checked) =>
                     onUpdate(item.id, 'email', Boolean(checked))
                   }
@@ -42,6 +45,7 @@ const NotificationGroupMobile = ({
                 <Checkbox
                   checked={notifications[item.id]?.inApp}
                   className='w-5 h-5'
+                  disabled={isReadOnly}
                   onCheckedChange={(checked) =>
                     onUpdate(item.id, 'inApp', Boolean(checked))
                   }
@@ -52,6 +56,7 @@ const NotificationGroupMobile = ({
                 <Checkbox
                   checked={notifications[item.id]?.sms}
                   className='w-5 h-5'
+                  disabled={isReadOnly}
                   onCheckedChange={(checked) =>
                     onUpdate(item.id, 'sms', Boolean(checked))
                   }

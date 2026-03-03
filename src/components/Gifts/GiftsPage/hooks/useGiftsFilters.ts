@@ -13,7 +13,9 @@ export const useGiftsFilters = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [filterFromDate, setFilterFromDate] = useState<Date | undefined>()
   const [filterToDate, setFilterToDate] = useState<Date | undefined>()
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterStatus, setFilterStatus] = useState<GiftsFilterState['status']>(
+    'all'
+  )
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterVisibility, setFilterVisibility] = useState('all')
   const [appliedFilterParams, setAppliedFilterParams] =
@@ -31,7 +33,7 @@ export const useGiftsFilters = () => {
   const queryParams: PagesQueryParams = useMemo(
     () => ({
       ...appliedFilterParams,
-      search: debouncedSearch || undefined,
+      s: debouncedSearch || undefined,
       limit: PAGE_SIZE,
       offset,
     }),

@@ -1,7 +1,7 @@
 export type GiftsFilterState = {
   fromDate?: Date
   toDate?: Date
-  status: string
+  status: 'all' | 'published' | 'archived' | 'ended'
   category: string
   visibility: string
 }

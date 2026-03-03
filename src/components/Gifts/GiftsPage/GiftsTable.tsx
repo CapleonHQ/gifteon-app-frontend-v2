@@ -14,7 +14,7 @@ type GiftsTableProps = {
   onToggleOne: (id: string) => void
   onView: (id: string) => void
   onDeactivateSelected: () => void
-  onDeactivateSingle: (id: string) => void
+  onStatusActionSingle: (id: string) => void
 }
 
 const GiftsTable = ({
@@ -26,7 +26,7 @@ const GiftsTable = ({
   onToggleOne,
   onView,
   onDeactivateSelected,
-  onDeactivateSingle,
+  onStatusActionSingle,
 }: GiftsTableProps) => {
   return (
     <div className='hidden lg:block overflow-x-auto'>
@@ -60,7 +60,7 @@ const GiftsTable = ({
               isSelected={selectedIds.has(page.id)}
               onToggle={() => onToggleOne(page.id)}
               onView={() => onView(page.id)}
-              onDeactivate={() => onDeactivateSingle(page.id)}
+              onStatusAction={() => onStatusActionSingle(page.id)}
             />
           ))}
         </div>

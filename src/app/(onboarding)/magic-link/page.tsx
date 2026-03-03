@@ -6,12 +6,13 @@ import { AnimatePresence } from 'framer-motion'
 import OnboardingLogo from '../components/OnboardingLogo'
 import MagicLinkError from './components/MagicLinkError'
 import MagicLinkLoading from './components/MagicLinkLoading'
+import RegisterSuccessStep from '../register/components/RegisterSuccessStep'
 import { verifyMagicLink } from '@/api/services/auth'
 import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
 
-type VerificationState = 'loading' | 'success' | 'error' | 'no-token'
+type VerificationState = 'loading' | 'success' | 'error'
 
 const MagicLinkVerifyContent = () => {
   const router = useRouter()
@@ -32,6 +33,8 @@ const MagicLinkVerifyContent = () => {
 
       try {
         const resp = await verifyMagicLink(token)
+        const action = searchParams.get('action')?.toLowerCase()
+
         if (resp.accessToken) {
           setAccessToken(resp.accessToken)
         }
@@ -39,8 +42,13 @@ const MagicLinkVerifyContent = () => {
           setRefreshToken(resp.refreshToken)
         }
         await refreshUser()
-        router.push('/dashboard')
-      } catch (error: any) {
+
+        if (action === 'register') {
+          setVerificationState('success')
+        } else {
+          router.push('/dashboard')
+        }
+      } catch (error: unknown) {
         const apiError = toApiError(error)
         setVerificationState('error')
         if (
@@ -56,12 +64,16 @@ const MagicLinkVerifyContent = () => {
     }
 
     verifyToken()
-  }, [searchParams, router])
+  }, [searchParams, router, refreshUser])
 
   const renderCurrentState = () => {
     switch (verificationState) {
       case 'loading':
         return <MagicLinkLoading />
+      case 'success':
+        return (
+          <RegisterSuccessStep onProceed={() => router.push('/dashboard')} />
+        )
       case 'error':
         return <MagicLinkError message={errorMessage} />
       default:
@@ -77,7 +89,6 @@ const MagicLinkVerifyContent = () => {
             <div className='mb-12'>
               <OnboardingLogo linkClassName='hidden lg:inline-block mb-8 mx-auto' />
             </div>
-
             <AnimatePresence mode='wait'>
               {renderCurrentState()}
             </AnimatePresence>
@@ -90,7 +101,18 @@ const MagicLinkVerifyContent = () => {
 
 const MagicLinkVerifyPage = () => {
   return (
-    <Suspense fallback={<>Loading...</>}>
+    <Suspense
+      fallback={
+        <main className='bg-base-bg px-4 py-10 sm:px-6 lg:px-10'>
+          <section className='mx-auto flex min-h-[calc(100vh-220px)] w-full max-w-[900px] flex-col items-center justify-center rounded-[20px] border border-grey-100 bg-white/80 p-6 text-center shadow-[0px_20px_40px_-24px_#1019282E] backdrop-blur-[2px] sm:p-10'>
+            <span className='inline-flex h-24 w-24 animate-spin rounded-full border-4 border-primary-200 border-t-primary-500 sm:h-28 sm:w-28' />
+            <p className='mt-6 text-base leading-7 text-grey-700 sm:text-lg'>
+              Loading...
+            </p>
+          </section>
+        </main>
+      }
+    >
       <MagicLinkVerifyContent />
     </Suspense>
   )

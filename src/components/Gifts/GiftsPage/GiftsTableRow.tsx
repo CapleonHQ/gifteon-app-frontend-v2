@@ -10,7 +10,7 @@ type GiftsTableRowProps = {
   isSelected: boolean
   onToggle: () => void
   onView: () => void
-  onDeactivate: () => void
+  onStatusAction: () => void
 }
 
 const GiftsTableRow = ({
@@ -18,8 +18,10 @@ const GiftsTableRow = ({
   isSelected,
   onToggle,
   onView,
-  onDeactivate,
+  onStatusAction,
 }: GiftsTableRowProps) => {
+  const isDeactivated = page.status === 'Deactivated'
+
   return (
     <div className='grid grid-cols-[24px_1.5fr_1fr_1fr_1fr_0.8fr_0.9fr_0.7fr_0.8fr_28px] items-center gap-4 text-grey-800 px-4 py-2.5 hover:bg-grey-50 transition-colors duration-300 border-b border-grey-50 whitespace-nowrap'>
       <Checkbox checked={isSelected} onCheckedChange={onToggle} className='size-5' />
@@ -58,7 +60,12 @@ const GiftsTableRow = ({
           {page.status}
         </span>
       </div>
-      <GiftsTableRowActions onView={onView} onDeactivate={onDeactivate} />
+      <GiftsTableRowActions
+        onView={onView}
+        onStatusAction={onStatusAction}
+        statusActionLabel={isDeactivated ? 'Activate' : 'Deactivate'}
+        isDestructive={!isDeactivated}
+      />
     </div>
   )
 }

@@ -13,7 +13,7 @@ type GiftsMobileCardProps = {
   onToggle: () => void
   onSelect: () => void
   onView: () => void
-  onDeactivate: () => void
+  onStatusAction: () => void
   onStartPress: () => void
   onClearPress: () => void
 }
@@ -26,10 +26,12 @@ const GiftsMobileCard = ({
   onToggle,
   onSelect,
   onView,
-  onDeactivate,
+  onStatusAction,
   onStartPress,
   onClearPress,
 }: GiftsMobileCardProps) => {
+  const isDeactivated = page.status === 'Deactivated'
+
   return (
     <div
       role='button'
@@ -130,7 +132,9 @@ const GiftsMobileCard = ({
 
           <GiftsMobileActionButtons
             onView={onView}
-            onDeactivate={onDeactivate}
+            onStatusAction={onStatusAction}
+            statusActionLabel={isDeactivated ? 'Activate' : 'Deactivate'}
+            isDestructive={!isDeactivated}
           />
         </>
       )}

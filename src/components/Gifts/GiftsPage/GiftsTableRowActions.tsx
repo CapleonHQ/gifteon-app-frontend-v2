@@ -12,15 +12,20 @@ import EyeOnIcon from '@/assets/icons/EyeOnIcon'
 import EditIcon from '@/assets/icons/EditIcon'
 import ShareIcon from '@/assets/icons/ShareIcon'
 import CancelHalfCircle from '@/assets/icons/CancelHalfCircle'
+import CheckmarkStyledIcon from '@/assets/icons/CheckmarkStyledIcon'
 
 type GiftsTableRowActionsProps = {
   onView: () => void
-  onDeactivate: () => void
+  onStatusAction: () => void
+  statusActionLabel: 'Deactivate' | 'Activate'
+  isDestructive?: boolean
 }
 
 const GiftsTableRowActions = ({
   onView,
-  onDeactivate,
+  onStatusAction,
+  statusActionLabel,
+  isDestructive = false,
 }: GiftsTableRowActionsProps) => {
   return (
     <DropdownMenu>
@@ -60,13 +65,19 @@ const GiftsTableRowActions = ({
         </DropdownMenuItem>
         <DropdownMenuSeparator className='bg-grey-50' />
         <DropdownMenuItem
-          className='gap-2 focus:text-error-500 cursor-pointer'
-          onClick={onDeactivate}
+          className={`gap-2 cursor-pointer ${
+            isDestructive ? 'focus:text-error-500' : ''
+          }`}
+          onClick={onStatusAction}
         >
-          <span className='w-5 h-5 text-error-400 [&>svg]:size-full! [&_svg]:text-current!'>
-            <CancelHalfCircle />
+          <span
+            className={`w-5 h-5 [&>svg]:size-full! [&_svg]:text-current! ${
+              isDestructive ? 'text-error-400' : 'text-success-500'
+            }`}
+          >
+            {isDestructive ? <CancelHalfCircle /> : <CheckmarkStyledIcon />}
           </span>
-          Deactivate
+          {statusActionLabel}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

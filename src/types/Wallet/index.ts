@@ -11,6 +11,21 @@ export interface WalletTransactionsParams extends PaginationParams {
 
 export interface WithdrawRequestBody {
   amount: number
+  bankId: string
+  pin: string
+}
+
+export interface WalletWithdrawalData {
+  id: string
+  reference: string
+  amount: number
+  currency: string
+  bankName: string
+  accountNumber: string
+  accountName: string
+  scheduledAt: string
+  status: string
+  message: string
 }
 
 export interface TopupRequestBody {

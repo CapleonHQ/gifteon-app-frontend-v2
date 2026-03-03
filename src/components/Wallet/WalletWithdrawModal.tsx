@@ -1,6 +1,12 @@
 'use client'
 
-import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type KeyboardEvent,
+} from 'react'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import {
@@ -10,6 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import ShakeOnError from '@/components/common/ShakeOnError'
+import { toApiError } from '@/api/errorHelpers'
+import { CURRENCY_WITHDRAWAL_LIMITS } from '@/lib/constants/payments'
 import { formatCurrency } from '@/lib/utils/currency'
 
 const formatAmount = (value: string) => {
@@ -17,6 +26,12 @@ const formatAmount = (value: string) => {
   const numeric = value.replace(/\D/g, '')
   if (!numeric) return ''
   return Number(numeric).toLocaleString('en-US')
+}
+
+const maskAccountNumber = (value: string) => {
+  if (value.length <= 4) return value
+  const suffix = value.slice(-4)
+  return `${'*'.repeat(Math.max(0, value.length - 4))}${suffix}`
 }
 
 const InputField = ({
@@ -66,16 +81,42 @@ type WalletWithdrawModalProps = {
   isOpen: boolean
   onClose: () => void
   availableBalance: number
-  bankAccounts: { id: string; label: string }[]
-  onSuccess: () => void
+  currency: string
+  bankAccounts: Array<{
+    id: string
+    label: string
+    bankName: string
+    accountNumber: string
+    accountName: string
+  }>
+  defaultBankId?: string
+  onSubmit: (payload: {
+    amount: number
+    bankId: string
+    pin: string
+  }) => Promise<void>
+  onResetError: () => void
+  isSubmitting: boolean
+  errorMessage?: string
+  isLoadingBanks: boolean
+  showKycCta?: boolean
+  onKycCta?: () => void
 }
 
 const WalletWithdrawModal = ({
   isOpen,
   onClose,
   availableBalance,
+  currency,
   bankAccounts,
-  onSuccess,
+  defaultBankId,
+  onSubmit,
+  onResetError,
+  isSubmitting,
+  errorMessage,
+  isLoadingBanks,
+  showKycCta = false,
+  onKycCta,
 }: WalletWithdrawModalProps) => {
   const [step, setStep] = useState<'form' | 'pin'>('form')
   const [amountInput, setAmountInput] = useState('')
@@ -85,13 +126,58 @@ const WalletWithdrawModal = ({
   const pinRefs = useRef<Array<HTMLInputElement | null>>([])
 
   const amountValue = Number(amountInput)
-  const fee = amountValue > 0 ? 80 : 0
+  const withdrawalLimits =
+    CURRENCY_WITHDRAWAL_LIMITS[currency] ?? CURRENCY_WITHDRAWAL_LIMITS.USD
+  // Processing fee is temporarily disabled.
+  const fee = 0
   const receiveAmount = Math.max(amountValue - fee, 0)
-  const isBelowMinimum = amountValue > 0 && amountValue < 1000
+  const isBelowMinimum = amountValue > 0 && amountValue < withdrawalLimits.min
+  const isAboveMaximum = amountValue > withdrawalLimits.max
   const isInsufficient = amountValue > availableBalance
+  const insufficientBalanceMessage = isInsufficient
+    ? `You have less than ${formatCurrency(amountValue, {
+        currency,
+        maximumFractionDigits: 0,
+      })} in your account`
+    : undefined
+  const hasConnectedBanks = bankAccounts.length > 0
+  const effectiveSelectedBank =
+    selectedBank || defaultBankId || bankAccounts[0]?.id || ''
+  const selectedBankDetails = bankAccounts.find(
+    (bank) => bank.id === effectiveSelectedBank
+  )
   const isContinueDisabled =
-    amountValue <= 0 || !selectedBank || isInsufficient || isBelowMinimum
+    amountValue <= 0 ||
+    !effectiveSelectedBank ||
+    !hasConnectedBanks ||
+    isInsufficient ||
+    isBelowMinimum ||
+    isAboveMaximum
   const isPinComplete = pin.every((digit) => digit.length === 1)
+  const isPinError = errorMessage?.toLowerCase().includes('pin') ?? false
+  const pinErrorMessage = isPinError ? errorMessage : undefined
+  const formErrorMessage = isPinError ? undefined : errorMessage
+
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return
+
+    const syncPinUiByViewport = () => {
+      const isMobileViewport = window.innerWidth < 1024
+
+      if (isMobileViewport && step === 'pin' && !isPinModalOpen) {
+        setIsPinModalOpen(true)
+      }
+
+      if (!isMobileViewport && isPinModalOpen) {
+        setIsPinModalOpen(false)
+        setStep('pin')
+      }
+    }
+
+    syncPinUiByViewport()
+    window.addEventListener('resize', syncPinUiByViewport)
+    return () => window.removeEventListener('resize', syncPinUiByViewport)
+  }, [isOpen, isPinModalOpen, step])
 
   const handleClose = () => {
     onClose()
@@ -100,12 +186,14 @@ const WalletWithdrawModal = ({
     setSelectedBank('')
     setPin(['', '', '', ''])
     setIsPinModalOpen(false)
+    onResetError()
   }
 
   const handlePinChange = (index: number, value: string) => {
     const next = [...pin]
     next[index] = value.replace(/[^0-9]/g, '').slice(0, 1)
     setPin(next)
+    onResetError()
     if (value && pinRefs.current[index + 1]) {
       pinRefs.current[index + 1]?.focus()
     }
@@ -115,7 +203,11 @@ const WalletWithdrawModal = ({
     index: number,
     event: KeyboardEvent<HTMLInputElement>
   ) => {
-    if (event.key === 'Backspace' && !pin[index] && pinRefs.current[index - 1]) {
+    if (
+      event.key === 'Backspace' &&
+      !pin[index] &&
+      pinRefs.current[index - 1]
+    ) {
       pinRefs.current[index - 1]?.focus()
     }
   }
@@ -128,11 +220,13 @@ const WalletWithdrawModal = ({
     if (!pasted) return
     const next = pasted.split('').slice(0, 4)
     setPin([next[0] || '', next[1] || '', next[2] || '', next[3] || ''])
+    onResetError()
     const targetIndex = Math.min(pasted.length, 4) - 1
     pinRefs.current[targetIndex]?.focus()
   }
 
   const openPinStep = () => {
+    onResetError()
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       setIsPinModalOpen(true)
       return
@@ -140,12 +234,33 @@ const WalletWithdrawModal = ({
     setStep('pin')
   }
 
+  const handleWithdrawSubmit = async () => {
+    if (!isPinComplete || isSubmitting) return
+    try {
+      await onSubmit({
+        amount: amountValue,
+        bankId: effectiveSelectedBank,
+        pin: pin.join(''),
+      })
+      handleClose()
+    } catch (error: unknown) {
+      const apiErrorMessage = toApiError(error).message?.toLowerCase() ?? ''
+      setPin(['', '', '', ''])
+      pinRefs.current[0]?.focus()
+      const shouldReturnToForm = !apiErrorMessage.includes('pin')
+      if (shouldReturnToForm) {
+        setStep('form')
+        setIsPinModalOpen(false)
+      }
+    }
+  }
+
   const headerTitle = step === 'pin' ? 'Confirmation' : 'Withdraw Funds'
   const headerSubtitle =
     step === 'pin'
       ? 'Provide your account PIN to move forward'
       : `Available balance: ${formatCurrency(availableBalance, {
-          currency: 'NGN',
+          currency,
           maximumFractionDigits: 0,
         })}`
 
@@ -164,18 +279,15 @@ const WalletWithdrawModal = ({
           </button>
           <button
             type='button'
-            disabled={!isPinComplete}
-            onClick={() => {
-              onSuccess()
-              handleClose()
-            }}
+            disabled={!isPinComplete || isSubmitting}
+            onClick={handleWithdrawSubmit}
             className={`flex-1 py-2.5 rounded-[10px] font-medium text-white transition-colors ${
-              isPinComplete
+              isPinComplete && !isSubmitting
                 ? 'bg-primary-500 hover:bg-primary-600'
                 : 'bg-primary-200 cursor-not-allowed'
             }`}
           >
-            Confirm Withdrawal
+            {isSubmitting ? 'Processing...' : 'Confirm Withdrawal'}
           </button>
         </div>
       )
@@ -222,12 +334,24 @@ const WalletWithdrawModal = ({
                 onChange={(event) => handlePinChange(index, event.target.value)}
                 onKeyDown={(event) => handlePinKeyDown(index, event)}
                 onPaste={handlePinPaste}
-                className='w-12 h-12 border border-grey-100 rounded-[8px] text-center text-lg font-medium text-blackish focus:outline-none focus:ring-1 focus:ring-primary-300'
+                className={`w-12 h-12 border rounded-[8px] text-center text-lg font-medium text-blackish focus:outline-none focus:ring-0 ${
+                  pinErrorMessage
+                    ? 'border-error-400 focus:border-error-400'
+                    : 'border-grey-100 focus:border-primary-300'
+                }`}
+                type='password'
                 inputMode='numeric'
                 maxLength={1}
               />
             ))}
           </div>
+          <ShakeOnError active={Boolean(pinErrorMessage)}>
+            {pinErrorMessage ? (
+              <p className='text-xs text-error-500 text-center'>
+                {pinErrorMessage}
+              </p>
+            ) : null}
+          </ShakeOnError>
           {showActions ? renderActions() : null}
         </div>
       )
@@ -238,26 +362,52 @@ const WalletWithdrawModal = ({
         <InputField
           label='Amount to Withdraw'
           value={amountInput}
-          onChange={setAmountInput}
+          onChange={(value) => {
+            setAmountInput(value)
+            onResetError()
+          }}
           placeholder='0.00'
           formatAsAmount
-          isError={isInsufficient || isBelowMinimum}
+          isError={isInsufficient || isBelowMinimum || isAboveMaximum}
           helper={
             isBelowMinimum
-              ? 'Minimum withdrawal amount is ₦1,000'
-              : isInsufficient
-                ? `You have less than ${formatCurrency(amountValue, {
-                    currency: 'NGN',
-                    maximumFractionDigits: 0,
-                  })} in your account`
-                : undefined
+              ? `Minimum withdrawal amount is ${
+                  withdrawalLimits.label
+                }${withdrawalLimits.min.toLocaleString('en-US')}`
+              : isAboveMaximum
+              ? `Maximum withdrawal amount is ${
+                  withdrawalLimits.label
+                }${withdrawalLimits.max.toLocaleString('en-US')}`
+              : undefined
           }
         />
+        <ShakeOnError active={Boolean(insufficientBalanceMessage)}>
+          {insufficientBalanceMessage ? (
+            <p className='text-xs text-error-500 -mt-2'>
+              {insufficientBalanceMessage}
+            </p>
+          ) : null}
+        </ShakeOnError>
         <div className='space-y-2'>
           <label className='text-xs text-grey-700'>Select Bank Account</label>
-          <Select value={selectedBank} onValueChange={setSelectedBank}>
+          <Select
+            value={effectiveSelectedBank}
+            onValueChange={(value) => {
+              setSelectedBank(value)
+              onResetError()
+            }}
+            disabled={isLoadingBanks || !hasConnectedBanks}
+          >
             <SelectTrigger className='w-full border-grey-100 rounded-[10px] text-sm text-blackish font-medium h-[44px]! shadow-none! bg-white'>
-              <SelectValue placeholder='Select an option' />
+              <SelectValue
+                placeholder={
+                  isLoadingBanks
+                    ? 'Loading bank accounts...'
+                    : hasConnectedBanks
+                    ? 'Select an option'
+                    : 'No bank accounts available'
+                }
+              />
             </SelectTrigger>
             <SelectContent className='rounded-[12px] border-grey-50'>
               {bankAccounts.map((bank) => (
@@ -268,13 +418,35 @@ const WalletWithdrawModal = ({
             </SelectContent>
           </Select>
         </div>
+        {selectedBankDetails ? (
+          <div className='bg-[#F7FAFF] border border-grey-50 rounded-[10px] p-3 text-xs text-grey-600 space-y-2'>
+            <div className='flex items-center justify-between gap-3'>
+              <span>Bank:</span>
+              <span className='font-medium text-grey-900 text-right'>
+                {selectedBankDetails.bankName}
+              </span>
+            </div>
+            <div className='flex items-center justify-between gap-3'>
+              <span>Account number:</span>
+              <span className='font-medium text-grey-900 text-right'>
+                {maskAccountNumber(selectedBankDetails.accountNumber)}
+              </span>
+            </div>
+            <div className='flex items-center justify-between gap-3'>
+              <span>Account name:</span>
+              <span className='font-medium text-grey-900 text-right'>
+                {selectedBankDetails.accountName}
+              </span>
+            </div>
+          </div>
+        ) : null}
         {amountValue > 0 && (
           <div className='bg-[#F7FAFF] border border-grey-50 rounded-[10px] p-3 text-xs text-grey-600 space-y-2'>
             <div className='flex items-center justify-between'>
               <span>Withdrawal amount:</span>
               <span className='font-medium text-grey-800'>
                 {formatCurrency(amountValue, {
-                  currency: 'NGN',
+                  currency,
                   maximumFractionDigits: 0,
                 })}
               </span>
@@ -282,8 +454,9 @@ const WalletWithdrawModal = ({
             <div className='flex items-center justify-between'>
               <span>Processing fee:</span>
               <span className='font-medium text-grey-800'>
-                -{formatCurrency(fee, {
-                  currency: 'NGN',
+                -
+                {formatCurrency(fee, {
+                  currency,
                   maximumFractionDigits: 0,
                 })}
               </span>
@@ -292,13 +465,27 @@ const WalletWithdrawModal = ({
               <span>You will receive:</span>
               <span className='font-medium text-grey-900'>
                 {formatCurrency(receiveAmount, {
-                  currency: 'NGN',
+                  currency,
                   maximumFractionDigits: 0,
                 })}
               </span>
             </div>
           </div>
         )}
+        {formErrorMessage ? (
+          <div className='space-y-2'>
+            <p className='text-xs text-error-500'>{formErrorMessage}</p>
+            {showKycCta && onKycCta ? (
+              <button
+                type='button'
+                onClick={onKycCta}
+                className='text-xs font-medium text-primary-500 underline underline-offset-2'
+              >
+                Complete verification
+              </button>
+            ) : null}
+          </div>
+        ) : null}
         {showActions ? renderActions() : null}
       </div>
     )
@@ -307,7 +494,9 @@ const WalletWithdrawModal = ({
   if (!isOpen) return null
 
   return (
-    <div className='fixed inset-0 z-30 lg:z-50'>
+    <div
+      className={`fixed inset-0 ${isPinModalOpen ? 'z-60' : 'z-30'} lg:z-50`}
+    >
       <div
         className='absolute inset-0 bg-black/40 backdrop-blur-sm hidden lg:block'
         onClick={handleClose}
@@ -326,7 +515,9 @@ const WalletWithdrawModal = ({
                 <CloseIcon />
               </span>
             </button>
-            <h3 className='text-2xl font-medium text-blackish'>{headerTitle}</h3>
+            <h3 className='text-2xl font-medium text-blackish'>
+              {headerTitle}
+            </h3>
             {headerSubtitle ? (
               <p className='text-sm text-grey-600 max-w-[356px] mx-auto mt-1'>
                 {headerSubtitle}
@@ -343,26 +534,26 @@ const WalletWithdrawModal = ({
         <div className='flex flex-col h-full'>
           <div className='pt-8 pb-4 px-4'>
             <div className='flex flex-col gap-3'>
-            <button
-              type='button'
-              onClick={handleClose}
-              className='w-6 h-6'
-              aria-label='Go back'
-            >
-              <span className='text-blackish hover:text-black/70 flex'>
-                <BackLeftIcon />
-              </span>
-            </button>
-            <div className='flex flex-col items-center justify-center gap-1'>
-              <span className='text-2xl font-medium text-blackish'>
-                {headerTitle}
-              </span>
-              {headerSubtitle ? (
-                <p className='text-sm text-grey-600 text-center'>
-                  {headerSubtitle}
-                </p>
-              ) : null}
-            </div>
+              <button
+                type='button'
+                onClick={handleClose}
+                className='w-6 h-6'
+                aria-label='Go back'
+              >
+                <span className='text-blackish hover:text-black/70 flex'>
+                  <BackLeftIcon />
+                </span>
+              </button>
+              <div className='flex flex-col items-center justify-center gap-1'>
+                <span className='text-2xl font-medium text-blackish'>
+                  {headerTitle}
+                </span>
+                {headerSubtitle ? (
+                  <p className='text-sm text-grey-600 text-center'>
+                    {headerSubtitle}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </div>
           <div className='flex-1 overflow-y-auto px-4 pb-4'>
@@ -375,15 +566,21 @@ const WalletWithdrawModal = ({
       </div>
 
       {isPinModalOpen && (
-        <div className='fixed inset-0 z-[60] lg:hidden flex items-center justify-center px-4'>
+        <div className='fixed inset-0 z-70 lg:hidden flex items-center justify-center px-4'>
           <div
             className='absolute inset-0 bg-black/40 backdrop-blur-sm'
-            onClick={() => setIsPinModalOpen(false)}
+            onClick={() => {
+              setIsPinModalOpen(false)
+              setStep('form')
+            }}
           />
           <div className='relative w-full max-w-[520px] rounded-[20px] bg-white shadow-[0px_24px_60px_-20px_#10192852] px-6 py-8'>
             <button
               type='button'
-              onClick={() => setIsPinModalOpen(false)}
+              onClick={() => {
+                setIsPinModalOpen(false)
+                setStep('form')
+              }}
               className='absolute right-5 top-5 w-9 h-9 rounded-full flex items-center justify-center hover:bg-grey-50'
               aria-label='Close'
             >
@@ -413,7 +610,12 @@ const WalletWithdrawModal = ({
                     }
                     onKeyDown={(event) => handlePinKeyDown(index, event)}
                     onPaste={handlePinPaste}
-                    className='w-12 h-12 border border-grey-100 rounded-[8px] text-center text-lg font-medium text-blackish focus:outline-none focus:ring-1 focus:ring-primary-300'
+                    className={`w-12 h-12 border rounded-[8px] text-center text-lg font-medium text-blackish focus:outline-none ${
+                      pinErrorMessage
+                        ? 'border-error-400 focus:ring-1 focus:ring-error-200'
+                        : 'border-grey-100 focus:ring-1 focus:ring-primary-300'
+                    }`}
+                    type='password'
                     inputMode='numeric'
                     maxLength={1}
                   />
@@ -422,27 +624,35 @@ const WalletWithdrawModal = ({
               <div className='flex items-center gap-3 w-full'>
                 <button
                   type='button'
-                  onClick={() => setIsPinModalOpen(false)}
+                  onClick={() => {
+                    setIsPinModalOpen(false)
+                    setStep('form')
+                  }}
                   className='flex-1 py-2.5 rounded-[10px] border border-grey-200 text-grey-700 font-medium bg-grey-50/70 hover:bg-grey-100/70 transition-colors'
                 >
                   Go Back
                 </button>
                 <button
                   type='button'
-                  disabled={!isPinComplete}
-                  onClick={() => {
-                    onSuccess()
-                    handleClose()
-                  }}
+                  disabled={!isPinComplete || isSubmitting}
+                  onClick={handleWithdrawSubmit}
                   className={`flex-1 py-2.5 rounded-[10px] font-medium text-white transition-colors ${
-                    isPinComplete
+                    isPinComplete && !isSubmitting
                       ? 'bg-primary-500 hover:bg-primary-600'
                       : 'bg-primary-200 cursor-not-allowed'
                   }`}
                 >
-                  Confirm Withdrawal
+                  {isSubmitting ? 'Processing...' : 'Confirm'}
                 </button>
               </div>
+              <ShakeOnError
+                active={Boolean(pinErrorMessage)}
+                className='w-full'
+              >
+                {pinErrorMessage ? (
+                  <p className='text-xs text-error-500'>{pinErrorMessage}</p>
+                ) : null}
+              </ShakeOnError>
             </div>
           </div>
         </div>

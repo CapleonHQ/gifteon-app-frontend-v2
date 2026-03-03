@@ -11,6 +11,9 @@ import type { GiftItem } from '@/types/Gifts/index'
 import { useStatsOverview } from '@/hooks/tanstack/stats'
 import type { DashboardRecentGift } from '@/types/Stats'
 import { formatCurrency } from '@/lib/utils/currency'
+import KycBanner from './KycBanner'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 const FALLBACK_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
 
@@ -72,6 +75,7 @@ const mapRecentGiftItem = (
 
 const DashboardPageClient = () => {
   const { openSuccess } = useSuccessModal()
+  const router = useRouter()
   const statsOverview = useStatsOverview()
   const [claimItem, setClaimItem] = useState<GiftItem | null>(null)
   const [deliverItem, setDeliverItem] = useState<GiftItem | null>(null)
@@ -123,11 +127,11 @@ const DashboardPageClient = () => {
 
   return (
     <>
-      {/* <KycBanner
+      <KycBanner
         message='You have been sent a huge amount of money. Please update your KYC to access it.'
         actionLabel='Update KYC'
-        actionHref='/profile'
-      /> */}
+        onAction={() => router.push('/profile?modal=kyc&source=dashboard')}
+      />
       <div className='mt-4 lg:mt-0 w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
         <DashboardStatsSection />
 
@@ -186,14 +190,16 @@ const DashboardPageClient = () => {
         aria-label='AI assistant'
       >
         <div className='w-[80px] h-[70px]'>
-          <img
+          <Image
             src='/assets/images/gifs/ai-animation.gif'
             alt='AI assistant'
-            className='w-full h-full object-contain rounded-[12px]'
+            width={80}
+            height={70}
+            className='object-contain rounded-[12px]'
+            unoptimized
           />
         </div>
       </button>
-
     </>
   )
 }

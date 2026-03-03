@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import WalletSummarySection from './WalletSummarySection'
 import KeyboardLeftIcon from '@/assets/icons/KeyboardLeftIcon'
 import KeyboardRightIcon from '@/assets/icons/KeyboardRightIcon'
@@ -18,23 +19,28 @@ import { useSuccessModal } from '@/context/SuccessModalContext'
 import {
   useWalletDetails,
   useTopupWalletLocals,
+  useWithdrawFromWallet,
   useWalletTransactions,
 } from '@/hooks/tanstack/wallet'
+import { useConnectedBanks } from '@/hooks/tanstack/banks'
 import { useDebounce } from '@/hooks/useDebounce'
 import { parseWalletBalance } from '@/lib/wallet/transformers'
 import { formatCurrency } from '@/lib/utils/currency'
 import { storePaymentReturnPath } from '@/lib/payments/paystackReturn'
 import { MIN_WALLET_TOPUP_AMOUNT } from '@/lib/constants/payments'
+import { toApiError } from '@/api/errorHelpers'
 import { type WalletTransaction } from './types'
-
-const bankAccounts = [
-  { id: 'gtb', label: 'GTB - 12******34' },
-  { id: 'sterling', label: 'Sterling Bank - 01******78' },
-]
 
 const PAGE_SIZE = 10
 const EMPTY_TRANSACTIONS: WalletTransaction[] = []
 const TOPUP_ERROR_MESSAGE = 'Unable to initialize top-up. Please try again.'
+const WITHDRAWAL_ERROR_MESSAGE = 'Unable to initiate withdrawal. Please try again.'
+
+const maskAccountNumber = (value: string): string => {
+  if (value.length <= 4) return value
+  const suffix = value.slice(-4)
+  return `${'*'.repeat(Math.max(0, value.length - 4))}${suffix}`
+}
 
 const WalletPageClient = () => {
   const [isTopUpOpen, setIsTopUpOpen] = useState(false)
@@ -46,10 +52,13 @@ const WalletPageClient = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const { openSuccess } = useSuccessModal()
+  const router = useRouter()
   const debouncedSearch = useDebounce(searchQuery.trim(), 400)
 
   const detailsQuery = useWalletDetails()
+  const connectedBanksQuery = useConnectedBanks()
   const topupMutation = useTopupWalletLocals()
+  const withdrawMutation = useWithdrawFromWallet()
   const transactionsQuery = useWalletTransactions({
     page: currentPage,
     limit: PAGE_SIZE,
@@ -59,6 +68,22 @@ const WalletPageClient = () => {
   })
 
   const walletDetails = detailsQuery.data?.data
+  const bankAccounts = useMemo(
+    () =>
+      (connectedBanksQuery.data?.data?.banks ?? []).map((bank) => ({
+        id: bank.id,
+        label: `${bank.bankName} - ${maskAccountNumber(bank.accountNumber)}`,
+        bankName: bank.bankName,
+        accountNumber: bank.accountNumber,
+        accountName: bank.accountName,
+      })),
+    [connectedBanksQuery.data?.data?.banks]
+  )
+  const defaultBankId = useMemo(
+    () =>
+      connectedBanksQuery.data?.data?.banks?.find((bank) => bank.isDefault)?.id,
+    [connectedBanksQuery.data?.data?.banks]
+  )
   const transactionsData = transactionsQuery.data?.data
 
   const availableBalance = parseWalletBalance(walletDetails?.balance)
@@ -108,6 +133,21 @@ const WalletPageClient = () => {
       : topupMutation.isError
       ? TOPUP_ERROR_MESSAGE
       : undefined
+  const withdrawalError =
+    withdrawMutation.isError
+      ? toApiError(withdrawMutation.error).message || WITHDRAWAL_ERROR_MESSAGE
+      : undefined
+  const withdrawalApiError = withdrawMutation.isError
+    ? toApiError(withdrawMutation.error)
+    : null
+  const showWithdrawalKycCta = Boolean(
+    withdrawalApiError &&
+      (withdrawalApiError.code === 'FORBIDDEN' ||
+        withdrawalApiError.message.toLowerCase().includes('verify your identity') ||
+        withdrawalApiError.message.toLowerCase().includes('kyc') ||
+        withdrawalApiError.message.toLowerCase().includes('nin') ||
+        withdrawalApiError.message.toLowerCase().includes('bvn'))
+  )
 
   const handleTopupSubmit = async (amount: number) => {
     if (amount < MIN_WALLET_TOPUP_AMOUNT) return
@@ -121,6 +161,20 @@ const WalletPageClient = () => {
     } catch {
       // Error state is handled in modal via `topupMutation.error`.
     }
+  }
+
+  const handleWithdrawSubmit = async (payload: {
+    amount: number
+    bankId: string
+    pin: string
+  }) => {
+    const response = await withdrawMutation.mutateAsync(payload)
+    openSuccess({
+      message:
+        response.data?.message ||
+        response.message ||
+        'Withdrawal initiated successfully.',
+    })
   }
 
   return (
@@ -291,15 +345,25 @@ const WalletPageClient = () => {
 
       <WalletWithdrawModal
         isOpen={isWithdrawOpen}
-        onClose={() => setIsWithdrawOpen(false)}
+        onClose={() => {
+          setIsWithdrawOpen(false)
+          withdrawMutation.reset()
+        }}
         availableBalance={availableBalance}
+        currency={currency}
         bankAccounts={bankAccounts}
-        onSuccess={() =>
-          openSuccess({
-            message:
-              'This withdrawal has been initiated successfully. You will get a notification once it is completed.',
-          })
-        }
+        defaultBankId={defaultBankId}
+        onSubmit={handleWithdrawSubmit}
+        onResetError={() => withdrawMutation.reset()}
+        isSubmitting={withdrawMutation.isPending}
+        errorMessage={withdrawalError}
+        isLoadingBanks={connectedBanksQuery.isLoading}
+        showKycCta={showWithdrawalKycCta}
+        onKycCta={() => {
+          setIsWithdrawOpen(false)
+          withdrawMutation.reset()
+          router.push('/profile?modal=kyc&source=wallet')
+        }}
       />
 
       <WalletDisputeModal

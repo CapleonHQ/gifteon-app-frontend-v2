@@ -10,7 +10,7 @@ export const buildFilterParams = (filters: GiftsFilterState): PagesQueryParams =
   const params: PagesQueryParams = {}
 
   if (filters.status !== 'all') {
-    params.status = filters.status === 'active' ? 'active' : 'ended'
+    params.status = filters.status
   }
 
   if (filters.category !== 'all') {

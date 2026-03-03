@@ -6,8 +6,8 @@ import { mapCommentsToWishes } from '@/lib/comments/transformers'
 
 const DEFAULT_COMMENTS_LIMIT = 20
 
-const toSortParam = (sort: string): 'asc' | 'desc' =>
-  sort === 'oldest' ? 'asc' : 'desc'
+const toSortParam = (sort: string): 'ASC' | 'DESC' =>
+  sort === 'oldest' ? 'ASC' : 'DESC'
 
 export const usePageComments = (
   pageId: string,
@@ -20,7 +20,7 @@ export const usePageComments = (
       getComments(pageId, {
         limit,
         offset: pageParam as number,
-        sort: toSortParam(sort),
+        sortBy: toSortParam(sort),
       }),
     enabled: pageId.length > 0,
     initialPageParam: 0,

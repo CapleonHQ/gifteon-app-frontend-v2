@@ -1,5 +1,5 @@
 export type PageVisibility = 'Public' | 'Shareable' | 'Private'
-export type PageStatus = 'Active' | 'Ended'
+export type PageStatus = 'Active' | 'Deactivated' | 'Ended'
 
 export type PageApiPrivacy = 'public' | 'private' | 'shareable'
 export type PageListApiStatus =
@@ -191,7 +191,8 @@ export type PagesQueryParams = {
   limit?: number
   offset?: number
   search?: string
-  status?: 'active' | 'ended'
+  s?: string
+  status?: 'published' | 'archived' | 'ended' | 'active'
   category?: string
   visibility?: 'public' | 'shareable' | 'private'
   startdate?: string

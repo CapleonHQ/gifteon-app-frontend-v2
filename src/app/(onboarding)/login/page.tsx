@@ -29,6 +29,17 @@ const LoginPage = () => {
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
+  const resolvePostLoginPath = () => {
+    const requestedNextPath = new URLSearchParams(window.location.search).get(
+      'next'
+    )
+    if (!requestedNextPath) return '/dashboard'
+    if (!requestedNextPath.startsWith('/')) return '/dashboard'
+    if (requestedNextPath.startsWith('//')) return '/dashboard'
+    if (requestedNextPath.startsWith('/login')) return '/dashboard'
+    return requestedNextPath
+  }
+
   // Countdown timer for resend
   useEffect(() => {
     if (currentStep === 'verification' && countdown > 0) {
@@ -166,7 +177,7 @@ const LoginPage = () => {
           setRefreshToken(resp.refreshToken)
         }
         await refreshUser()
-        router.push('/dashboard')
+        router.push(resolvePostLoginPath())
       }
     } catch (error: unknown) {
       const apiError = toApiError(error)
@@ -199,7 +210,7 @@ const LoginPage = () => {
   }
 
   const handleProceedToDashboard = () => {
-    router.push('/dashboard')
+    router.push(resolvePostLoginPath())
   }
 
   const isValidEmail = Boolean(email) && validateEmail(email)

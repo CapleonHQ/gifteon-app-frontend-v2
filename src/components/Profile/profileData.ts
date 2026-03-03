@@ -87,7 +87,7 @@ export const notificationGroups: NotificationGroup[] = [
 export const initialNotificationPrefs = notificationGroups.reduce(
   (acc, group) => {
     group.items.forEach((item) => {
-      acc[item.id] = { email: false, inApp: true, sms: false }
+      acc[item.id] = { email: true, inApp: false, sms: false }
     })
     return acc
   },

@@ -25,6 +25,9 @@ const PaymentMethodsManagerSection = () => {
   const setDefaultBankMutation = useSetDefaultConnectedBank()
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<PaymentMethod | null>(null)
+  const [pendingDefaultMethodId, setPendingDefaultMethodId] = useState<
+    string | null
+  >(null)
 
   const paymentMethods = useMemo<PaymentMethod[]>(
     () =>
@@ -56,6 +59,8 @@ const PaymentMethodsManagerSection = () => {
   }
 
   const handleSetDefaultPayment = async (method: PaymentMethod) => {
+    if (setDefaultBankMutation.isPending) return
+    setPendingDefaultMethodId(method.id)
     try {
       await setDefaultBankMutation.mutateAsync(method.id)
       openSuccess({
@@ -65,6 +70,8 @@ const PaymentMethodsManagerSection = () => {
       openSuccess({
         message: 'Unable to update default payment method. Please try again.',
       })
+    } finally {
+      setPendingDefaultMethodId(null)
     }
   }
 
@@ -78,6 +85,8 @@ const PaymentMethodsManagerSection = () => {
         isLoading={connectedBanksQuery.isLoading}
         hasError={connectedBanksQuery.isError}
         onRetry={() => connectedBanksQuery.refetch()}
+        isSettingDefault={setDefaultBankMutation.isPending}
+        defaultingMethodId={pendingDefaultMethodId}
       />
 
       <AddAccountModal

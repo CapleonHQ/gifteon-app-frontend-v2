@@ -115,7 +115,7 @@ const ClaimGiftModal = ({
       <button
         type='button'
         onClick={onConfirm}
-        className='flex-1 py-3 rounded-[12px] bg-linear-to-r from-primary-400 to-primary-600 border border-primary-500 text-white font-medium hover:from-primary-500 hover:to-primary-700 transition-colors'
+        className='flex-1 py-3 rounded-[12px] bg-linear-to-b from-primary-400 from-17% to-primary-600 border border-primary-500 text-white font-medium hover:from-primary-500 hover:to-primary-700 transition-colors'
       >
         Claim Gift
       </button>

@@ -7,6 +7,7 @@ import type {
 type NotificationGroupDesktopProps = {
   group: NotificationGroup
   notifications: NotificationPrefs
+  isReadOnly?: boolean
   onUpdate: (
     id: string,
     field: 'email' | 'inApp' | 'sms',
@@ -17,6 +18,7 @@ type NotificationGroupDesktopProps = {
 const NotificationGroupDesktop = ({
   group,
   notifications,
+  isReadOnly = false,
   onUpdate,
 }: NotificationGroupDesktopProps) => {
   return (
@@ -33,6 +35,7 @@ const NotificationGroupDesktop = ({
               <Checkbox
                 checked={notifications[item.id]?.email}
                 className='w-5 h-5'
+                disabled={isReadOnly}
                 onCheckedChange={(checked) =>
                   onUpdate(item.id, 'email', Boolean(checked))
                 }
@@ -42,6 +45,7 @@ const NotificationGroupDesktop = ({
               <Checkbox
                 checked={notifications[item.id]?.inApp}
                 className='w-5 h-5'
+                disabled={isReadOnly}
                 onCheckedChange={(checked) =>
                   onUpdate(item.id, 'inApp', Boolean(checked))
                 }
@@ -51,6 +55,7 @@ const NotificationGroupDesktop = ({
               <Checkbox
                 checked={notifications[item.id]?.sms}
                 className='w-5 h-5'
+                disabled={isReadOnly}
                 onCheckedChange={(checked) =>
                   onUpdate(item.id, 'sms', Boolean(checked))
                 }

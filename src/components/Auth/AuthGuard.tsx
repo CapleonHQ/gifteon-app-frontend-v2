@@ -1,18 +1,21 @@
 'use client'
 
 import { useEffect, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 
 const AuthGuard = ({ children }: { children: ReactNode }) => {
   const router = useRouter()
+  const pathname = usePathname()
   const { status } = useAuth()
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.replace('/login')
+      const currentPath = `${pathname}${window.location.search}`
+      const next = encodeURIComponent(currentPath)
+      router.replace(`/login?next=${next}`)
     }
-  }, [status, router])
+  }, [status, router, pathname])
 
   if (status !== 'authenticated') {
     return (
