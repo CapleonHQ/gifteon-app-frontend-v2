@@ -8,6 +8,7 @@ import CheckmarkStyledIcon from '@/assets/icons/CheckmarkStyledIcon'
 
 type GiftsMobileActionButtonsProps = {
   onView: () => void
+  onShare: () => void
   onStatusAction: () => void
   statusActionLabel: 'Deactivate' | 'Activate'
   isDestructive?: boolean
@@ -15,6 +16,7 @@ type GiftsMobileActionButtonsProps = {
 
 const GiftsMobileActionButtons = ({
   onView,
+  onShare,
   onStatusAction,
   statusActionLabel,
   isDestructive = false,
@@ -35,7 +37,10 @@ const GiftsMobileActionButtons = ({
       </button>
       <button
         className='flex items-center justify-center gap-2 w-full py-3 rounded-[8px] border border-grey-200 bg-grey-50/70 transition-colors hover:bg-grey-100/70 duration-300 text-grey-800 text-sm font-medium'
-        onClick={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation()
+          onShare()
+        }}
       >
         <span className='w-3.5 h-3.5 text-secondary-800'>
           <EditIcon />

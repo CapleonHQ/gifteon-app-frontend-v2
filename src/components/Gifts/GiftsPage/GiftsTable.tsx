@@ -13,6 +13,7 @@ type GiftsTableProps = {
   onToggleAll: () => void
   onToggleOne: (id: string) => void
   onView: (id: string) => void
+  onShare: (id: string) => void
   onDeactivateSelected: () => void
   onStatusActionSingle: (id: string) => void
 }
@@ -25,6 +26,7 @@ const GiftsTable = ({
   onToggleAll,
   onToggleOne,
   onView,
+  onShare,
   onDeactivateSelected,
   onStatusActionSingle,
 }: GiftsTableProps) => {
@@ -60,6 +62,7 @@ const GiftsTable = ({
               isSelected={selectedIds.has(page.id)}
               onToggle={() => onToggleOne(page.id)}
               onView={() => onView(page.id)}
+              onShare={() => onShare(page.id)}
               onStatusAction={() => onStatusActionSingle(page.id)}
             />
           ))}

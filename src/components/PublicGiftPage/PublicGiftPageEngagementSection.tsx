@@ -4,6 +4,8 @@ import {
   type PublicPageApiData,
 } from '@/api/services/publicPages'
 import { useMemo, useState } from 'react'
+import { Share2 } from 'lucide-react'
+import ShareGiftPageModal from '@/components/Gifts/GiftDetails/ShareGiftPageModal'
 import CommentComposer from './engagement/CommentComposer'
 import EngagementFeed from './engagement/EngagementFeed'
 import EngagementTabs from './engagement/EngagementTabs'
@@ -33,6 +35,7 @@ export default function PublicGiftPageEngagementSection({
     'most-recent'
   )
   const [isSuccessModalOpen, setSuccessModalOpen] = useState(false)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   const receiverName = useMemo(
     () => resolveRecipientName(page, pageTitle),
@@ -58,6 +61,7 @@ export default function PublicGiftPageEngagementSection({
     () => giftOptions.filter((item) => selectedGiftIds[item.id]),
     [giftOptions, selectedGiftIds]
   )
+  const shareUrl = page.slug ? `/u/${page.slug}` : ''
 
   const handleSelectGift = (giftId: string, checked: boolean) => {
     setSelectedGiftIds((prev) => ({ ...prev, [giftId]: checked }))
@@ -78,6 +82,17 @@ export default function PublicGiftPageEngagementSection({
 
   return (
     <div className='w-full px-5 pb-8 sm:px-8 lg:px-15 lg:pb-14'>
+      <div className='mb-4 flex items-center justify-end gap-2'>
+        <button
+          type='button'
+          onClick={() => setIsShareModalOpen(true)}
+          className='inline-flex items-center gap-2 rounded-[10px] border border-grey-200 bg-white px-3 py-2 text-sm font-medium text-grey-700 hover:bg-grey-50 transition-colors'
+        >
+          <Share2 className='h-4 w-4' />
+          Share
+        </button>
+      </div>
+
       <EngagementTabs
         activeTab={activeTab}
         commentsTotal={commentsTotal}
@@ -118,6 +133,13 @@ export default function PublicGiftPageEngagementSection({
         selectedGiftItems={selectedGiftItems}
         giftQuantities={giftQuantities}
         currency={currency}
+      />
+      <ShareGiftPageModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        pageTitle={pageTitle}
+        pageUrl={shareUrl}
+        trackShareSlug={page.slug}
       />
     </div>
   )

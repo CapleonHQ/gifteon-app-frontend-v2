@@ -10,6 +10,7 @@ type GiftsTableRowProps = {
   isSelected: boolean
   onToggle: () => void
   onView: () => void
+  onShare: () => void
   onStatusAction: () => void
 }
 
@@ -18,6 +19,7 @@ const GiftsTableRow = ({
   isSelected,
   onToggle,
   onView,
+  onShare,
   onStatusAction,
 }: GiftsTableRowProps) => {
   const isDeactivated = page.status === 'Deactivated'
@@ -62,6 +64,7 @@ const GiftsTableRow = ({
       </div>
       <GiftsTableRowActions
         onView={onView}
+        onShare={onShare}
         onStatusAction={onStatusAction}
         statusActionLabel={isDeactivated ? 'Activate' : 'Deactivate'}
         isDestructive={!isDeactivated}

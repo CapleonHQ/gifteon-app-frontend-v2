@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import CloseIcon from '@/assets/icons/CloseIcon'
 
 import { Check, Copy, Download } from 'lucide-react'
@@ -10,12 +10,14 @@ import InstagramIcon from '@/assets/icons/brand/InstagramIcon'
 import WhatsappIcon from '@/assets/icons/brand/WhatsappIcon'
 import XIcon from '@/assets/icons/brand/XIcon'
 import LinkedinIcon from '@/assets/icons/brand/LinkedinIcon'
+import { recordPageShare } from '@/api/services/pages'
 
 type ShareGiftPageModalProps = {
   isOpen: boolean
   onClose: () => void
   pageTitle: string
   pageUrl: string
+  trackShareSlug?: string
 }
 
 const ShareGiftPageModal = ({
@@ -23,10 +25,12 @@ const ShareGiftPageModal = ({
   onClose,
   pageTitle,
   pageUrl,
+  trackShareSlug,
 }: ShareGiftPageModalProps) => {
   const [tab, setTab] = useState<'link' | 'qr' | 'social'>('link')
   const [qrData, setQrData] = useState('')
   const [isCopied, setIsCopied] = useState(false)
+  const recordedProvidersRef = useRef<Set<string>>(new Set())
   const resolvedPageUrl = useMemo(() => {
     if (!pageUrl) return ''
     if (/^https?:\/\//i.test(pageUrl)) return pageUrl
@@ -34,12 +38,37 @@ const ShareGiftPageModal = ({
     const normalizedPath = pageUrl.startsWith('/') ? pageUrl : `/${pageUrl}`
     return `${window.location.origin}${normalizedPath}`
   }, [pageUrl])
+  const resolvedShareSlug = useMemo(() => {
+    if (trackShareSlug) return trackShareSlug
+    if (!pageUrl) return ''
+    const value = pageUrl.trim()
+    if (!value) return ''
+    const path = /^https?:\/\//i.test(value)
+      ? (() => {
+          try {
+            return new URL(value).pathname
+          } catch {
+            return value
+          }
+        })()
+      : value
+    const normalized = path.replace(/\/+$/, '')
+    const segments = normalized.split('/').filter(Boolean)
+    const uIndex = segments.findIndex((segment) => segment === 'u')
+    if (uIndex >= 0 && segments[uIndex + 1]) return segments[uIndex + 1]
+    return segments[segments.length - 1] || ''
+  }, [pageUrl, trackShareSlug])
 
   const handleCloseModal = () => {
     setTab('link')
     setIsCopied(false)
     onClose()
   }
+
+  useEffect(() => {
+    if (!isOpen) return
+    recordedProvidersRef.current.clear()
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen) return
@@ -59,8 +88,20 @@ const ShareGiftPageModal = ({
       await navigator.clipboard.writeText(resolvedPageUrl)
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 1500)
+      void trackShare('copy')
     } catch {
       setIsCopied(false)
+    }
+  }
+
+  const trackShare = async (provider: string) => {
+    if (!resolvedShareSlug) return
+    if (recordedProvidersRef.current.has(provider)) return
+    try {
+      await recordPageShare(resolvedShareSlug, provider)
+      recordedProvidersRef.current.add(provider)
+    } catch {
+      // best-effort analytics; UI flow should not fail on tracking issues
     }
   }
 
@@ -76,6 +117,7 @@ const ShareGiftPageModal = ({
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    void trackShare('qr')
   }
 
   const handleInstagramShare = async () => {
@@ -87,13 +129,20 @@ const ShareGiftPageModal = ({
           text: `I just created a gift page for "${pageTitle}".`,
           url: resolvedPageUrl,
         })
+        void trackShare('instagram')
         return
       }
       await navigator.clipboard.writeText(shareText)
     } catch {
       // Continue to Instagram regardless of share/copy support.
-    } finally {
-      window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer')
+    }
+    const opened = window.open(
+      'https://www.instagram.com/',
+      '_blank',
+      'noopener,noreferrer'
+    )
+    if (opened) {
+      void trackShare('instagram')
     }
   }
 
@@ -122,11 +171,19 @@ const ShareGiftPageModal = ({
       return
     }
 
-    window.open(
+    const opened = window.open(
       shareUrls[platform],
       '_blank',
       'noopener,noreferrer'
     )
+    if (opened) {
+      const providerMap = {
+        whatsapp: 'whatsapp',
+        x: 'twitter',
+        linkedin: 'linkedin',
+      } as const
+      void trackShare(providerMap[platform])
+    }
   }
 
   if (!isOpen) return null
