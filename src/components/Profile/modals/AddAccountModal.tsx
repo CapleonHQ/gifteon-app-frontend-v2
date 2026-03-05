@@ -35,7 +35,7 @@ const AddAccountModal = ({
   const availableBanksQuery = useAvailableBanks(isOpen)
   const profileQuery = useProfile()
   const connectBankMutation = useConnectBank()
-  const verifyBankAccountMutation = useVerifyBankAccount()
+  const { mutateAsync: verifyBankAccount } = useVerifyBankAccount()
   const verifyRequestIdRef = useRef(0)
   const lastAttemptedResolveKeyRef = useRef('')
 
@@ -71,6 +71,7 @@ const AddAccountModal = ({
 
   const resetForm = () => {
     verifyRequestIdRef.current += 1
+    lastAttemptedResolveKeyRef.current = ''
     setSelectedBankId('')
     setAccountNumber('')
     setResolvedAccountName('')
@@ -101,10 +102,7 @@ const AddAccountModal = ({
       return
     }
 
-    if (
-      lastAttemptedResolveKeyRef.current === resolveKey &&
-      (Boolean(resolvedAccountName) || Boolean(resolveErrorMessage))
-    ) {
+    if (lastAttemptedResolveKeyRef.current === resolveKey) {
       return
     }
     lastAttemptedResolveKeyRef.current = resolveKey
@@ -123,7 +121,7 @@ const AddAccountModal = ({
           await new Promise((resolve) => window.setTimeout(resolve, 450))
           accountName = mockAccountName
         } else {
-          const response = await verifyBankAccountMutation.mutateAsync({
+          const response = await verifyBankAccount({
             accountNumber,
             bankCode: selectedBank.code,
           })
@@ -155,12 +153,10 @@ const AddAccountModal = ({
     }
   }, [
     accountNumber,
-    resolveErrorMessage,
-    resolvedAccountName,
     mockAccountName,
     selectedBank,
     shouldMockResolve,
-    verifyBankAccountMutation,
+    verifyBankAccount,
   ])
 
   const canSave = Boolean(
