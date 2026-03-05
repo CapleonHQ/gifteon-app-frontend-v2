@@ -67,3 +67,12 @@ export const unarchivePage = async (
     await apiService.appPrivate.post('/pages/unarchive', { ids })
   return resp.data
 }
+
+export const recordPageShare = async (
+  slug: string,
+  provider: string
+): Promise<ApiResponse<object>> => {
+  const resp: AxiosResponse<ApiResponse<object>> =
+    await apiService.appPrivate.post(`/pages/${slug}/share`, { provider })
+  return resp.data
+}

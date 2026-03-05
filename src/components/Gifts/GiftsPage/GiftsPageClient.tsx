@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DeactivateModal from '@/components/Gifts/GiftsPage/DeactivateModal'
 import ReactivateModal from '@/components/Gifts/GiftDetails/ReactivateModal'
+import ShareGiftPageModal from '@/components/Gifts/GiftDetails/ShareGiftPageModal'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import FilterModal from '@/components/Gifts/GiftsPage/FilterModal'
 import GiftsHeader from '@/components/Gifts/GiftsPage/GiftsHeader'
@@ -25,6 +26,11 @@ const GiftsPageClient = () => {
   const [deactivateIds, setDeactivateIds] = useState<string[]>([])
   const [isReactivateOpen, setIsReactivateOpen] = useState(false)
   const [reactivateId, setReactivateId] = useState<string | null>(null)
+  const [sharePage, setSharePage] = useState<{
+    title: string
+    url: string
+    slug: string
+  } | null>(null)
   const { openSuccess } = useSuccessModal()
   const archiveMutation = useArchivePage()
   const unarchiveMutation = useUnarchivePage()
@@ -100,6 +106,17 @@ const GiftsPageClient = () => {
     router.push(`/gifts/${id}`)
   }
 
+  const handleSharePage = (id: string) => {
+    const page = giftPages.find((item) => item.id === id)
+    if (!page) return
+    const slug = page.publicUrl.replace(/^\/u\//, '').trim()
+    setSharePage({
+      title: page.title,
+      url: page.publicUrl,
+      slug,
+    })
+  }
+
   const handleStatusActionSingle = async (id: string) => {
     const page = giftPages.find((item) => item.id === id)
     if (!page) return
@@ -158,6 +175,7 @@ const GiftsPageClient = () => {
                   onToggleAll={toggleSelectAll}
                   onToggleOne={toggleSelectOne}
                   onView={handleViewPage}
+                  onShare={handleSharePage}
                   onDeactivateSelected={() => openDeactivate([...selectedIds])}
                   onStatusActionSingle={handleStatusActionSingle}
                 />
@@ -170,6 +188,7 @@ const GiftsPageClient = () => {
                   onSelect={toggleSelectOne}
                   onLongPressSelect={selectOne}
                   onView={handleViewPage}
+                  onShare={handleSharePage}
                   onDeactivateSelected={() => openDeactivate([...selectedIds])}
                   onClearSelection={clearSelection}
                   onStatusActionSingle={handleStatusActionSingle}
@@ -242,6 +261,13 @@ const GiftsPageClient = () => {
         onClose={() => setIsFilterOpen(false)}
         onReset={resetAppliedFilters}
         onApply={applyFilters}
+      />
+      <ShareGiftPageModal
+        isOpen={Boolean(sharePage)}
+        onClose={() => setSharePage(null)}
+        pageTitle={sharePage?.title ?? ''}
+        pageUrl={sharePage?.url ?? ''}
+        trackShareSlug={sharePage?.slug}
       />
     </div>
   )

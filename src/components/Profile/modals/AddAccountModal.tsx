@@ -7,12 +7,13 @@ import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox'
 import InputField from '@/components/Profile/components/InputField'
 import {
   useAvailableBanks,
@@ -27,15 +28,12 @@ type AddAccountModalProps = {
   onClose: () => void
 }
 
-const AddAccountModal = ({
-  isOpen,
-  onClose,
-}: AddAccountModalProps) => {
+const AddAccountModal = ({ isOpen, onClose }: AddAccountModalProps) => {
   const { openSuccess } = useSuccessModal()
   const availableBanksQuery = useAvailableBanks(isOpen)
   const profileQuery = useProfile()
   const connectBankMutation = useConnectBank()
-  const verifyBankAccountMutation = useVerifyBankAccount()
+  const { mutateAsync: verifyBankAccount } = useVerifyBankAccount()
   const verifyRequestIdRef = useRef(0)
   const lastAttemptedResolveKeyRef = useRef('')
 
@@ -71,6 +69,7 @@ const AddAccountModal = ({
 
   const resetForm = () => {
     verifyRequestIdRef.current += 1
+    lastAttemptedResolveKeyRef.current = ''
     setSelectedBankId('')
     setAccountNumber('')
     setResolvedAccountName('')
@@ -91,7 +90,9 @@ const AddAccountModal = ({
   }, [isOpen])
 
   useEffect(() => {
-    const resolveKey = selectedBank ? `${selectedBank.code}:${accountNumber}` : ''
+    const resolveKey = selectedBank
+      ? `${selectedBank.code}:${accountNumber}`
+      : ''
 
     if (!selectedBank || accountNumber.length !== 10) {
       lastAttemptedResolveKeyRef.current = ''
@@ -101,10 +102,7 @@ const AddAccountModal = ({
       return
     }
 
-    if (
-      lastAttemptedResolveKeyRef.current === resolveKey &&
-      (Boolean(resolvedAccountName) || Boolean(resolveErrorMessage))
-    ) {
+    if (lastAttemptedResolveKeyRef.current === resolveKey) {
       return
     }
     lastAttemptedResolveKeyRef.current = resolveKey
@@ -123,7 +121,7 @@ const AddAccountModal = ({
           await new Promise((resolve) => window.setTimeout(resolve, 450))
           accountName = mockAccountName
         } else {
-          const response = await verifyBankAccountMutation.mutateAsync({
+          const response = await verifyBankAccount({
             accountNumber,
             bankCode: selectedBank.code,
           })
@@ -155,12 +153,10 @@ const AddAccountModal = ({
     }
   }, [
     accountNumber,
-    resolveErrorMessage,
-    resolvedAccountName,
     mockAccountName,
     selectedBank,
     shouldMockResolve,
-    verifyBankAccountMutation,
+    verifyBankAccount,
   ])
 
   const canSave = Boolean(
@@ -198,8 +194,12 @@ const AddAccountModal = ({
         </button>
       </div>
       <div className='text-center mt-3 lg:mt-0'>
-        <h3 className='text-2xl font-semibold text-blackish'>Add New Account</h3>
-        <p className='text-sm text-grey-600 mt-1'>Provide the following details</p>
+        <h3 className='text-2xl font-semibold text-blackish'>
+          Add New Account
+        </h3>
+        <p className='text-sm text-grey-600 mt-1'>
+          Provide the following details
+        </p>
       </div>
     </div>
   )
@@ -208,35 +208,44 @@ const AddAccountModal = ({
     <div className='space-y-4'>
       <div>
         <label className='text-sm font-medium text-grey-900'>Bank Name</label>
-        <Select
-          value={selectedBankId}
-          onValueChange={setSelectedBankId}
+        <Combobox
+          items={bankOptions}
+          itemToStringValue={(bank) => bank.label}
+          value={selectedBank ?? null}
+          onValueChange={(bank) => setSelectedBankId(bank?.id ?? '')}
           disabled={
             availableBanksQuery.isLoading ||
             availableBanksQuery.isError ||
             bankOptions.length === 0
           }
         >
-          <SelectTrigger className='mt-1 w-full rounded-[10px] border border-grey-100 bg-grey-50/15 px-3 py-3.5 text-sm text-grey-600 h-[48px]! disabled:opacity-60'>
-            <SelectValue
-              placeholder={
-                availableBanksQuery.isLoading ? 'Loading banks...' : 'Select bank'
-              }
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {!availableBanksQuery.isLoading && bankOptions.length === 0 && (
-              <SelectItem value='no-banks' disabled>
-                No banks available
-              </SelectItem>
-            )}
-            {bankOptions.map((option) => (
-              <SelectItem key={option.id} value={option.id}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <ComboboxInput
+            className='mt-1 h-[48px] w-full rounded-[10px] border border-grey-100 bg-grey-50/15 text-grey-600 disabled:opacity-60 **:data-[slot=input-group-control]:text-sm **:data-[slot=input-group-control]:placeholder:text-grey-600 **:data-[slot=input-group-control]:px-3 **:data-[slot=input-group-control]:font-normal **:data-[slot=input-group-button]:text-grey-500 has-[**:data-[slot=input-group-control]:focus-visible]:ring-0 has-[**:data-[slot=input-group-control]:focus-visible]:border-primary-500'
+            placeholder={
+              availableBanksQuery.isLoading ? 'Loading banks...' : 'Select bank'
+            }
+            showClear={Boolean(selectedBankId)}
+            disabled={
+              availableBanksQuery.isLoading ||
+              availableBanksQuery.isError ||
+              bankOptions.length === 0
+            }
+          />
+          <ComboboxContent className='border-grey-100 p-0 py-2 mt-2.5'>
+            <ComboboxEmpty>No banks found</ComboboxEmpty>
+            <ComboboxList>
+              {(bank) => (
+                <ComboboxItem
+                  key={bank.id}
+                  value={bank}
+                  className='py-2 cursor-pointer px-2'
+                >
+                  {bank.label}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
 
         {availableBanksQuery.isError && (
           <div className='mt-2 rounded-[10px] border border-error-100 bg-error-50 px-3 py-2'>
@@ -257,7 +266,9 @@ const AddAccountModal = ({
         label='Account Number'
         placeholder='Enter the account number'
         value={accountNumber}
-        onChange={(value) => setAccountNumber(value.replace(/\D/g, '').slice(0, 10))}
+        onChange={(value) =>
+          setAccountNumber(value.replace(/\D/g, '').slice(0, 10))
+        }
       />
       <div>
         <label className='text-sm leading-[145%] font-medium text-grey-900'>

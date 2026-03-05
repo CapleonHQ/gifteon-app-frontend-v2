@@ -1,6 +1,7 @@
 export type GiftPageItem = {
   id: string
   title: string
+  publicUrl: string
   category: string
   visibility: 'Public' | 'Shareable' | 'Private'
   createdOn: string

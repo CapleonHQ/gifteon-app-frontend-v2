@@ -16,6 +16,7 @@ import CheckmarkStyledIcon from '@/assets/icons/CheckmarkStyledIcon'
 
 type GiftsTableRowActionsProps = {
   onView: () => void
+  onShare: () => void
   onStatusAction: () => void
   statusActionLabel: 'Deactivate' | 'Activate'
   isDestructive?: boolean
@@ -23,6 +24,7 @@ type GiftsTableRowActionsProps = {
 
 const GiftsTableRowActions = ({
   onView,
+  onShare,
   onStatusAction,
   statusActionLabel,
   isDestructive = false,
@@ -57,7 +59,7 @@ const GiftsTableRowActions = ({
           Edit
         </DropdownMenuItem>
         <DropdownMenuSeparator className='bg-grey-50' />
-        <DropdownMenuItem className='gap-2 cursor-pointer'>
+        <DropdownMenuItem className='gap-2 cursor-pointer' onClick={onShare}>
           <span className='w-5 h-5 text-secondary-800 [&>svg]:size-full! [&_svg]:text-current!'>
             <ShareIcon />
           </span>

@@ -127,11 +127,11 @@ const DashboardPageClient = () => {
 
   return (
     <>
-      <KycBanner
+      {/* <KycBanner
         message='You have been sent a huge amount of money. Please update your KYC to access it.'
         actionLabel='Update KYC'
         onAction={() => router.push('/profile?modal=kyc&source=dashboard')}
-      />
+      /> */}
       <div className='mt-4 lg:mt-0 w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
         <DashboardStatsSection />
 
