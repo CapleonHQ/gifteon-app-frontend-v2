@@ -16,4 +16,5 @@ export type WishItem = {
   name: string
   time: string
   message: string
+  private: boolean
 }

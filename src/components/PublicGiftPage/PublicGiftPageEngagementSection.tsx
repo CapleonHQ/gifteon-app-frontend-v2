@@ -1,31 +1,28 @@
 'use client'
 
+import { type PublicPageApiData } from '@/api/services/publicPages'
+import { useState } from 'react'
+import { ChevronDownIcon } from '@/assets/icons'
+import SortIcon from '@/assets/icons/SortIcon'
 import {
-  type PublicPageApiData,
-} from '@/api/services/publicPages'
-import { useMemo, useState } from 'react'
-import { Share2 } from 'lucide-react'
-import ShareGiftPageModal from '@/components/Gifts/GiftDetails/ShareGiftPageModal'
-import CommentComposer from './engagement/CommentComposer'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import EngagementFeed from './engagement/EngagementFeed'
 import EngagementTabs from './engagement/EngagementTabs'
-import GiftListSection from './engagement/GiftListSection'
-import SuccessModal from './engagement/SuccessModal'
 import type { EngagementTab } from './engagement/types'
-import {
-  readString,
-  resolveGiftOptions,
-  resolveRecipientName,
-} from './engagement/utils'
 
 type PublicGiftPageEngagementSectionProps = {
   page: PublicPageApiData
-  pageTitle: string
+  variant?: 'default' | 'spotlightGrid'
 }
 
 export default function PublicGiftPageEngagementSection({
   page,
-  pageTitle,
+  variant = 'default',
 }: PublicGiftPageEngagementSectionProps) {
   const [activeTab, setActiveTab] = useState<EngagementTab>('comments')
   const [commentsTotal, setCommentsTotal] = useState<number>(
@@ -34,65 +31,123 @@ export default function PublicGiftPageEngagementSection({
   const [sortValue, setSortValue] = useState<'most-recent' | 'oldest'>(
     'most-recent'
   )
-  const [isSuccessModalOpen, setSuccessModalOpen] = useState(false)
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
-
-  const receiverName = useMemo(
-    () => resolveRecipientName(page, pageTitle),
-    [page, pageTitle]
-  )
-  const currency = readString(page.settings?.currency)?.toUpperCase() || 'NGN'
-  const giftOptions = useMemo(() => resolveGiftOptions(page), [page])
-
-  const [giftQuantities, setGiftQuantities] = useState<Record<string, number>>(
-    () => {
-      const initial: Record<string, number> = {}
-      for (const item of giftOptions) {
-        initial[item.id] = 1
-      }
-      return initial
-    }
-  )
-  const [selectedGiftIds, setSelectedGiftIds] = useState<
-    Record<string, boolean>
-  >({})
-
-  const selectedGiftItems = useMemo(
-    () => giftOptions.filter((item) => selectedGiftIds[item.id]),
-    [giftOptions, selectedGiftIds]
-  )
-  const shareUrl = page.slug ? `/u/${page.slug}` : ''
-
-  const handleSelectGift = (giftId: string, checked: boolean) => {
-    setSelectedGiftIds((prev) => ({ ...prev, [giftId]: checked }))
-  }
-
-  const updateGiftQuantity = (giftId: string, direction: 'inc' | 'dec') => {
-    setGiftQuantities((prev) => {
-      const current = prev[giftId] ?? 1
-      const next = direction === 'inc' ? current + 1 : Math.max(1, current - 1)
-      return { ...prev, [giftId]: next }
-    })
-  }
+  const [commentsOpen, setCommentsOpen] = useState(true)
+  const [activitiesOpen, setActivitiesOpen] = useState(true)
 
   const handleTabChange = (tab: EngagementTab) => {
     setSortValue('most-recent')
     setActiveTab(tab)
   }
 
+  if (variant === 'spotlightGrid') {
+    const toggleComments = () => {
+      setCommentsOpen((prev) => {
+        if (prev && !activitiesOpen) return true
+        return !prev
+      })
+    }
+
+    const toggleActivities = () => {
+      setActivitiesOpen((prev) => {
+        if (prev && !commentsOpen) return true
+        return !prev
+      })
+    }
+
+    return (
+      <div className='w-full flex flex-col gap-3'>
+        <div className='border rounded-[10px] border-grey-100 bg-white flex flex-col overflow-hidden'>
+          <button
+            type='button'
+            onClick={toggleComments}
+            className='flex justify-between items-center bg-[#F3F2F280] px-4 py-3 text-left transition-colors hover:bg-[#F3F2F2]'
+          >
+            <span className='text-sm font-medium text-grey-900'>
+              Comments ({commentsTotal})
+            </span>
+            <span
+              className={`h-4 w-4 transition-transform ${
+                commentsOpen ? 'rotate-180' : ''
+              }`}
+            >
+              <ChevronDownIcon />
+            </span>
+          </button>
+          {commentsOpen ? (
+            <div className='max-h-[380px] overflow-y-auto px-4 py-3 md:max-h-[460px]'>
+              <div className='mb-4 flex items-center justify-between gap-3'>
+                <p className='text-sm leading-5 text-blackish'>
+                  Wishes from friends and family
+                </p>
+                <Select
+                  value={sortValue}
+                  onValueChange={(value) =>
+                    setSortValue(value as 'most-recent' | 'oldest')
+                  }
+                >
+                  <SelectTrigger className='h-auto border-none px-0 py-0 text-sm leading-4 text-grey-700 shadow-none focus:ring-0 focus-visible:ring-0'>
+                    <span className='inline-flex items-center gap-1'>
+                      <span className='h-4 w-4'>
+                        <SortIcon />
+                      </span>
+                      <SelectValue placeholder='Most recent' />
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent className='rounded-[10px] border-grey-50'>
+                    <SelectItem value='most-recent'>Most recent</SelectItem>
+                    <SelectItem value='oldest'>Oldest</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <EngagementFeed
+                activeTab='comments'
+                pageId={page.id}
+                sortValue={sortValue}
+                initialActivities={page.activities}
+                onCommentsTotalChange={setCommentsTotal}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        <div className='border rounded-[10px] border-grey-100 bg-white flex flex-col overflow-hidden'>
+          <button
+            type='button'
+            onClick={toggleActivities}
+            className='flex justify-between items-center bg-[#F3F2F280] px-4 py-3 text-left transition-colors hover:bg-[#F3F2F2]'
+          >
+            <span className='text-sm font-medium text-grey-900'>
+              Activities
+            </span>
+            <span
+              className={`h-4 w-4 transition-transform ${
+                activitiesOpen ? 'rotate-180' : ''
+              }`}
+            >
+              <ChevronDownIcon />
+            </span>
+          </button>
+          {activitiesOpen ? (
+            <div className='max-h-[380px] overflow-y-auto px-4 py-3 md:max-h-[460px]'>
+              <div className='mb-4 flex items-center justify-between gap-3'>
+                <p className='text-sm leading-5 text-blackish'>Activities</p>
+              </div>
+              <EngagementFeed
+                activeTab='activities'
+                pageId={page.id}
+                sortValue='most-recent'
+                initialActivities={page.activities}
+                onCommentsTotalChange={setCommentsTotal}
+              />
+            </div>
+          ) : null}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='w-full px-5 pb-8 sm:px-8 lg:px-15 lg:pb-14'>
-      <div className='mb-4 flex items-center justify-end gap-2'>
-        <button
-          type='button'
-          onClick={() => setIsShareModalOpen(true)}
-          className='inline-flex items-center gap-2 rounded-[10px] border border-grey-200 bg-white px-3 py-2 text-sm font-medium text-grey-700 hover:bg-grey-50 transition-colors'
-        >
-          <Share2 className='h-4 w-4' />
-          Share
-        </button>
-      </div>
-
       <EngagementTabs
         activeTab={activeTab}
         commentsTotal={commentsTotal}
@@ -107,39 +162,6 @@ export default function PublicGiftPageEngagementSection({
         sortValue={sortValue}
         initialActivities={page.activities}
         onCommentsTotalChange={setCommentsTotal}
-      />
-
-      <CommentComposer
-        receiverName={receiverName}
-        pageId={page.id}
-        onCommentSent={() => setSuccessModalOpen(true)}
-      />
-
-      <GiftListSection
-        receiverName={receiverName}
-        currency={currency}
-        gifts={giftOptions}
-        selectedGiftIds={selectedGiftIds}
-        giftQuantities={giftQuantities}
-        onSelectGift={handleSelectGift}
-        onChangeGiftQuantity={updateGiftQuantity}
-        onSendCustomGift={() => setSuccessModalOpen(true)}
-      />
-
-      <SuccessModal
-        isOpen={isSuccessModalOpen}
-        onClose={() => setSuccessModalOpen(false)}
-        receiverName={receiverName}
-        selectedGiftItems={selectedGiftItems}
-        giftQuantities={giftQuantities}
-        currency={currency}
-      />
-      <ShareGiftPageModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        pageTitle={pageTitle}
-        pageUrl={shareUrl}
-        trackShareSlug={page.slug}
       />
     </div>
   )

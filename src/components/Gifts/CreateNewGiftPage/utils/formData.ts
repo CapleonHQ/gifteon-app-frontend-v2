@@ -2,7 +2,7 @@ import { format } from 'date-fns'
 import type { GiftPageData, Recipient } from '@/types/gifts'
 import { type CustomGiftForm } from '@/types/Gifts/index'
 import type { GiftSettingsValues } from './validation'
-import { normalizeAmount } from './validation'
+import { hasCashGiftType, hasStoreGiftType, normalizeAmount } from './validation'
 
 type BuildFormDataInput = {
   giftPageData: GiftPageData
@@ -15,6 +15,8 @@ type BuildFormDataInput = {
   recipientForm: Recipient
 }
 
+type SocialProvider = 'instagram' | 'facebook' | 'x' | 'linkedin'
+
 const appendIf = (
   formData: FormData,
   key: string,
@@ -23,6 +25,36 @@ const appendIf = (
   if (value === undefined || value === null) return
   if (typeof value === 'string' && value.trim() === '') return
   formData.append(key, value)
+}
+
+const normalizeSocialUrl = (provider: SocialProvider, value?: string) => {
+  const rawValue = value?.trim()
+  if (!rawValue) return ''
+
+  const sanitizedValue = rawValue.replace(/^@+/, '')
+
+  try {
+    const withProtocol = /^[a-z]+:\/\//i.test(sanitizedValue)
+      ? sanitizedValue
+      : `https://${sanitizedValue}`
+
+    return new URL(withProtocol).toString()
+  } catch {
+    const encodedHandle = encodeURIComponent(sanitizedValue)
+
+    switch (provider) {
+      case 'instagram':
+        return `https://www.instagram.com/${encodedHandle}`
+      case 'facebook':
+        return `https://www.facebook.com/${encodedHandle}`
+      case 'x':
+        return `https://x.com/${encodedHandle}`
+      case 'linkedin':
+        return `https://www.linkedin.com/in/${encodedHandle}`
+      default:
+        return ''
+    }
+  }
 }
 
 export const buildCreatePageFormData = ({
@@ -76,15 +108,18 @@ export const buildCreatePageFormData = ({
   appendIf(formData, 'categoryId', categoryId)
 
   appendIf(formData, 'settings[whoIsFor]', settings.giftFor)
+  const hasCashGift = hasCashGiftType(settings.giftType)
+  const hasStoreItems = hasStoreGiftType(settings.giftType)
+
   appendIf(
     formData,
     'settings[acceptCashGift]',
-    String(settings.giftType === 'cash')
+    String(hasCashGift)
   )
   appendIf(
     formData,
     'settings[hasStoreItems]',
-    String(settings.giftType === 'items')
+    String(hasStoreItems)
   )
   appendIf(
     formData,
@@ -94,7 +129,7 @@ export const buildCreatePageFormData = ({
   appendIf(formData, 'settings[hasMusic]', String(settings.addMusic === 'yes'))
   appendIf(formData, 'settings[privacy]', settings.privacy)
 
-  if (settings.giftType === 'cash') {
+  if (hasCashGift) {
     appendIf(
       formData,
       'settings[cashGift][currency]',
@@ -112,11 +147,6 @@ export const buildCreatePageFormData = ({
         formData,
         'settings[cashGift][minimumAmount]',
         normalizeAmount(settings.minAmount)
-      )
-      appendIf(
-        formData,
-        'settings[cashGift][maximumAmount]',
-        normalizeAmount(settings.maxAmount)
       )
       appendIf(
         formData,
@@ -166,11 +196,19 @@ export const buildCreatePageFormData = ({
     appendIf(formData, `settings[recipients][${index}][email]`, recipient.email)
   })
 
-  const socials = [
+  const socialSources = [
     { provider: 'instagram', url: giftPageData.socialLinks.instagram },
+    { provider: 'facebook', url: giftPageData.socialLinks.facebook },
     { provider: 'x', url: giftPageData.socialLinks.twitter },
     { provider: 'linkedin', url: giftPageData.socialLinks.linkedin },
-  ].filter((social) => Boolean(social.url?.trim()))
+  ] satisfies Array<{ provider: SocialProvider; url?: string }>
+
+  const socials = socialSources
+    .map((social) => ({
+      provider: social.provider,
+      url: normalizeSocialUrl(social.provider, social.url),
+    }))
+    .filter((social) => Boolean(social.url))
 
   socials.forEach((social, index) => {
     appendIf(formData, `settings[socials][${index}][provider]`, social.provider)
@@ -184,7 +222,7 @@ export const buildCreatePageFormData = ({
     appendIf(formData, 'settings[receiver][email]', settings.receiverEmail)
   }
 
-  if (settings.giftType === 'cash' && settings.giftFor === 'someone_else') {
+  if (hasCashGift && settings.giftFor === 'someone_else') {
     appendIf(
       formData,
       'settings[allowJoinGifting]',

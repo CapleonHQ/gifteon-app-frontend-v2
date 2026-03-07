@@ -138,7 +138,7 @@ const GiftsPageClient = () => {
         <div className='flex flex-col gap-2 lg:gap-0 md:gap-1 h-full'>
           <GiftsHeader
             onFilterClick={() => setIsFilterOpen(true)}
-            totalPages={totalCount}
+            totalCount={totalCount}
             searchValue={searchValue}
             onSearchChange={setSearchAndReset}
           />

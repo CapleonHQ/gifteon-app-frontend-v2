@@ -21,12 +21,14 @@ interface TemplatingEditingProps {
   handleBack: () => void
   onCreated: (link: string) => void
   selectedTemplate: string | null
+  selectedCategoryId: string | null
 }
 
 const TemplatingEditingContent = ({
   handleBack,
   onCreated,
   selectedTemplate,
+  selectedCategoryId,
 }: TemplatingEditingProps) => {
   const [customizationOpen, setCustomizationOpen] = useState(true)
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false)
@@ -41,7 +43,6 @@ const TemplatingEditingContent = ({
     currency,
     cashAmount,
     minAmount,
-    maxAmount,
     targetAmount,
     customGifts,
     addMusic,
@@ -96,7 +97,6 @@ const TemplatingEditingContent = ({
       currency,
       cashAmount,
       minAmount,
-      maxAmount,
       targetAmount,
       customGifts,
       addMusic,
@@ -116,7 +116,6 @@ const TemplatingEditingContent = ({
       currency,
       cashAmount,
       minAmount,
-      maxAmount,
       targetAmount,
       customGifts,
       addMusic,
@@ -204,6 +203,7 @@ const TemplatingEditingContent = ({
       const validationErrors = validateCreateGift({
         giftPageData,
         selectedTemplate,
+        categoryId: selectedCategoryId,
         settings,
         recipients,
         recipientForm,
@@ -218,7 +218,7 @@ const TemplatingEditingContent = ({
       const formData = buildCreatePageFormData({
         giftPageData,
         selectedTemplate,
-        categoryId: '8fc7b8c1-5468-46dd-b2c8-e3f09bbdd60d',
+        categoryId: selectedCategoryId || '',
         titleFormat,
         settings,
         customGiftItems,

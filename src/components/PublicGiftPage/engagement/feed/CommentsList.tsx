@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { PageComment } from '@/types/Comments'
 import { getDisplayName, toInitials, toRelativeTime } from '../utils'
+import UserLockIcon from '@/assets/icons/UserLockIcon'
 
 type CommentsListProps = {
   comments: PageComment[]
@@ -29,8 +30,18 @@ export default function CommentsList({ comments }: CommentsListProps) {
               {item.user?.profilePictureUrl ? (
                 <AvatarImage src={item.user.profilePictureUrl} alt={name} />
               ) : null}
-              <AvatarFallback className='bg-grey-50 text-xs font-medium text-grey-700'>
-                {toInitials(name)}
+              <AvatarFallback
+                className={`${
+                  item.anonymous ? 'bg-warning-50' : 'bg-grey-50'
+                } text-xs font-medium text-grey-700`}
+              >
+                {item.anonymous ? (
+                  <span className='w-5 h-5 text-warning-700'>
+                    <UserLockIcon />
+                  </span>
+                ) : (
+                  toInitials(name)
+                )}
               </AvatarFallback>
             </Avatar>
 

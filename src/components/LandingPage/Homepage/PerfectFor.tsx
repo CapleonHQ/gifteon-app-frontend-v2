@@ -5,37 +5,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import EmojiWrappedGift from '@/assets/icons/EmojiWrappedGift'
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
+import { GIFT_CATEGORY_META } from '@/lib/constants/giftCategories'
 
-const celebrationItems = [
-  {
-    title: 'Birthday Celebrations',
-    description:
-      'Create memorable birthday experiences with personalized gift collections',
-    image: '/assets/images/birthday-celebration.jpg',
-    align: 'left',
-  },
-  {
-    title: 'Weddings & Anniversaries',
-    description:
-      'Perfect for couples planning their special day or milestone celebrations',
-    image: '/assets/images/wedding-anniversary.jpg',
-    align: 'right',
-  },
-  {
-    title: 'Graduations',
-    description:
-      'Celebrate academic achievements and support new graduates next steps',
-    image: '/assets/images/graduation-celebration.jpg',
-    align: 'left',
-  },
-  {
-    title: 'Promotions',
-    description:
-      'Support artists, creators, and entrepreneurs launching new ventures',
-    image: '/assets/images/promotion-celebration.jpg',
-    align: 'right',
-  },
-]
+const celebrationItems = GIFT_CATEGORY_META.map((item, index) => ({
+  ...item,
+  align: index % 2 === 0 ? 'left' : 'right',
+}))
 
 const PerfectFor = () => {
   const shouldReduceMotion = useReducedMotion()
@@ -166,7 +141,7 @@ const PerfectFor = () => {
                   {item.description}
                 </p>
                 <Link
-                  href='/gifts/create-new'
+                  href={`/gifts/create-new?category=${item.slug}`}
                   className='mt-4 inline-flex py-3.5 w-full items-center justify-center rounded-[12px] border border-primary-500 bg-linear-to-b from-primary-400 from-17% to-primary-600 text-sm font-medium text-white transition-colors duration-300 hover:from-primary-500 hover:to-primary-700 sm:w-[200px]'
                 >
                   Create a Gift Page

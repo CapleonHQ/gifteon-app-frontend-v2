@@ -3,11 +3,13 @@ import { motion } from 'framer-motion'
 type TemplateSelectionFooterProps = {
   canContinue: boolean
   onContinue: () => void
+  ctaLabel?: string
 }
 
 const TemplateSelectionFooter = ({
   canContinue,
   onContinue,
+  ctaLabel = 'Save and Continue',
 }: TemplateSelectionFooterProps) => {
   return (
     <div className='flex justify-center'>
@@ -22,7 +24,7 @@ const TemplateSelectionFooter = ({
         whileHover={canContinue ? { scale: 1.02 } : {}}
         whileTap={canContinue ? { scale: 0.98 } : {}}
       >
-        Save and Continue
+        {ctaLabel}
       </motion.button>
     </div>
   )

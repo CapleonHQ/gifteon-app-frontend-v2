@@ -20,7 +20,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import DashboardEmptyState from './DashboardEmptyState'
 import EmptyFolderFile from '@/assets/icons/EmptyFolderFile'
@@ -36,10 +35,37 @@ ChartJS.register(
 )
 
 type VisitSharesCardProps = {
-  range: string
-  onRangeChange: (value: string) => void
-  rangeOptions: Array<{ value: string; label: string; rangeLabel: string }>
+  range: 'week' | 'month' | 'bi-annual' | 'annual'
+  onRangeChange: (value: 'week' | 'month' | 'bi-annual' | 'annual') => void
+  rangeOptions: Array<{
+    value: 'week' | 'month' | 'bi-annual' | 'annual'
+    label: string
+    rangeLabel: string
+  }>
   points: Array<{ date: string; visits: number; shares: number }>
+}
+
+const formatPointLabel = (
+  value: string,
+  range: 'week' | 'month' | 'bi-annual' | 'annual'
+) => {
+  if (!value) return ''
+
+  const normalizedValue =
+    /^\d{4}-\d{2}$/.test(value) ? `${value}-01` : value
+  const parsed = parseISO(normalizedValue)
+
+  if (!isValid(parsed)) return value
+
+  if (range === 'week') {
+    return format(parsed, 'EEE')
+  }
+
+  if (range === 'month') {
+    return format(parsed, 'MMM d')
+  }
+
+  return format(parsed, 'MMM yyyy')
 }
 
 const VisitSharesCard = ({
@@ -53,9 +79,7 @@ const VisitSharesCard = ({
   const lineChartData: ChartData<'line'> = useMemo(() => {
     const labels =
       points.map((point) => {
-        if (!point.date) return ''
-        const parsed = parseISO(point.date)
-        return isValid(parsed) ? format(parsed, 'MMM d') : ''
+        return formatPointLabel(point.date, range)
       }) ?? []
     const visits = points.map((point) => point.visits ?? 0)
     const shares = points.map((point) => point.shares ?? 0)
@@ -103,7 +127,7 @@ const VisitSharesCard = ({
         },
       ],
     }
-  }, [points])
+  }, [points, range])
 
   const isEmpty =
     lineChartData.datasets.length === 0 ||
@@ -194,7 +218,10 @@ const VisitSharesCard = ({
         <h2 className='sm:text-lg font-medium text-blackish'>
           Visit vs Shares
         </h2>
-        <Select value={range} onValueChange={onRangeChange}>
+        <Select
+          value={range}
+          onValueChange={(value) => onRangeChange(value as typeof range)}
+        >
           <SelectTrigger className='flex items-center gap-2 text-xs text-grey-500 bg-grey-50/20 border-[0.5px] border-grey-50 rounded-full px-3 py-2 h-auto shadow-none'>
             <span className='flex items-center gap-1 text-grey-500'>
               <span className='text-xs text-grey-500'>

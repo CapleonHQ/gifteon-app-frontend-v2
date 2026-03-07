@@ -1,4 +1,9 @@
-import { InstagramColored, LinkedinIcon, XTwitterIcon } from '@/assets/icons'
+import {
+  FacebookIcon,
+  InstagramColored,
+  LinkedinIcon,
+  XTwitterIcon,
+} from '@/assets/icons'
 import { cn } from '@/lib/utils'
 import type { RenderTemplateData, RenderTemplateProps } from './types'
 
@@ -47,6 +52,19 @@ const SocialLinksRow = ({
 
   return (
     <div className={cn('flex items-center', gap)}>
+      {links.facebook && (
+        <a
+          href={links.facebook}
+          target='_blank'
+          rel='noopener noreferrer'
+          aria-label='Facebook'
+          className={chipClass}
+        >
+          <span className={cn('block', iconSize)}>
+            <FacebookIcon />
+          </span>
+        </a>
+      )}
       {links.instagram && (
         <a
           href={links.instagram}
@@ -109,10 +127,7 @@ const descriptionStyle = (data: RenderTemplateData) =>
     color: data.descriptionStyle.color,
   } as const)
 
-export const RenderTemplate1 = ({
-  data,
-  engagementSection,
-}: RenderTemplateProps) => (
+export const RenderClassicSplit = ({ data }: RenderTemplateProps) => (
   <>
     <div className='w-full flex flex-col gap-6 relative'>
       <div className='absolute top-0 left-0 right-0 h-52 sm:h-[352px] bg-warning-50' />
@@ -147,14 +162,10 @@ export const RenderTemplate1 = ({
         </div>
       </div>
     </div>
-    {engagementSection ? engagementSection : null}
   </>
 )
 
-export const RenderTemplate2 = ({
-  data,
-  engagementSection,
-}: RenderTemplateProps) => (
+export const RenderHaloPortrait = ({ data }: RenderTemplateProps) => (
   <>
     <div className='w-full flex flex-col gap-6 relative overflow-hidden'>
       <div className='absolute top-0 left-0 right-0 h-[170px] sm:h-[190px] lg:h-[205px] bg-warning-50' />
@@ -186,14 +197,10 @@ export const RenderTemplate2 = ({
         </div>
       </div>
     </div>
-    {engagementSection ? engagementSection : null}
   </>
 )
 
-export const RenderTemplate3 = ({
-  data,
-  engagementSection,
-}: RenderTemplateProps) => (
+export const RenderStorySplit = ({ data }: RenderTemplateProps) => (
   <>
     <div className='w-full flex flex-col gap-6 relative overflow-hidden'>
       <div className='absolute top-[-90px] lg:top-[-107px] left-0 right-0 h-40 lg:h-[214px] bg-secondary-100 rounded-full blur-[36px]' />
@@ -225,13 +232,13 @@ export const RenderTemplate3 = ({
         </div>
       </div>
     </div>
-    {engagementSection ? engagementSection : null}
   </>
 )
 
-export const RenderTemplate4 = ({
+export const RenderSpotlightGrid = ({
   data,
   engagementSection,
+  mobileShareAction,
 }: RenderTemplateProps) => (
   <div className='w-full flex flex-col gap-4 relative overflow-hidden'>
     <div className='absolute top-0 left-0 right-0 h-[45%] md:h-full w-full md:w-1/2 bg-secondary-50 rounded-br-[80px] md:rounded-br-[120px] blur-lg md:blur-xl lg:blur-[30px]' />
@@ -253,7 +260,7 @@ export const RenderTemplate4 = ({
         </p>
       </div>
 
-      <div className='flex-1 flex flex-col gap-3 md:items-end'>
+      <div className='flex-1 flex flex-col gap-3 md:sticky md:top-6 md:self-start md:items-end'>
         <div className='flex md:justify-end'>
           <button
             type='button'
@@ -266,6 +273,7 @@ export const RenderTemplate4 = ({
             {data.buttonLabel}
           </button>
         </div>
+        {mobileShareAction ? <div className='md:hidden'>{mobileShareAction}</div> : null}
         {engagementSection}
       </div>
     </div>

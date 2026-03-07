@@ -47,26 +47,39 @@ const GiftsTable = ({
         )}
       </div>
 
-      <div className='min-w-[1080px]'>
-        <GiftsTableHeader
-          isIndeterminate={isIndeterminate}
-          allSelected={allSelected}
-          onToggleAll={onToggleAll}
-        />
-
-        <div>
-          {items.map((page) => (
-            <GiftsTableRow
-              key={page.id}
-              page={page}
-              isSelected={selectedIds.has(page.id)}
-              onToggle={() => onToggleOne(page.id)}
-              onView={() => onView(page.id)}
-              onShare={() => onShare(page.id)}
-              onStatusAction={() => onStatusActionSingle(page.id)}
-            />
-          ))}
-        </div>
+      <div className='min-w-[1180px]'>
+        <table className='w-full table-fixed border-collapse'>
+          <colgroup>
+            <col className='w-[56px]' />
+            <col className='w-[21%]' />
+            <col className='w-[19%]' />
+            <col className='w-[11%]' />
+            <col className='w-[12%]' />
+            <col className='w-[8%]' />
+            <col className='w-[9%]' />
+            <col className='w-[7%]' />
+            <col className='w-[9%]' />
+            <col className='w-[64px]' />
+          </colgroup>
+          <GiftsTableHeader
+            isIndeterminate={isIndeterminate}
+            allSelected={allSelected}
+            onToggleAll={onToggleAll}
+          />
+          <tbody>
+            {items.map((page) => (
+              <GiftsTableRow
+                key={page.id}
+                page={page}
+                isSelected={selectedIds.has(page.id)}
+                onToggle={() => onToggleOne(page.id)}
+                onView={() => onView(page.id)}
+                onShare={() => onShare(page.id)}
+                onStatusAction={() => onStatusActionSingle(page.id)}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )

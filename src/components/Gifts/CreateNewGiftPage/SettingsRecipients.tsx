@@ -1,5 +1,6 @@
 import InputField from './Components/InputField'
 import RecipientItem from './Components/ReceipientItem'
+import { hasCashGiftType } from './utils/validation'
 import {
   useGiftSettingsContext,
   useRecipientsContext,
@@ -30,11 +31,11 @@ const SettingsRecipients = ({
   } = useRecipientsContext()
 
   const title =
-    giftFor === 'someone_else' && giftType === 'cash'
+    giftFor === 'someone_else' && hasCashGiftType(giftType)
       ? 'GIFT PAGE PARTICIPANTS'
       : 'GIFT PAGE RECIPIENTS'
   const listTitle =
-    giftFor === 'someone_else' && giftType === 'cash'
+    giftFor === 'someone_else' && hasCashGiftType(giftType)
       ? 'Gift Page Participants'
       : 'Gift Page Recipients'
 

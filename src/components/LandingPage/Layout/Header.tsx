@@ -10,6 +10,7 @@ import {
   motion,
   type Variants,
 } from 'framer-motion'
+import { useAuth } from '@/context/AuthContext'
 
 const navLinks = [
   { label: 'Home', href: '#' },
@@ -85,11 +86,13 @@ const mobileSubmenuVariants: Variants = {
 }
 
 const Header = () => {
+  const { status } = useAuth()
   const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileCelebrationOpen, setIsMobileCelebrationOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const closeDropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isAuthenticated = status === 'authenticated'
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8)
@@ -253,25 +256,41 @@ const Header = () => {
           </nav>
 
           <div className='hidden items-center gap-5 lg:flex'>
-            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                href='/login'
-                className='text-base font-medium leading-5 text-primary-500 transition-colors hover:text-primary-600'
+            {isAuthenticated ? (
+              <motion.div
+                whileHover={{ y: -1, scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Log In
-              </Link>
-            </motion.div>
-            <motion.div
-              whileHover={{ y: -1, scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                href='/register'
-                className='inline-flex py-3.5 w-[100px] xl:w-[200px] items-center justify-center rounded-2xl bg-linear-to-b from-17% from-primary-400 to-primary-600 text-base font-medium leading-5 text-white transition-colors hover:from-primary-500 hover:to-primary-700'
-              >
-                Sign Up
-              </Link>
-            </motion.div>
+                <Link
+                  href='/dashboard'
+                  className='inline-flex py-3.5 w-[120px] xl:w-[200px] items-center justify-center rounded-2xl bg-linear-to-b from-17% from-primary-400 to-primary-600 text-base font-medium leading-5 text-white transition-colors hover:from-primary-500 hover:to-primary-700'
+                >
+                  Dashboard
+                </Link>
+              </motion.div>
+            ) : (
+              <>
+                <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    href='/login'
+                    className='text-base font-medium leading-5 text-primary-500 transition-colors hover:text-primary-600'
+                  >
+                    Log In
+                  </Link>
+                </motion.div>
+                <motion.div
+                  whileHover={{ y: -1, scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Link
+                    href='/register'
+                    className='inline-flex py-3.5 w-[100px] xl:w-[200px] items-center justify-center rounded-2xl bg-linear-to-b from-17% from-primary-400 to-primary-600 text-base font-medium leading-5 text-white transition-colors hover:from-primary-500 hover:to-primary-700'
+                  >
+                    Sign Up
+                  </Link>
+                </motion.div>
+              </>
+            )}
           </div>
 
           <button
@@ -419,24 +438,38 @@ const Header = () => {
                   initial='hidden'
                   animate='show'
                 >
-                  <motion.div variants={mobileItemVariants}>
-                    <Link
-                      href='/register'
-                      onClick={closeMobileMenu}
-                      className='inline-flex h-[54px] w-full items-center justify-center rounded-2xl bg-linear-to-b from-primary-400 to-primary-600 text-base font-medium leading-6 text-white'
-                    >
-                      Sign Up
-                    </Link>
-                  </motion.div>
-                  <motion.div variants={mobileItemVariants}>
-                    <Link
-                      href='/login'
-                      onClick={closeMobileMenu}
-                      className='inline-flex h-[54px] w-full items-center justify-center rounded-2xl border border-primary-300 text-base font-medium leading-6 text-primary-400'
-                    >
-                      Log In
-                    </Link>
-                  </motion.div>
+                  {isAuthenticated ? (
+                    <motion.div variants={mobileItemVariants}>
+                      <Link
+                        href='/dashboard'
+                        onClick={closeMobileMenu}
+                        className='inline-flex h-[54px] w-full items-center justify-center rounded-2xl bg-linear-to-b from-primary-400 to-primary-600 text-base font-medium leading-6 text-white'
+                      >
+                        Dashboard
+                      </Link>
+                    </motion.div>
+                  ) : (
+                    <>
+                      <motion.div variants={mobileItemVariants}>
+                        <Link
+                          href='/register'
+                          onClick={closeMobileMenu}
+                          className='inline-flex h-[54px] w-full items-center justify-center rounded-2xl bg-linear-to-b from-primary-400 to-primary-600 text-base font-medium leading-6 text-white'
+                        >
+                          Sign Up
+                        </Link>
+                      </motion.div>
+                      <motion.div variants={mobileItemVariants}>
+                        <Link
+                          href='/login'
+                          onClick={closeMobileMenu}
+                          className='inline-flex h-[54px] w-full items-center justify-center rounded-2xl border border-primary-300 text-base font-medium leading-6 text-primary-400'
+                        >
+                          Log In
+                        </Link>
+                      </motion.div>
+                    </>
+                  )}
                 </motion.div>
               </motion.div>
             </>

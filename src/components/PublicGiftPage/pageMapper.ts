@@ -1,4 +1,3 @@
-import { TEMPLATES } from '@/lib/config/templates/selection'
 import type { RenderTemplateData } from '@/lib/config/templates/types'
 import type { PublicPageApiData } from '@/api/services/publicPages'
 
@@ -33,6 +32,7 @@ const extractSocialLinks = (
     const provider = String(item.provider || '').toLowerCase()
     const url = String(item.url || '').trim()
     if (!url) continue
+    if (provider.includes('facebook')) links.facebook = url
     if (provider.includes('instagram')) links.instagram = url
     if (provider === 'x' || provider.includes('twitter')) links.twitter = url
     if (provider.includes('linkedin')) links.linkedin = url
@@ -80,12 +80,4 @@ export const normalizePublicPageData = (
     },
     socialLinks: extractSocialLinks(page),
   }
-}
-
-export const resolveTemplateOverrideId = (
-  templateLayout: string | null
-): string | null => {
-  if (!templateLayout) return null
-  const matched = TEMPLATES.find((item) => item.layout === templateLayout)
-  return matched?.id ?? null
 }

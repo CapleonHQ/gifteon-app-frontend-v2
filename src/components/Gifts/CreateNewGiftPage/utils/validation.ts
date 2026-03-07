@@ -10,11 +10,10 @@ export type CustomizeDraft = {
 
 export type GiftSettingsValues = {
   giftFor: 'for_me' | 'someone_else' | ''
-  giftType: 'cash' | 'items' | ''
+  giftType: 'cash' | 'items' | 'cash_items' | ''
   currency: string
   cashAmount: string
   minAmount: string
-  maxAmount: string
   targetAmount: string
   customGifts: 'yes' | 'no' | ''
   addMusic: 'yes' | 'no' | ''
@@ -32,6 +31,7 @@ export type GiftSettingsValues = {
 export type CreateGiftValidationInput = {
   giftPageData: GiftPageData
   selectedTemplate: string | null
+  categoryId: string | null
   settings: GiftSettingsValues
   recipients: Recipient[]
   recipientForm: Recipient
@@ -50,6 +50,19 @@ export const isValidAmount = (value: string) => {
   const parsed = Number(normalized)
   return Number.isFinite(parsed) && parsed > 0
 }
+
+export const isValidMinimumAmount = (value: string, minimum = 1000) => {
+  const normalized = normalizeAmount(value)
+  if (!normalized) return false
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) && parsed >= minimum
+}
+
+export const hasCashGiftType = (giftType: GiftSettingsValues['giftType']) =>
+  giftType === 'cash' || giftType === 'cash_items'
+
+export const hasStoreGiftType = (giftType: GiftSettingsValues['giftType']) =>
+  giftType === 'items' || giftType === 'cash_items'
 
 export const validateCustomizeDraft = (draft: CustomizeDraft) => {
   const errors: Record<string, string> = {}
@@ -81,6 +94,7 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
   const {
     giftPageData,
     selectedTemplate,
+    categoryId,
     settings,
     recipients,
     recipientForm,
@@ -99,6 +113,10 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
 
   if (!selectedTemplate) {
     errors.template = 'Please select a template.'
+  }
+
+  if (!categoryId) {
+    errors.category = 'Please select a category.'
   }
 
   if (!giftPageData.media?.file) {
@@ -121,11 +139,7 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
     errors.customGifts = 'Please select if you want to add custom gifts.'
   }
 
-  if (!settings.addMusic) {
-    errors.addMusic = 'Please select if you want to add music.'
-  }
-
-  if (settings.giftType === 'cash') {
+  if (hasCashGiftType(settings.giftType)) {
     if (!settings.currency) {
       errors.currency = 'Currency is required.'
     }
@@ -162,23 +176,11 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
         }
       }
     } else if (settings.giftFor === 'for_me') {
-      if (!isValidAmount(settings.minAmount)) {
-        errors.minAmount = 'Minimum amount is required.'
+      if (!isValidMinimumAmount(settings.minAmount)) {
+        errors.minAmount = 'Minimum amount must be at least 1000.'
       }
-      if (!isValidAmount(settings.maxAmount)) {
-        errors.maxAmount = 'Maximum amount is required.'
-      }
-      if (!isValidAmount(settings.targetAmount)) {
-        errors.targetAmount = 'Target amount is required.'
-      }
-      const minValue = Number(normalizeAmount(settings.minAmount))
-      const maxValue = Number(normalizeAmount(settings.maxAmount))
-      if (
-        Number.isFinite(minValue) &&
-        Number.isFinite(maxValue) &&
-        minValue > maxValue
-      ) {
-        errors.minAmount = 'Minimum amount must be less than maximum amount.'
+      if (!isValidMinimumAmount(settings.targetAmount)) {
+        errors.targetAmount = 'Target amount must be at least 1000.'
       }
     }
   }

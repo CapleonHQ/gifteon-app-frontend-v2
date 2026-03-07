@@ -21,7 +21,14 @@ const WishRow = ({ wish }: WishRowProps) => {
       </Avatar>
       <div className='flex flex-1 flex-col gap-1'>
         <div className='flex items-center justify-between gap-3'>
-          <p className='font-medium text-blackish'>{wish.name}</p>
+          <div className='flex min-w-0 items-center gap-2'>
+            <p className='truncate font-medium text-blackish'>{wish.name}</p>
+            {wish.private ? (
+              <span className='inline-flex shrink-0 items-center rounded-full border border-warning-100 bg-warning-50 px-2 py-0.5 text-[11px] font-medium text-warning-700'>
+                Private
+              </span>
+            ) : null}
+          </div>
           <span className='text-sm text-grey-400'>{wish.time}</span>
         </div>
         <p className='text-sm text-grey-500'>{wish.message}</p>
