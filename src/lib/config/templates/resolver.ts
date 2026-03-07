@@ -1,7 +1,7 @@
 import { TEMPLATES } from './selection'
 import type { TemplateLayout, TemplateMeta } from './types'
 
-export const DEFAULT_TEMPLATE_LAYOUT: TemplateLayout = 'template1'
+export const DEFAULT_TEMPLATE_LAYOUT: TemplateLayout = 'classicSplit'
 
 export const DEFAULT_TEMPLATE: TemplateMeta = TEMPLATES[0]
 

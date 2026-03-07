@@ -32,6 +32,7 @@ export type GiftSettingsValues = {
 export type CreateGiftValidationInput = {
   giftPageData: GiftPageData
   selectedTemplate: string | null
+  categoryId: string | null
   settings: GiftSettingsValues
   recipients: Recipient[]
   recipientForm: Recipient
@@ -81,6 +82,7 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
   const {
     giftPageData,
     selectedTemplate,
+    categoryId,
     settings,
     recipients,
     recipientForm,
@@ -99,6 +101,10 @@ export const validateCreateGift = (input: CreateGiftValidationInput) => {
 
   if (!selectedTemplate) {
     errors.template = 'Please select a template.'
+  }
+
+  if (!categoryId) {
+    errors.category = 'Please select a category.'
   }
 
   if (!giftPageData.media?.file) {

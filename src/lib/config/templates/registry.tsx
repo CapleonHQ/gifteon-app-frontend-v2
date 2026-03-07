@@ -1,12 +1,23 @@
 import type { ComponentType, ReactNode } from 'react'
 import {
-  PreviewTemplate1,
-  PreviewTemplate2,
-  PreviewTemplate3,
-  PreviewTemplate4,
+  PreviewClassicSplit,
+  PreviewHaloPortrait,
+  PreviewStorySplit,
+  PreviewSpotlightGrid,
 } from './preview'
-import { RenderTemplate1, RenderTemplate2, RenderTemplate3, RenderTemplate4 } from './render'
-import { Template1Selection, Template2Selection, Template3Selection, Template4Selection, TEMPLATES } from './selection'
+import {
+  RenderClassicSplit,
+  RenderHaloPortrait,
+  RenderStorySplit,
+  RenderSpotlightGrid,
+} from './render'
+import {
+  ClassicSplitSelection,
+  HaloPortraitSelection,
+  StorySplitSelection,
+  SpotlightGridSelection,
+  TEMPLATES,
+} from './selection'
 import type { PreviewTemplateProps, RenderTemplateProps, TemplateMeta } from './types'
 
 type SelectionComponent = ComponentType
@@ -22,24 +33,24 @@ export type TemplateModeComponents = {
 export type TemplateRegistryItem = TemplateMeta & TemplateModeComponents
 
 const PREVIEW_BY_LAYOUT: Record<TemplateMeta['layout'], PreviewComponent> = {
-  template1: PreviewTemplate1,
-  template2: PreviewTemplate2,
-  template3: PreviewTemplate3,
-  template4: PreviewTemplate4,
+  classicSplit: PreviewClassicSplit,
+  haloPortrait: PreviewHaloPortrait,
+  storySplit: PreviewStorySplit,
+  spotlightGrid: PreviewSpotlightGrid,
 }
 
 const SELECTION_BY_LAYOUT: Record<TemplateMeta['layout'], SelectionComponent> = {
-  template1: Template1Selection,
-  template2: Template2Selection,
-  template3: Template3Selection,
-  template4: Template4Selection,
+  classicSplit: ClassicSplitSelection,
+  haloPortrait: HaloPortraitSelection,
+  storySplit: StorySplitSelection,
+  spotlightGrid: SpotlightGridSelection,
 }
 
 const RENDER_BY_LAYOUT: Record<TemplateMeta['layout'], RenderComponent> = {
-  template1: RenderTemplate1,
-  template2: RenderTemplate2,
-  template3: RenderTemplate3,
-  template4: RenderTemplate4,
+  classicSplit: RenderClassicSplit,
+  haloPortrait: RenderHaloPortrait,
+  storySplit: RenderStorySplit,
+  spotlightGrid: RenderSpotlightGrid,
 }
 
 export const TEMPLATE_REGISTRY: TemplateRegistryItem[] = TEMPLATES.map((template) => ({

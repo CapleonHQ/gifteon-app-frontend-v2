@@ -11,8 +11,7 @@ import { GiftPageData } from '@/types/gifts'
 const toCssTextAlign = (alignment: GiftPageData['title']['alignment']) =>
   alignment === 'middle' ? 'center' : alignment
 
-// ========== PREVIEW TEMPLATE 1 ==========
-export const PreviewTemplate1 = memo(({ data }: { data: GiftPageData }) => {
+export const PreviewClassicSplit = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -195,9 +194,9 @@ export const PreviewTemplate1 = memo(({ data }: { data: GiftPageData }) => {
     </div>
   )
 })
+PreviewClassicSplit.displayName = 'PreviewClassicSplit'
 
-// ========== PREVIEW TEMPLATE 2 ==========
-export const PreviewTemplate2 = memo(({ data }: { data: GiftPageData }) => {
+export const PreviewHaloPortrait = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -366,9 +365,9 @@ export const PreviewTemplate2 = memo(({ data }: { data: GiftPageData }) => {
     </div>
   )
 })
+PreviewHaloPortrait.displayName = 'PreviewHaloPortrait'
 
-// ========== PREVIEW TEMPLATE 3 ==========
-export const PreviewTemplate3 = memo(({ data }: { data: GiftPageData }) => {
+export const PreviewStorySplit = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -540,9 +539,9 @@ export const PreviewTemplate3 = memo(({ data }: { data: GiftPageData }) => {
     </div>
   )
 })
+PreviewStorySplit.displayName = 'PreviewStorySplit'
 
-// ========== PREVIEW TEMPLATE 4 ==========
-export const PreviewTemplate4 = memo(({ data }: { data: GiftPageData }) => {
+export const PreviewSpotlightGrid = memo(({ data }: { data: GiftPageData }) => {
   const [commentsOpen, setCommentsOpen] = useState(true)
   const [activitiesOpen, setActivitiesOpen] = useState(false)
 
@@ -733,3 +732,4 @@ export const PreviewTemplate4 = memo(({ data }: { data: GiftPageData }) => {
     </div>
   )
 })
+PreviewSpotlightGrid.displayName = 'PreviewSpotlightGrid'

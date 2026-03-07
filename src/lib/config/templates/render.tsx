@@ -109,7 +109,7 @@ const descriptionStyle = (data: RenderTemplateData) =>
     color: data.descriptionStyle.color,
   } as const)
 
-export const RenderTemplate1 = ({ data }: RenderTemplateProps) => (
+export const RenderClassicSplit = ({ data }: RenderTemplateProps) => (
   <>
     <div className='w-full flex flex-col gap-6 relative'>
       <div className='absolute top-0 left-0 right-0 h-52 sm:h-[352px] bg-warning-50' />
@@ -147,7 +147,7 @@ export const RenderTemplate1 = ({ data }: RenderTemplateProps) => (
   </>
 )
 
-export const RenderTemplate2 = ({ data }: RenderTemplateProps) => (
+export const RenderHaloPortrait = ({ data }: RenderTemplateProps) => (
   <>
     <div className='w-full flex flex-col gap-6 relative overflow-hidden'>
       <div className='absolute top-0 left-0 right-0 h-[170px] sm:h-[190px] lg:h-[205px] bg-warning-50' />
@@ -182,7 +182,7 @@ export const RenderTemplate2 = ({ data }: RenderTemplateProps) => (
   </>
 )
 
-export const RenderTemplate3 = ({ data }: RenderTemplateProps) => (
+export const RenderStorySplit = ({ data }: RenderTemplateProps) => (
   <>
     <div className='w-full flex flex-col gap-6 relative overflow-hidden'>
       <div className='absolute top-[-90px] lg:top-[-107px] left-0 right-0 h-40 lg:h-[214px] bg-secondary-100 rounded-full blur-[36px]' />
@@ -217,7 +217,7 @@ export const RenderTemplate3 = ({ data }: RenderTemplateProps) => (
   </>
 )
 
-export const RenderTemplate4 = ({
+export const RenderSpotlightGrid = ({
   data,
   engagementSection,
   mobileShareAction,

@@ -6,12 +6,16 @@ import TemplateSelectionFooter from './TemplateSelectionFooter'
 
 const TemplateSelection = ({
   selectedTemplate,
+  selectedCategoryName,
   onTemplateSelect,
   onContinue,
+  onBack,
 }: {
   selectedTemplate: string | null
+  selectedCategoryName?: string
   onTemplateSelect: (id: string) => void
   onContinue: () => void
+  onBack?: () => void
 }) => {
   return (
     <motion.div
@@ -20,7 +24,10 @@ const TemplateSelection = ({
       exit={{ opacity: 0 }}
       className='w-full pb-10'
     >
-      <TemplateSelectionHeader />
+      <TemplateSelectionHeader
+        selectedCategoryName={selectedCategoryName}
+        onBack={onBack}
+      />
       <TemplateGrid
         selectedTemplate={selectedTemplate}
         onTemplateSelect={onTemplateSelect}
@@ -28,6 +35,7 @@ const TemplateSelection = ({
       <TemplateSelectionFooter
         canContinue={Boolean(selectedTemplate)}
         onContinue={onContinue}
+        ctaLabel='Continue to Customization'
       />
     </motion.div>
   )

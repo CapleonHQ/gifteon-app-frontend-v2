@@ -1,7 +1,11 @@
 import type { GiftPageData } from '@/types/gifts'
 import type { ReactNode } from 'react'
 
-export type TemplateLayout = 'template1' | 'template2' | 'template3' | 'template4'
+export type TemplateLayout =
+  | 'classicSplit'
+  | 'haloPortrait'
+  | 'storySplit'
+  | 'spotlightGrid'
 
 export type TemplateMeta = {
   id: string

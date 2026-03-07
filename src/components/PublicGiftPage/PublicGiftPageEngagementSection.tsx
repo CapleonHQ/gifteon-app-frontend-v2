@@ -17,7 +17,7 @@ import type { EngagementTab } from './engagement/types'
 
 type PublicGiftPageEngagementSectionProps = {
   page: PublicPageApiData
-  variant?: 'default' | 'template4'
+  variant?: 'default' | 'spotlightGrid'
 }
 
 export default function PublicGiftPageEngagementSection({
@@ -39,7 +39,7 @@ export default function PublicGiftPageEngagementSection({
     setActiveTab(tab)
   }
 
-  if (variant === 'template4') {
+  if (variant === 'spotlightGrid') {
     const toggleComments = () => {
       setCommentsOpen((prev) => {
         if (prev && !activitiesOpen) return true

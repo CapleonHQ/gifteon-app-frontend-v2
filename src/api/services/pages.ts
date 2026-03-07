@@ -18,6 +18,12 @@ export const createPageCategory = async (
   return resp.data
 }
 
+export const getPageCategories = async (): Promise<ApiResponse<object[]>> => {
+  const resp: AxiosResponse<ApiResponse<object[]>> =
+    await apiService.appPrivate.get('/page/categories')
+  return resp.data
+}
+
 export const getPages = async (
   params?: PagesQueryParams
 ): Promise<ApiResponse<PagesListApiData>> => {

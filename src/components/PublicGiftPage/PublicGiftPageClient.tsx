@@ -54,7 +54,7 @@ export default function PublicGiftPageClient({
   const resolvedTemplateLayout = useMemo(() => {
     return getTemplateRegistryItem(resolvedTemplateId).layout
   }, [resolvedTemplateId])
-  const isTemplate4 = resolvedTemplateLayout === 'template4'
+  const isTemplate4 = resolvedTemplateLayout === 'spotlightGrid'
   const [isSuccessModalOpen, setSuccessModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [giftQuantities, setGiftQuantities] = useState<Record<string, number>>(
@@ -116,7 +116,7 @@ export default function PublicGiftPageClient({
       templateId: safeTemplateId,
     },
     engagementSection: isTemplate4 ? (
-      <PublicGiftPageEngagementSection page={pageData} variant='template4' />
+      <PublicGiftPageEngagementSection page={pageData} variant='spotlightGrid' />
     ) : null,
     mobileShareAction: isTemplate4 ? shareButton : null,
   }
