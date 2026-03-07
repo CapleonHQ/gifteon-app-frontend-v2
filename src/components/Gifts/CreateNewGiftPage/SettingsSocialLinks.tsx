@@ -11,6 +11,12 @@ const SettingsSocialLinks = () => {
       </h4>
       <div className='space-y-3'>
         <InputField
+          label='Facebook'
+          value={giftPageData.socialLinks.facebook || ''}
+          onChange={(value) => updateSocialLink('facebook', value)}
+          placeholder='Enter your Facebook url'
+        />
+        <InputField
           label='Instagram'
           value={giftPageData.socialLinks.instagram || ''}
           onChange={(value) => updateSocialLink('instagram', value)}

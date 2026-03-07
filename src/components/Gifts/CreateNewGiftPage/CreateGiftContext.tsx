@@ -30,16 +30,14 @@ type GiftPageDataContextValue = {
 type GiftSettingsContextValue = {
   giftFor: 'for_me' | 'someone_else' | ''
   setGiftFor: (value: 'for_me' | 'someone_else' | '') => void
-  giftType: 'cash' | 'items' | ''
-  setGiftType: (value: 'cash' | 'items' | '') => void
+  giftType: 'cash' | 'items' | 'cash_items' | ''
+  setGiftType: (value: 'cash' | 'items' | 'cash_items' | '') => void
   currency: string
   setCurrency: (value: string) => void
   cashAmount: string
   setCashAmount: (value: string) => void
   minAmount: string
   setMinAmount: (value: string) => void
-  maxAmount: string
-  setMaxAmount: (value: string) => void
   targetAmount: string
   setTargetAmount: (value: string) => void
   customGifts: 'yes' | 'no' | ''
@@ -109,7 +107,6 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
     setCurrency,
     setCashAmount,
     setMinAmount,
-    setMaxAmount,
     setTargetAmount,
     setCustomGifts,
     setAddMusic,
@@ -207,8 +204,6 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
       setCashAmount,
       minAmount: giftSettings.minAmount,
       setMinAmount,
-      maxAmount: giftSettings.maxAmount,
-      setMaxAmount,
       targetAmount: giftSettings.targetAmount,
       setTargetAmount,
       customGifts: giftSettings.customGifts,
@@ -245,8 +240,6 @@ export const CreateGiftProvider = ({ children }: { children: ReactNode }) => {
       setCashAmount,
       giftSettings.minAmount,
       setMinAmount,
-      giftSettings.maxAmount,
-      setMaxAmount,
       giftSettings.targetAmount,
       setTargetAmount,
       giftSettings.customGifts,

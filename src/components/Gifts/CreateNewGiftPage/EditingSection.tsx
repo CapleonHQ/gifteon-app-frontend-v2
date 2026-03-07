@@ -19,7 +19,6 @@ interface EditingSectionProps {
     currency?: string
     cashAmount?: string
     minAmount?: string
-    maxAmount?: string
     targetAmount?: string
     customGifts?: string
     addMusic?: string
@@ -33,6 +32,8 @@ interface EditingSectionProps {
     giftingEndDate?: string
     giftingEndTime?: string
     recipients?: string
+    recipientName?: string
+    recipientEmail?: string
   }
   continueErrors?: {
     title?: string
@@ -94,7 +95,7 @@ const EditingSection = ({
     })
 
     return () => setOnBack(undefined)
-  }, [onClose, setOnBack, step])
+  }, [onClose, onStepChange, setOnBack, step])
 
   return (
     <div className='h-full relative lg:rounded-t-3xl lg:shadow-[0px_-5px_13px_5px_#1019280F] bg-white flex flex-col overflow-hidden'>

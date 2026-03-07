@@ -32,6 +32,7 @@ const extractSocialLinks = (
     const provider = String(item.provider || '').toLowerCase()
     const url = String(item.url || '').trim()
     if (!url) continue
+    if (provider.includes('facebook')) links.facebook = url
     if (provider.includes('instagram')) links.instagram = url
     if (provider === 'x' || provider.includes('twitter')) links.twitter = url
     if (provider.includes('linkedin')) links.linkedin = url

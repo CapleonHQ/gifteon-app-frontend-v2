@@ -6,11 +6,10 @@ import { type GiftPageData } from '@/types/gifts'
 type GiftSettingsState = {
   giftPageData: GiftPageData
   giftFor: 'for_me' | 'someone_else' | ''
-  giftType: 'cash' | 'items' | ''
+  giftType: 'cash' | 'items' | 'cash_items' | ''
   currency: string
   cashAmount: string
   minAmount: string
-  maxAmount: string
   targetAmount: string
   customGifts: 'yes' | 'no' | ''
   addMusic: 'yes' | 'no' | ''
@@ -113,6 +112,7 @@ const initialGiftSettingsState: GiftSettingsState = {
       instagram: '',
       twitter: '',
       linkedin: '',
+      facebook: '',
     },
   },
   giftFor: '',
@@ -120,10 +120,9 @@ const initialGiftSettingsState: GiftSettingsState = {
   currency: '',
   cashAmount: '',
   minAmount: '',
-  maxAmount: '',
   targetAmount: '',
   customGifts: '',
-  addMusic: '',
+  addMusic: 'no',
   privacy: '',
   receiverName: '',
   receiverEmail: '',
@@ -147,7 +146,6 @@ type UseGiftSettingsReturn = {
   setCurrency: (value: string) => void
   setCashAmount: (value: string) => void
   setMinAmount: (value: string) => void
-  setMaxAmount: (value: string) => void
   setTargetAmount: (value: string) => void
   setCustomGifts: (value: GiftSettingsState['customGifts']) => void
   setAddMusic: (value: GiftSettingsState['addMusic']) => void
@@ -214,9 +212,6 @@ export const useGiftSettings = (): UseGiftSettingsReturn => {
   const setMinAmount = useCallback((value: string) => {
     dispatch({ type: 'SET_FIELD', field: 'minAmount', value })
   }, [])
-  const setMaxAmount = useCallback((value: string) => {
-    dispatch({ type: 'SET_FIELD', field: 'maxAmount', value })
-  }, [])
   const setTargetAmount = useCallback((value: string) => {
     dispatch({ type: 'SET_FIELD', field: 'targetAmount', value })
   }, [])
@@ -278,7 +273,6 @@ export const useGiftSettings = (): UseGiftSettingsReturn => {
     setCurrency,
     setCashAmount,
     setMinAmount,
-    setMaxAmount,
     setTargetAmount,
     setCustomGifts,
     setAddMusic,

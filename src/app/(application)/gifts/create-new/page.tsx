@@ -110,7 +110,7 @@ const CreateNewGiftPage = () => {
       clearTimeout(redirectTimerRef.current)
     }
     redirectTimerRef.current = setTimeout(() => {
-      router.push('/gift-pages')
+      router.push('/gifts')
     }, 10000)
   }
 

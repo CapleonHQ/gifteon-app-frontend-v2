@@ -12,7 +12,6 @@ const SettingsStep = ({
     currency?: string
     cashAmount?: string
     minAmount?: string
-    maxAmount?: string
     targetAmount?: string
     customGifts?: string
     addMusic?: string

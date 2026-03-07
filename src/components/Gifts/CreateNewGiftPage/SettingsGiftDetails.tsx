@@ -1,3 +1,5 @@
+import AlertIcon from '@/assets/icons/AlertIcon'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -5,38 +7,103 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import RadioField from './Components/RadioField'
-import InputField from './Components/InputField'
 import DatePickerField from './Components/DatePickerField'
+import InputField from './Components/InputField'
+import RadioField from './Components/RadioField'
 import TimePickerField from './Components/TimePickerField'
-import AlertIcon from '@/assets/icons/AlertIcon'
-import SettingsCustomGifts from './SettingsCustomGifts'
 import { useGiftSettingsContext } from './CreateGiftContext'
+import SettingsCustomGifts from './SettingsCustomGifts'
+import { hasCashGiftType, hasStoreGiftType } from './utils/validation'
+
+type SettingsErrors = {
+  giftFor?: string
+  giftType?: string
+  currency?: string
+  cashAmount?: string
+  minAmount?: string
+  targetAmount?: string
+  customGifts?: string
+  addMusic?: string
+  privacy?: string
+  receiverName?: string
+  receiverEmail?: string
+  allowJoinGifting?: string
+  joinTargetAmount?: string
+  joinMinAmount?: string
+  setTimeframe?: string
+  giftingEndDate?: string
+  giftingEndTime?: string
+}
+
+const resolveGiftType = (hasCash: boolean, hasItems: boolean) => {
+  if (hasCash && hasItems) return 'cash_items'
+  if (hasCash) return 'cash'
+  if (hasItems) return 'items'
+  return ''
+}
+
+const GiftTypeOption = ({
+  checked,
+  title,
+  description,
+  onCheckedChange,
+}: {
+  checked: boolean
+  title: string
+  description: string
+  onCheckedChange: (checked: boolean) => void
+}) => (
+  <label className='flex cursor-pointer items-start gap-3 bg-white transition-colors'>
+    <Checkbox
+      checked={checked}
+      onCheckedChange={(value) => onCheckedChange(Boolean(value))}
+    />
+    <span className='space-y-1'>
+      <span className='block text-sm font-medium text-blackish'>{title}</span>
+      <span className='block text-xs leading-5 text-grey-500'>
+        {description}
+      </span>
+    </span>
+  </label>
+)
+
+const CurrencyField = ({
+  value,
+  error,
+  onChange,
+}: {
+  value: string
+  error?: string
+  onChange: (value: string) => void
+}) => (
+  <div>
+    <label className='mb-2 block text-sm font-medium'>Currency</label>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className='h-auto! w-full rounded-lg border border-grey-50 px-3 py-3.5 text-sm font-medium text-blackish outline-hidden focus:outline-hidden'>
+        <SelectValue placeholder='Select an option' />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value='placeholder' disabled>
+          Select an option
+        </SelectItem>
+        <SelectItem value='NGN'>Naira (₦)</SelectItem>
+        <SelectItem value='USD' disabled>
+          US Dollar ($)
+        </SelectItem>
+        <SelectItem value='EUR' disabled>
+          Euro (€)
+        </SelectItem>
+      </SelectContent>
+    </Select>
+    {error ? <p className='mt-1 text-xs text-error-600'>{error}</p> : null}
+  </div>
+)
 
 const SettingsGiftDetails = ({
   errors,
   onClearError,
 }: {
-  errors?: {
-    giftFor?: string
-    giftType?: string
-    currency?: string
-    cashAmount?: string
-    minAmount?: string
-    maxAmount?: string
-    targetAmount?: string
-    customGifts?: string
-    addMusic?: string
-    privacy?: string
-    receiverName?: string
-    receiverEmail?: string
-    allowJoinGifting?: string
-    joinTargetAmount?: string
-    joinMinAmount?: string
-    setTimeframe?: string
-    giftingEndDate?: string
-    giftingEndTime?: string
-  }
+  errors?: SettingsErrors
   onClearError?: (key: string) => void
 }) => {
   const {
@@ -45,7 +112,6 @@ const SettingsGiftDetails = ({
     currency,
     cashAmount,
     minAmount,
-    maxAmount,
     targetAmount,
     customGifts,
     addMusic,
@@ -63,7 +129,6 @@ const SettingsGiftDetails = ({
     setCurrency,
     setCashAmount,
     setMinAmount,
-    setMaxAmount,
     setTargetAmount,
     setCustomGifts,
     setAddMusic,
@@ -78,13 +143,23 @@ const SettingsGiftDetails = ({
     setGiftingEndTime,
   } = useGiftSettingsContext()
 
+  const hasCash = hasCashGiftType(giftType)
+  const hasItems = hasStoreGiftType(giftType)
+
+  const toggleGiftType = (type: 'cash' | 'items', checked: boolean) => {
+    const nextHasCash = type === 'cash' ? checked : hasCash
+    const nextHasItems = type === 'items' ? checked : hasItems
+    setGiftType(resolveGiftType(nextHasCash, nextHasItems) as typeof giftType)
+    onClearError?.('giftType')
+  }
+
   return (
     <div className='space-y-5'>
       <RadioField
         label='Who is this gift for?'
         value={giftFor}
         onChange={(value) => {
-          setGiftFor(value as any)
+          setGiftFor(value as 'for_me' | 'someone_else')
           onClearError?.('giftFor')
         }}
         options={[
@@ -94,74 +169,59 @@ const SettingsGiftDetails = ({
         error={errors?.giftFor}
       />
 
-      <RadioField
-        label='Gift Type'
-        value={giftType}
-        onChange={(value) => {
-          setGiftType(value as any)
-          onClearError?.('giftType')
-        }}
-        options={[
-          { value: 'cash', label: 'Cash' },
-          {
-            value: 'items',
-            label: 'Gift Items on Giftseon (Coming soon)',
-            disabled: true,
-          },
-        ]}
-        helper={
-          giftType === 'cash' && giftFor === 'someone_else'
-            ? "Cash will be deposited into the user's Giftseon Wallet for withdrawal anytime."
-            : giftType === 'cash'
-              ? 'Cash will be deposited into your Giftseon Wallet for withdrawal anytime.'
-              : giftType === 'items'
-                ? 'Gift items on Giftseon are temporarily unavailable.'
-              : undefined
-        }
-        error={errors?.giftType}
-      />
-      {giftType === 'cash' && giftFor === 'someone_else' && (
-        <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-warning-50/50 text-warning-500 text-xs font-medium'>
-          <span className='w-4 h-4 text-warning-500'>
+      <div className='space-y-3'>
+        <div>
+          <p className='text-sm font-medium text-blackish'>Gift Type</p>
+          <p className='mt-1 text-xs leading-5 text-grey-500'>
+            Choose one or both gift formats for this page.
+          </p>
+        </div>
+
+        <div className='space-y-3'>
+          <GiftTypeOption
+            checked={hasCash}
+            title='Cash gift'
+            description={
+              giftFor === 'someone_else'
+                ? "Cash will be deposited into the receiver's Giftseon wallet."
+                : 'Cash will be deposited into your Giftseon wallet.'
+            }
+            onCheckedChange={(checked) => toggleGiftType('cash', checked)}
+          />
+          <GiftTypeOption
+            checked={hasItems}
+            title='Store gifts'
+            description='Allow supporters to send items from stores on Giftseon.'
+            onCheckedChange={(checked) => toggleGiftType('items', checked)}
+          />
+        </div>
+
+        {errors?.giftType ? (
+          <p className='text-xs text-error-600'>{errors.giftType}</p>
+        ) : null}
+      </div>
+
+      {hasCash && giftFor === 'someone_else' ? (
+        <div className='flex items-center gap-1.5 rounded-full bg-warning-50/50 px-2.5 py-1.5 text-xs font-medium text-warning-500'>
+          <span className='h-4 w-4 text-warning-500'>
             <AlertIcon />
           </span>
           <span>The receiver has to own a Giftseon account</span>
         </div>
-      )}
+      ) : null}
 
-      {giftType === 'cash' && giftFor !== 'someone_else' && (
+      {hasCash && giftFor !== 'someone_else' ? (
         <>
-          <div>
-            <label className='text-sm font-medium mb-2 block'>Currency</label>
-            <Select
-              value={currency}
-              onValueChange={(value) => {
-                setCurrency(value)
-                onClearError?.('currency')
-              }}
-            >
-              <SelectTrigger className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium h-auto!'>
-                <SelectValue placeholder='Select an option' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='placeholder' disabled>
-                  Select an option
-                </SelectItem>
-                <SelectItem value='NGN'>Naira (₦)</SelectItem>
-                <SelectItem value='USD' disabled>
-                  US Dollar ($)
-                </SelectItem>
-                <SelectItem value='EUR' disabled>
-                  Euro (€)
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {errors?.currency && (
-              <p className='text-xs text-error-600 mt-1'>{errors.currency}</p>
-            )}
-          </div>
+          <CurrencyField
+            value={currency}
+            error={errors?.currency}
+            onChange={(value) => {
+              setCurrency(value)
+              onClearError?.('currency')
+            }}
+          />
 
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
             <InputField
               label='Minimum Amount'
               value={minAmount}
@@ -174,64 +234,30 @@ const SettingsGiftDetails = ({
               error={errors?.minAmount}
             />
             <InputField
-              label='Maximum Amount'
-              value={maxAmount}
+              label='Target Amount'
+              value={targetAmount}
               onChange={(value) => {
-                setMaxAmount(value)
-                onClearError?.('maxAmount')
+                setTargetAmount(value)
+                onClearError?.('targetAmount')
               }}
-              placeholder='Set your maximum amount'
+              placeholder='Enter your target amount'
               formatAsAmount
-              error={errors?.maxAmount}
+              error={errors?.targetAmount}
             />
           </div>
-
-          <InputField
-            label='Target Amount'
-            value={targetAmount}
-            onChange={(value) => {
-              setTargetAmount(value)
-              onClearError?.('targetAmount')
-            }}
-            placeholder='Enter your target amount'
-            helper='Optional'
-            formatAsAmount
-            error={errors?.targetAmount}
-          />
         </>
-      )}
+      ) : null}
 
-      {giftType === 'cash' && giftFor === 'someone_else' && (
+      {hasCash && giftFor === 'someone_else' ? (
         <>
-          <div className='space-y-2'>
-            <label className='text-sm font-medium mb-2 block'>Currency</label>
-            <Select
-              value={currency}
-              onValueChange={(value) => {
-                setCurrency(value)
-                onClearError?.('currency')
-              }}
-            >
-              <SelectTrigger className='w-full px-3 py-3.5 border border-grey-50 rounded-lg outline-hidden focus:outline-hidden text-sm text-blackish font-medium h-auto!'>
-                <SelectValue placeholder='Select an option' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='placeholder' disabled>
-                  Select an option
-                </SelectItem>
-                <SelectItem value='NGN'>Naira (₦)</SelectItem>
-                <SelectItem value='USD' disabled>
-                  US Dollar ($)
-                </SelectItem>
-                <SelectItem value='EUR' disabled>
-                  Euro (€)
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {errors?.currency && (
-              <p className='text-xs text-error-600 mt-1'>{errors.currency}</p>
-            )}
-          </div>
+          <CurrencyField
+            value={currency}
+            error={errors?.currency}
+            onChange={(value) => {
+              setCurrency(value)
+              onClearError?.('currency')
+            }}
+          />
           <InputField
             label='Enter Amount'
             value={cashAmount}
@@ -265,13 +291,13 @@ const SettingsGiftDetails = ({
             error={errors?.receiverEmail}
           />
         </>
-      )}
+      ) : null}
 
       <RadioField
         label='Do you want to add custom gifts?'
         value={customGifts}
         onChange={(value) => {
-          setCustomGifts(value as any)
+          setCustomGifts(value as 'yes' | 'no')
           onClearError?.('customGifts')
         }}
         options={[
@@ -281,17 +307,21 @@ const SettingsGiftDetails = ({
         error={errors?.customGifts}
       />
 
-      <SettingsCustomGifts error={errors?.customGifts} onClearError={onClearError} />
+      <SettingsCustomGifts
+        error={errors?.customGifts}
+        onClearError={onClearError}
+      />
 
       <RadioField
         label='Do you want to add music?'
         value={addMusic}
         onChange={(value) => {
-          setAddMusic(value as any)
+          if (value === 'yes') return
+          setAddMusic(value as 'yes' | 'no')
           onClearError?.('addMusic')
         }}
         options={[
-          { value: 'yes', label: 'Yes' },
+          { value: 'yes', label: 'Yes (Coming soon)', disabled: true },
           { value: 'no', label: 'No' },
         ]}
         error={errors?.addMusic}
@@ -302,7 +332,7 @@ const SettingsGiftDetails = ({
           label='Gift Page Privacy Control'
           value={privacy}
           onChange={(value) => {
-            setPrivacy(value as any)
+            setPrivacy(value as 'public' | 'shareable' | 'private')
             onClearError?.('privacy')
           }}
           options={[
@@ -313,20 +343,20 @@ const SettingsGiftDetails = ({
           grid='grid-cols-3'
           error={errors?.privacy}
         />
-        <div className='text-xs text-grey-500 mt-1 space-y-1'>
+        <div className='mt-1 space-y-1 text-xs text-grey-500'>
           <p>Public: Visible to everyone on Giftseon and shareable anywhere.</p>
           <p>Shareable: Visible to anyone with the link and QR code.</p>
           <p>Private: Visible only to people you add as recipients.</p>
         </div>
       </div>
 
-      {giftType === 'cash' && giftFor === 'someone_else' && (
+      {hasCash && giftFor === 'someone_else' ? (
         <>
           <RadioField
-            label='Do you want others to join this gifting?'
+            label='Allow Join Gifting?'
             value={allowJoinGifting}
             onChange={(value) => {
-              setAllowJoinGifting(value as any)
+              setAllowJoinGifting(value as 'yes' | 'no')
               onClearError?.('allowJoinGifting')
             }}
             options={[
@@ -336,38 +366,38 @@ const SettingsGiftDetails = ({
             error={errors?.allowJoinGifting}
           />
 
-          {allowJoinGifting === 'yes' && (
-            <>
+          {allowJoinGifting === 'yes' ? (
+            <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               <InputField
-                label='Target Amount'
+                label='Join Target Amount'
                 value={joinTargetAmount}
                 onChange={(value) => {
                   setJoinTargetAmount(value)
                   onClearError?.('joinTargetAmount')
                 }}
-                placeholder='Enter your target amount'
+                placeholder='Enter target amount'
                 formatAsAmount
                 error={errors?.joinTargetAmount}
               />
               <InputField
-                label='Minimum Amount'
+                label='Join Minimum Amount'
                 value={joinMinAmount}
                 onChange={(value) => {
                   setJoinMinAmount(value)
                   onClearError?.('joinMinAmount')
                 }}
-                placeholder='Set your minimum amount'
+                placeholder='Enter minimum amount'
                 formatAsAmount
                 error={errors?.joinMinAmount}
               />
-            </>
-          )}
+            </div>
+          ) : null}
 
           <RadioField
-            label='Do you want to set a timeframe for this gifting?'
+            label='Set Gifting Timeframe?'
             value={setTimeframe}
             onChange={(value) => {
-              setSetTimeframe(value as any)
+              setSetTimeframe(value as 'yes' | 'no')
               onClearError?.('setTimeframe')
             }}
             options={[
@@ -377,45 +407,42 @@ const SettingsGiftDetails = ({
             error={errors?.setTimeframe}
           />
 
-          {setTimeframe === 'yes' && (
-            <div className='space-y-3'>
-              <p className='text-sm text-grey-700 uppercase tracking-wide'>
-                When should the gifting end?
-              </p>
-              <div className='grid grid-cols-2 gap-4'>
+          {setTimeframe === 'yes' ? (
+            <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+              <div>
                 <DatePickerField
-                  label='Date'
+                  label='Gifting End Date'
                   value={giftingEndDate}
                   onChange={(value) => {
                     setGiftingEndDate(value)
                     onClearError?.('giftingEndDate')
                   }}
-                  placeholder='Select date'
                 />
-                {errors?.giftingEndDate && (
-                  <p className='text-xs text-error-600 mt-1'>
+                {errors?.giftingEndDate ? (
+                  <p className='mt-1 text-xs text-error-600'>
                     {errors.giftingEndDate}
                   </p>
-                )}
+                ) : null}
+              </div>
+              <div>
                 <TimePickerField
-                  label='Time'
+                  label='Gifting End Time'
                   value={giftingEndTime}
                   onChange={(value) => {
                     setGiftingEndTime(value)
                     onClearError?.('giftingEndTime')
                   }}
-                  placeholder='Select time'
                 />
-                {errors?.giftingEndTime && (
-                  <p className='text-xs text-error-600 mt-1'>
+                {errors?.giftingEndTime ? (
+                  <p className='mt-1 text-xs text-error-600'>
                     {errors.giftingEndTime}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
-          )}
+          ) : null}
         </>
-      )}
+      ) : null}
     </div>
   )
 }

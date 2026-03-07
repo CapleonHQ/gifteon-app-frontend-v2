@@ -33,6 +33,7 @@ export interface GiftPageData {
     instagram?: string
     twitter?: string
     linkedin?: string
+    facebook?: string
   }
 }
 

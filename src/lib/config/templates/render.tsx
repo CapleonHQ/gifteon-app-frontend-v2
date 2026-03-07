@@ -1,4 +1,9 @@
-import { InstagramColored, LinkedinIcon, XTwitterIcon } from '@/assets/icons'
+import {
+  FacebookIcon,
+  InstagramColored,
+  LinkedinIcon,
+  XTwitterIcon,
+} from '@/assets/icons'
 import { cn } from '@/lib/utils'
 import type { RenderTemplateData, RenderTemplateProps } from './types'
 
@@ -47,6 +52,19 @@ const SocialLinksRow = ({
 
   return (
     <div className={cn('flex items-center', gap)}>
+      {links.facebook && (
+        <a
+          href={links.facebook}
+          target='_blank'
+          rel='noopener noreferrer'
+          aria-label='Facebook'
+          className={chipClass}
+        >
+          <span className={cn('block', iconSize)}>
+            <FacebookIcon />
+          </span>
+        </a>
+      )}
       {links.instagram && (
         <a
           href={links.instagram}

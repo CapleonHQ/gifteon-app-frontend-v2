@@ -26,6 +26,7 @@ export type RenderSocialLinks = {
   instagram?: string
   twitter?: string
   linkedin?: string
+  facebook?: string
 }
 
 export type RenderCommentItem = {
