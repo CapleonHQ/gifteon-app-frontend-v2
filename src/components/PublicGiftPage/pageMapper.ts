@@ -1,4 +1,3 @@
-import { TEMPLATES } from '@/lib/config/templates/selection'
 import type { RenderTemplateData } from '@/lib/config/templates/types'
 import type { PublicPageApiData } from '@/api/services/publicPages'
 
@@ -80,12 +79,4 @@ export const normalizePublicPageData = (
     },
     socialLinks: extractSocialLinks(page),
   }
-}
-
-export const resolveTemplateOverrideId = (
-  templateLayout: string | null
-): string | null => {
-  if (!templateLayout) return null
-  const matched = TEMPLATES.find((item) => item.layout === templateLayout)
-  return matched?.id ?? null
 }

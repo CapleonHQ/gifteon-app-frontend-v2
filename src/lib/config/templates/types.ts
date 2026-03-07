@@ -69,4 +69,5 @@ export type RenderTemplateData = {
 export type RenderTemplateProps = {
   data: RenderTemplateData
   engagementSection?: ReactNode
+  mobileShareAction?: ReactNode
 }
