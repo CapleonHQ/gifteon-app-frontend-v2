@@ -7,18 +7,18 @@ import FilterIcon from '@/assets/icons/FilterIcon'
 
 type GiftsHeaderProps = {
   onFilterClick: () => void
-  totalPages: number
+  totalCount: number
   searchValue: string
   onSearchChange: (value: string) => void
 }
 
 const GiftsHeader = ({
   onFilterClick,
-  totalPages,
+  totalCount,
   searchValue,
   onSearchChange,
 }: GiftsHeaderProps) => {
-  const pageLabel = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`
+  const pageLabel = `${totalCount} ${totalCount === 1 ? 'Page' : 'Pages'}`
 
   return (
     <div className='flex flex-col gap-4 py-4 lg:pt-3 lg:pb-0 px-4'>

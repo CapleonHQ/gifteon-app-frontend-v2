@@ -34,6 +34,7 @@ const GiftsTableRowActions = ({
       <DropdownMenuTrigger asChild>
         <button
           type='button'
+          onClick={(event) => event.stopPropagation()}
           className='w-7 h-7 rounded-md flex items-center justify-center text-grey-500 hover:bg-grey-50
                focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1'
           aria-label='More options'

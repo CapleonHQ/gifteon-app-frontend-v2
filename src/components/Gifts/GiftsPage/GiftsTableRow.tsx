@@ -25,22 +25,42 @@ const GiftsTableRow = ({
   const isDeactivated = page.status === 'Deactivated'
 
   return (
-    <div className='grid grid-cols-[24px_1.5fr_1fr_1fr_1fr_0.8fr_0.9fr_0.7fr_0.8fr_28px] items-center gap-4 text-grey-800 px-4 py-2.5 hover:bg-grey-50 transition-colors duration-300 border-b border-grey-50 whitespace-nowrap'>
-      <Checkbox checked={isSelected} onCheckedChange={onToggle} className='size-5' />
-      <div className='flex items-center gap-2 min-w-0'>
-        <div className='w-8 h-8 rounded-[4px] overflow-hidden'>
-          <Image
-            src={page.image}
-            alt={page.title}
-            width={32}
-            height={32}
-            className='w-full h-full object-cover'
-          />
+    <tr
+      className='cursor-pointer border-b border-grey-50 text-grey-800 transition-colors duration-300 hover:bg-grey-50'
+      onClick={onView}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onView()
+        }
+      }}
+      tabIndex={0}
+      aria-label={`View ${page.title}`}
+    >
+      <td
+        className='w-[56px] px-4 py-2.5 align-middle'
+        onClick={(event) => event.stopPropagation()}
+      >
+        <Checkbox checked={isSelected} onCheckedChange={onToggle} className='size-5' />
+      </td>
+      <td className='px-2 py-2.5 align-middle'>
+        <div className='flex min-w-0 items-center gap-2 whitespace-nowrap'>
+          <div className='h-8 w-8 shrink-0 overflow-hidden rounded-[4px]'>
+            <Image
+              src={page.image}
+              alt={page.title}
+              width={32}
+              height={32}
+              className='h-full w-full object-cover'
+            />
+          </div>
+          <p className='truncate font-medium text-grey-900'>{page.title}</p>
         </div>
-        <p className='text-grey-900 font-medium truncate'>{page.title}</p>
-      </div>
-      <span>{page.category}</span>
-      <div>
+      </td>
+      <td className='px-2 py-2.5 align-middle'>
+        <div className='min-w-0 truncate whitespace-nowrap'>{page.category}</div>
+      </td>
+      <td className='px-2 py-2.5 align-middle whitespace-nowrap'>
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
             visibilityStyles[page.visibility]
@@ -48,12 +68,12 @@ const GiftsTableRow = ({
         >
           {page.visibility}
         </span>
-      </div>
-      <span>{page.createdOn}</span>
-      <span>{page.totalGifts?.toLocaleString()}</span>
-      <span>{page.totalWishes?.toLocaleString()}</span>
-      <span>{page.views?.toLocaleString()}</span>
-      <div>
+      </td>
+      <td className='px-2 py-2.5 align-middle whitespace-nowrap'>{page.createdOn}</td>
+      <td className='px-2 py-2.5 align-middle whitespace-nowrap'>{page.totalGifts?.toLocaleString()}</td>
+      <td className='px-2 py-2.5 align-middle whitespace-nowrap'>{page.totalWishes?.toLocaleString()}</td>
+      <td className='px-2 py-2.5 align-middle whitespace-nowrap'>{page.views?.toLocaleString()}</td>
+      <td className='px-2 py-2.5 align-middle whitespace-nowrap'>
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
             statusStyles[page.status]
@@ -61,15 +81,20 @@ const GiftsTableRow = ({
         >
           {page.status}
         </span>
-      </div>
-      <GiftsTableRowActions
-        onView={onView}
-        onShare={onShare}
-        onStatusAction={onStatusAction}
-        statusActionLabel={isDeactivated ? 'Activate' : 'Deactivate'}
-        isDestructive={!isDeactivated}
-      />
-    </div>
+      </td>
+      <td
+        className='w-[64px] px-6 py-2.5 align-middle'
+        onClick={(event) => event.stopPropagation()}
+      >
+        <GiftsTableRowActions
+          onView={onView}
+          onShare={onShare}
+          onStatusAction={onStatusAction}
+          statusActionLabel={isDeactivated ? 'Activate' : 'Deactivate'}
+          isDestructive={!isDeactivated}
+        />
+      </td>
+    </tr>
   )
 }
 
