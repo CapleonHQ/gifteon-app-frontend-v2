@@ -25,6 +25,7 @@ const toWishItem = (comment: PageComment): WishItem => {
     name: toDisplayName(comment),
     time: toRelativeTime(comment.createdAt),
     message: comment.comment,
+    private: comment.private,
   }
 }
 

@@ -20,16 +20,24 @@ import { emptySummaryCards } from './types'
 import { formatCurrency } from '@/lib/utils/currency'
 
 const DashboardStatsSection = () => {
-  const [visitRange, setVisitRange] = useState('last-7-days')
+  const [visitRange, setVisitRange] = useState<
+    'week' | 'month' | 'bi-annual' | 'annual'
+  >('week')
 
-  const getRangeMeta = (range: string) => {
+  const getRangeMeta = (
+    range: 'week' | 'month' | 'bi-annual' | 'annual'
+  ) => {
     const today = new Date()
-    if (range === 'last-30-days') {
+    if (range === 'month') {
       const from = subDays(today, 29)
       return { from, to: today, interval: 'weekly' as const }
     }
-    if (range === 'last-6-months') {
+    if (range === 'bi-annual') {
       const from = subMonths(today, 6)
+      return { from, to: today, interval: 'monthly' as const }
+    }
+    if (range === 'annual') {
+      const from = subMonths(today, 12)
       return { from, to: today, interval: 'monthly' as const }
     }
     const from = subDays(today, 6)
@@ -37,39 +45,50 @@ const DashboardStatsSection = () => {
   }
 
   const rangeOptions = useMemo(() => {
-    const last7 = getRangeMeta('last-7-days')
-    const last30 = getRangeMeta('last-30-days')
-    const last6m = getRangeMeta('last-6-months')
+    const week = getRangeMeta('week')
+    const month = getRangeMeta('month')
+    const biAnnual = getRangeMeta('bi-annual')
+    const annual = getRangeMeta('annual')
 
-    const formatRangeLabel = (from: Date, to: Date) =>
-      `${format(from, 'MMM d')} - ${format(to, 'MMM d')}`
+    const formatRangeLabel = (
+      from: Date,
+      to: Date,
+      style: 'day' | 'month-year' = 'day'
+    ) =>
+      style === 'month-year'
+        ? `${format(from, 'MMM yyyy')} - ${format(to, 'MMM yyyy')}`
+        : `${format(from, 'MMM d')} - ${format(to, 'MMM d')}`
 
     return [
       {
-        value: 'last-7-days',
+        value: 'week',
         label: 'Last 7 days',
-        rangeLabel: formatRangeLabel(last7.from, last7.to),
+        rangeLabel: formatRangeLabel(week.from, week.to),
       },
       {
-        value: 'last-30-days',
+        value: 'month',
         label: 'Last 30 days',
-        rangeLabel: formatRangeLabel(last30.from, last30.to),
+        rangeLabel: formatRangeLabel(month.from, month.to),
       },
       {
-        value: 'last-6-months',
+        value: 'bi-annual',
         label: 'Last 6 months',
-        rangeLabel: formatRangeLabel(last6m.from, last6m.to),
+        rangeLabel: formatRangeLabel(biAnnual.from, biAnnual.to),
       },
-    ]
+      {
+        value: 'annual',
+        label: 'Last 12 months',
+        rangeLabel: formatRangeLabel(annual.from, annual.to, 'month-year'),
+      },
+    ] satisfies Array<{
+      value: 'week' | 'month' | 'bi-annual' | 'annual'
+      label: string
+      rangeLabel: string
+    }>
   }, [])
-
-  const currentRangeMeta = useMemo(() => getRangeMeta(visitRange), [visitRange])
-
   const overview = useStatsOverview()
   const visitShares = useVisitSharesChart({
-    startDate: format(currentRangeMeta.from, 'yyyy-MM-dd'),
-    endDate: format(currentRangeMeta.to, 'yyyy-MM-dd'),
-    interval: currentRangeMeta.interval,
+    filter: visitRange,
   })
   const overviewData = overview.data?.data?.overview
   const chartData = overview.data?.data?.chart

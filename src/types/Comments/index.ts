@@ -24,6 +24,7 @@ export interface PageComment {
   fullName: string | null
   anonymous: boolean
   comment: string
+  private: boolean
   giftPageId: string
   userId: string | null
   createdAt: string

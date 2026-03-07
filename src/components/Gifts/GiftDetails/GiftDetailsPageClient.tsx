@@ -89,13 +89,12 @@ const GiftDetailsPageClient = () => {
 
   const handleDeactivateConfirm = async () => {
     try {
-      const response = await archiveMutation.mutateAsync([giftId])
+      await archiveMutation.mutateAsync([giftId])
       ui.setIsDeactivateOpen(false)
       ui.markInactive()
       await pageQuery.refetch()
       openSuccess({
-        message:
-          response.message || 'Your gift page has been successfully deactivated',
+        message: 'Your gift page has been successfully deactivated',
       })
     } catch {
       // Query error states will recover via refetch/invalidation.
@@ -104,12 +103,12 @@ const GiftDetailsPageClient = () => {
 
   const handleReactivateConfirm = async () => {
     try {
-      const response = await unarchiveMutation.mutateAsync([giftId])
+      await unarchiveMutation.mutateAsync([giftId])
       ui.setIsReactivateOpen(false)
       ui.markActive()
       await pageQuery.refetch()
       openSuccess({
-        message: response.message || 'Your gift page has been successfully activated',
+        message: 'Your gift page has been successfully activated',
       })
     } catch {
       // Query error states will recover via refetch/invalidation.

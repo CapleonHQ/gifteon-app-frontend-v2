@@ -64,9 +64,7 @@ export interface VisitSharesChartData {
 }
 
 export interface VisitSharesQueryParams {
-  startDate: string
-  endDate: string
-  interval: 'daily' | 'weekly' | 'monthly'
+  filter: 'week' | 'month' | 'bi-annual' | 'annual'
 }
 
 export type SummaryCardItem = {
