@@ -37,6 +37,9 @@ type AuthContextValue = {
   status: AuthStatus
   user: UserProfile | null
   lastVerifiedAt: number | null
+  isOffline: boolean
+  connectivityBanner: 'offline' | 'online' | null
+  connectivityBannerSession: number
   refreshUser: () => Promise<void>
   clearUser: () => void
 }
@@ -77,11 +80,48 @@ const isCacheFresh = (lastVerifiedAt: number) => {
   return Date.now() - lastVerifiedAt < CACHE_TTL_MS
 }
 
+const isConnectivityError = (code: string) => {
+  return code === 'NETWORK_ERROR' || code === 'TIMEOUT'
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [status, setStatus] = useState<AuthStatus>('checking')
   const [user, setUser] = useState<UserProfile | null>(null)
   const [lastVerifiedAt, setLastVerifiedAt] = useState<number | null>(null)
+  const [isOffline, setIsOffline] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !window.navigator.onLine
+  })
+  const [connectivityBanner, setConnectivityBanner] = useState<
+    'offline' | 'online' | null
+  >(() => {
+    if (typeof window === 'undefined') return null
+    return window.navigator.onLine ? null : 'offline'
+  })
+  const [connectivityBannerSession, setConnectivityBannerSession] = useState(() => {
+    if (typeof window === 'undefined') return 0
+    return window.navigator.onLine ? 0 : 1
+  })
   const inFlightRef = useRef(false)
+  const userRef = useRef<UserProfile | null>(null)
+  const hasShownOfflineStateRef = useRef(
+    typeof window !== 'undefined' && !window.navigator.onLine
+  )
+
+  const markOffline = useCallback(() => {
+    setIsOffline((prev) => {
+      if (!prev) {
+        setConnectivityBanner('offline')
+        setConnectivityBannerSession((session) => session + 1)
+      }
+      return true
+    })
+    hasShownOfflineStateRef.current = true
+  }, [])
+
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
 
   const clearUser = useCallback(() => {
     setUser(null)
@@ -123,6 +163,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const profile = await getProfile()
       if (profile.data) {
         const now = Date.now()
+        setIsOffline(false)
         setUser(profile.data)
         setLastVerifiedAt(now)
         writeCache(profile.data, now)
@@ -132,6 +173,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       const apiError = toApiError(error)
+      const connectivityFailure =
+        isConnectivityError(apiError.code) ||
+        (typeof window !== 'undefined' && !window.navigator.onLine)
+
+      if (connectivityFailure) {
+        markOffline()
+        if (userRef.current) {
+          setStatus('authenticated')
+          return
+        }
+        return
+      }
+
       if (apiError.code === 'UNAUTHORIZED') {
         clearUser()
         return
@@ -140,7 +194,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       inFlightRef.current = false
     }
-  }, [clearUser])
+  }, [clearUser, markOffline])
 
   useEffect(() => {
     const cache = readCache()
@@ -152,15 +206,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return
     }
 
-    if (cache && isCacheFresh(cache.lastVerifiedAt)) {
+    if (cache) {
       setUser(cache.user)
       setLastVerifiedAt(cache.lastVerifiedAt)
       setStatus('authenticated')
+      if (isCacheFresh(cache.lastVerifiedAt) || !navigator.onLine) {
+        return
+      }
+    }
+
+    if (!navigator.onLine) {
+      markOffline()
       return
     }
 
     refreshUser()
-  }, [refreshUser, clearUser])
+  }, [refreshUser, clearUser, markOffline])
 
   useEffect(() => {
     const handleLogout = () => {
@@ -183,35 +244,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const handleOnline = () => {
+      setIsOffline(false)
+      if (hasShownOfflineStateRef.current) {
+        setConnectivityBanner('online')
+        setConnectivityBannerSession((session) => session + 1)
+      }
+      hasShownOfflineStateRef.current = false
       if (!lastVerifiedAt || !isCacheFresh(lastVerifiedAt)) {
         refreshUser()
       }
     }
 
+    const handleOffline = () => {
+      markOffline()
+    }
+
     const handleVisibility = () => {
-      if (!document.hidden && (!lastVerifiedAt || !isCacheFresh(lastVerifiedAt))) {
+      if (
+        !document.hidden &&
+        navigator.onLine &&
+        (!lastVerifiedAt || !isCacheFresh(lastVerifiedAt))
+      ) {
         refreshUser()
       }
     }
 
     window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
     document.addEventListener('visibilitychange', handleVisibility)
 
     return () => {
       window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
       document.removeEventListener('visibilitychange', handleVisibility)
     }
-  }, [lastVerifiedAt, refreshUser])
+  }, [lastVerifiedAt, refreshUser, markOffline])
 
   const value = useMemo<AuthContextValue>(
     () => ({
       status,
       user,
       lastVerifiedAt,
+      isOffline,
+      connectivityBanner,
+      connectivityBannerSession,
       refreshUser,
       clearUser,
     }),
-    [status, user, lastVerifiedAt, refreshUser, clearUser]
+    [
+      status,
+      user,
+      lastVerifiedAt,
+      isOffline,
+      connectivityBanner,
+      connectivityBannerSession,
+      refreshUser,
+      clearUser,
+    ]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

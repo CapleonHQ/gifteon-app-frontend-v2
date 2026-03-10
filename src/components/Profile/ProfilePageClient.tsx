@@ -115,6 +115,10 @@ const ProfilePageClient = () => {
     !isCheckingGiftseonTag &&
     !changeTagMutation.isPending
   const isLoadingProfile = profileQuery.isLoading && !profileData
+  const hasProfileError =
+    profileQuery.isError ||
+    profileQuery.isRefetchError ||
+    (!profileQuery.isLoading && !profileData)
   const { label: verificationLabel, tone: verificationTone } =
     useProfileVerificationBadge(kycStatusQuery.data?.data, profileData?.kycEnabled)
 
@@ -435,6 +439,29 @@ const ProfilePageClient = () => {
         <div className='flex flex-col items-center gap-3'>
           <div className='h-10 w-10 animate-spin rounded-full border-2 border-primary-200 border-t-primary-500' />
           <p className='text-sm text-grey-700'>Loading profile...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (hasProfileError) {
+    return (
+      <div className='w-full min-h-[50vh] flex items-center justify-center px-4'>
+        <div className='w-full max-w-[420px] rounded-[16px] border border-grey-100 bg-white px-6 py-8 text-center shadow-[0px_10px_18px_-2px_#10192812]'>
+          <h2 className='text-lg font-semibold text-blackish'>
+            We couldn&apos;t load your profile
+          </h2>
+          <p className='mt-2 text-sm leading-[22px] text-grey-600'>
+            Check your connection and try again.
+          </p>
+          <button
+            type='button'
+            onClick={() => profileQuery.refetch()}
+            disabled={profileQuery.isFetching}
+            className='mt-5 inline-flex items-center justify-center rounded-[10px] border border-grey-200 px-4 py-2 text-sm font-medium text-grey-800 transition-colors hover:bg-grey-50 disabled:cursor-not-allowed disabled:opacity-60'
+          >
+            {profileQuery.isFetching ? 'Retrying...' : 'Retry'}
+          </button>
         </div>
       </div>
     )
