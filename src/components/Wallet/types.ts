@@ -1,4 +1,7 @@
-import type { WalletTransactionStatus, WalletTransactionType } from '@/types/Wallet'
+import type {
+  WalletTransactionStatus,
+  WalletTransactionType,
+} from '@/types/Wallet'
 export type { WalletTransaction, WalletTransactionsData } from '@/types/Wallet'
 
 const capitalize = (value: string): string => {
@@ -8,11 +11,11 @@ const capitalize = (value: string): string => {
 
 export const transactionTypeStyles: Record<string, string> = {
   credit: 'bg-success-50 text-success-500',
-  debit: 'bg-grey-50 text-grey-500',
+  debit: 'bg-error-50 text-error-500',
 }
 
 export const transactionStatusStyles: Record<string, string> = {
-  completed: 'bg-success-50 text-success-500',
+  success: 'bg-success-50 text-success-500',
   pending: 'bg-warning-50 text-warning-600',
   failed: 'bg-error-50 text-error-500',
 }
@@ -29,4 +32,7 @@ export const getTransactionTypeLabel = (type: WalletTransactionType): string =>
 
 export const getTransactionStatusLabel = (
   status: WalletTransactionStatus
-): string => capitalize(status)
+): string => {
+  if (status === 'success') return 'Completed'
+  return capitalize(status)
+}

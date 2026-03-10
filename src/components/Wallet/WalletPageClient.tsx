@@ -35,6 +35,7 @@ const PAGE_SIZE = 10
 const EMPTY_TRANSACTIONS: WalletTransaction[] = []
 const TOPUP_ERROR_MESSAGE = 'Unable to initialize top-up. Please try again.'
 const WITHDRAWAL_ERROR_MESSAGE = 'Unable to initiate withdrawal. Please try again.'
+const WALLET_BALANCE_VISIBILITY_KEY = 'wallet-balance-hidden'
 
 const maskAccountNumber = (value: string): string => {
   if (value.length <= 4) return value
@@ -51,6 +52,12 @@ const WalletPageClient = () => {
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
+  const [isBalanceHidden, setIsBalanceHidden] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return (
+      window.localStorage.getItem(WALLET_BALANCE_VISIBILITY_KEY) === 'true'
+    )
+  })
   const { openSuccess } = useSuccessModal()
   const router = useRouter()
   const debouncedSearch = useDebounce(searchQuery.trim(), 400)
@@ -199,6 +206,19 @@ const WalletPageClient = () => {
           hasError={hasOverviewError}
           isRetrying={hasOverviewError && detailsQuery.isFetching}
           onRetry={() => detailsQuery.refetch()}
+          isBalanceHidden={isBalanceHidden}
+          onToggleBalanceVisibility={() => {
+            setIsBalanceHidden((prev) => {
+              const nextValue = !prev
+              if (typeof window !== 'undefined') {
+                window.localStorage.setItem(
+                  WALLET_BALANCE_VISIBILITY_KEY,
+                  String(nextValue)
+                )
+              }
+              return nextValue
+            })
+          }}
         />
       )}
 

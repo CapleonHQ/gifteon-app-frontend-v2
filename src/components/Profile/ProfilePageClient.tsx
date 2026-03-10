@@ -448,7 +448,7 @@ const ProfilePageClient = () => {
             profile={{
               firstName: activeProfile.firstName,
               lastName: activeProfile.lastName,
-              gender: activeProfile.gender,
+              giftseonTag: activeProfile.giftseonTag,
               profilePicture: profilePhotoPreviewUrl || activeProfile.profilePicture,
               verificationLabel,
               verificationTone,
