@@ -281,6 +281,39 @@ body {
   width: 100%;
 }
 
+.app-shell-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(96, 92, 90, 0.18) transparent;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(96, 92, 90, 0.16);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 92, 90, 0.32);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-thumb:active {
+  background: rgba(96, 92, 90, 0.42);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
 @keyframes shake-x {
   0%,
   100% {

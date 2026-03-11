@@ -7,6 +7,7 @@ import {
   type ClipboardEvent,
   type KeyboardEvent,
 } from 'react'
+import { useRouter } from 'next/navigation'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import {
@@ -17,21 +18,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import ShakeOnError from '@/components/common/ShakeOnError'
+import { useSuccessModal } from '@/context/SuccessModalContext'
+import { useWithdrawFromWallet } from '@/hooks/tanstack/wallet'
 import { toApiError } from '@/api/errorHelpers'
 import { CURRENCY_WITHDRAWAL_LIMITS } from '@/lib/constants/payments'
 import { formatCurrency } from '@/lib/utils/currency'
+import { maskAccountNumber } from './utils'
 
 const formatAmount = (value: string) => {
   if (!value) return ''
   const numeric = value.replace(/\D/g, '')
   if (!numeric) return ''
   return Number(numeric).toLocaleString('en-US')
-}
-
-const maskAccountNumber = (value: string) => {
-  if (value.length <= 4) return value
-  const suffix = value.slice(-4)
-  return `${'*'.repeat(Math.max(0, value.length - 4))}${suffix}`
 }
 
 const InputField = ({
@@ -90,18 +88,11 @@ type WalletWithdrawModalProps = {
     accountName: string
   }>
   defaultBankId?: string
-  onSubmit: (payload: {
-    amount: number
-    bankId: string
-    pin: string
-  }) => Promise<void>
-  onResetError: () => void
-  isSubmitting: boolean
-  errorMessage?: string
   isLoadingBanks: boolean
-  showKycCta?: boolean
-  onKycCta?: () => void
 }
+
+const WITHDRAWAL_ERROR_MESSAGE =
+  'Unable to initiate withdrawal. Please try again.'
 
 const WalletWithdrawModal = ({
   isOpen,
@@ -110,14 +101,11 @@ const WalletWithdrawModal = ({
   currency,
   bankAccounts,
   defaultBankId,
-  onSubmit,
-  onResetError,
-  isSubmitting,
-  errorMessage,
   isLoadingBanks,
-  showKycCta = false,
-  onKycCta,
 }: WalletWithdrawModalProps) => {
+  const router = useRouter()
+  const { openSuccess } = useSuccessModal()
+  const withdrawMutation = useWithdrawFromWallet()
   const [step, setStep] = useState<'form' | 'pin'>('form')
   const [amountInput, setAmountInput] = useState('')
   const [selectedBank, setSelectedBank] = useState('')
@@ -154,6 +142,22 @@ const WalletWithdrawModal = ({
     isBelowMinimum ||
     isAboveMaximum
   const isPinComplete = pin.every((digit) => digit.length === 1)
+  const errorMessage = withdrawMutation.isError
+    ? toApiError(withdrawMutation.error).message || WITHDRAWAL_ERROR_MESSAGE
+    : undefined
+  const withdrawalApiError = withdrawMutation.isError
+    ? toApiError(withdrawMutation.error)
+    : null
+  const showKycCta = Boolean(
+    withdrawalApiError &&
+      (withdrawalApiError.code === 'FORBIDDEN' ||
+        withdrawalApiError.message
+          .toLowerCase()
+          .includes('verify your identity') ||
+        withdrawalApiError.message.toLowerCase().includes('kyc') ||
+        withdrawalApiError.message.toLowerCase().includes('nin') ||
+        withdrawalApiError.message.toLowerCase().includes('bvn'))
+  )
   const isPinError = errorMessage?.toLowerCase().includes('pin') ?? false
   const pinErrorMessage = isPinError ? errorMessage : undefined
   const formErrorMessage = isPinError ? undefined : errorMessage
@@ -186,14 +190,14 @@ const WalletWithdrawModal = ({
     setSelectedBank('')
     setPin(['', '', '', ''])
     setIsPinModalOpen(false)
-    onResetError()
+    withdrawMutation.reset()
   }
 
   const handlePinChange = (index: number, value: string) => {
     const next = [...pin]
     next[index] = value.replace(/[^0-9]/g, '').slice(0, 1)
     setPin(next)
-    onResetError()
+    withdrawMutation.reset()
     if (value && pinRefs.current[index + 1]) {
       pinRefs.current[index + 1]?.focus()
     }
@@ -220,13 +224,13 @@ const WalletWithdrawModal = ({
     if (!pasted) return
     const next = pasted.split('').slice(0, 4)
     setPin([next[0] || '', next[1] || '', next[2] || '', next[3] || ''])
-    onResetError()
+    withdrawMutation.reset()
     const targetIndex = Math.min(pasted.length, 4) - 1
     pinRefs.current[targetIndex]?.focus()
   }
 
   const openPinStep = () => {
-    onResetError()
+    withdrawMutation.reset()
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       setIsPinModalOpen(true)
       return
@@ -235,12 +239,18 @@ const WalletWithdrawModal = ({
   }
 
   const handleWithdrawSubmit = async () => {
-    if (!isPinComplete || isSubmitting) return
+    if (!isPinComplete || withdrawMutation.isPending) return
     try {
-      await onSubmit({
+      const response = await withdrawMutation.mutateAsync({
         amount: amountValue,
         bankId: effectiveSelectedBank,
         pin: pin.join(''),
+      })
+      openSuccess({
+        message:
+          response.data?.message ||
+          response.message ||
+          'Withdrawal initiated successfully.',
       })
       handleClose()
     } catch (error: unknown) {
@@ -279,15 +289,15 @@ const WalletWithdrawModal = ({
           </button>
           <button
             type='button'
-            disabled={!isPinComplete || isSubmitting}
+            disabled={!isPinComplete || withdrawMutation.isPending}
             onClick={handleWithdrawSubmit}
             className={`flex-1 py-2.5 rounded-[10px] font-medium text-white transition-colors ${
-              isPinComplete && !isSubmitting
+              isPinComplete && !withdrawMutation.isPending
                 ? 'bg-primary-500 hover:bg-primary-600'
                 : 'bg-primary-200 cursor-not-allowed'
             }`}
           >
-            {isSubmitting ? 'Processing...' : 'Confirm Withdrawal'}
+            {withdrawMutation.isPending ? 'Processing...' : 'Confirm Withdrawal'}
           </button>
         </div>
       )
@@ -364,7 +374,7 @@ const WalletWithdrawModal = ({
           value={amountInput}
           onChange={(value) => {
             setAmountInput(value)
-            onResetError()
+            withdrawMutation.reset()
           }}
           placeholder='0.00'
           formatAsAmount
@@ -394,7 +404,7 @@ const WalletWithdrawModal = ({
             value={effectiveSelectedBank}
             onValueChange={(value) => {
               setSelectedBank(value)
-              onResetError()
+              withdrawMutation.reset()
             }}
             disabled={isLoadingBanks || !hasConnectedBanks}
           >
@@ -475,10 +485,14 @@ const WalletWithdrawModal = ({
         {formErrorMessage ? (
           <div className='space-y-2'>
             <p className='text-xs text-error-500'>{formErrorMessage}</p>
-            {showKycCta && onKycCta ? (
+            {showKycCta ? (
               <button
                 type='button'
-                onClick={onKycCta}
+                onClick={() => {
+                  onClose()
+                  withdrawMutation.reset()
+                  router.push('/profile?modal=kyc&source=wallet')
+                }}
                 className='text-xs font-medium text-primary-500 underline underline-offset-2'
               >
                 Complete verification
@@ -634,15 +648,15 @@ const WalletWithdrawModal = ({
                 </button>
                 <button
                   type='button'
-                  disabled={!isPinComplete || isSubmitting}
+                  disabled={!isPinComplete || withdrawMutation.isPending}
                   onClick={handleWithdrawSubmit}
                   className={`flex-1 py-2.5 rounded-[10px] font-medium text-white transition-colors ${
-                    isPinComplete && !isSubmitting
+                    isPinComplete && !withdrawMutation.isPending
                       ? 'bg-primary-500 hover:bg-primary-600'
                       : 'bg-primary-200 cursor-not-allowed'
                   }`}
                 >
-                  {isSubmitting ? 'Processing...' : 'Confirm'}
+                  {withdrawMutation.isPending ? 'Processing...' : 'Confirm'}
                 </button>
               </div>
               <ShakeOnError

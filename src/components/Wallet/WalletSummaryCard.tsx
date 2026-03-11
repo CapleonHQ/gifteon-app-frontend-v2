@@ -5,8 +5,10 @@ import { type ReactNode } from 'react'
 type WalletSummaryCardProps = {
   title: string
   value: string
+  valueContent?: ReactNode
   subtitle: string
   icon?: ReactNode
+  titleAction?: ReactNode
   actions?: ReactNode
   hasBg?: boolean
 }
@@ -14,8 +16,10 @@ type WalletSummaryCardProps = {
 const WalletSummaryCard = ({
   title,
   value,
+  valueContent,
   subtitle,
   icon,
+  titleAction,
   actions,
   hasBg,
 }: WalletSummaryCardProps) => {
@@ -27,14 +31,19 @@ const WalletSummaryCard = ({
     >
       <div className='flex flex-col gap-3'>
         <div className='flex items-start justify-between gap-2'>
-          <p className={`text-sm ${hasBg ? 'text-grey-600' : 'text-grey-400'}`}>
-            {title}
-          </p>
-          {icon && <span className='w-4 h-4'>{icon}</span>}
+          <div className='flex items-center gap-2'>
+            <p className={`text-sm ${hasBg ? 'text-grey-600' : 'text-grey-400'}`}>
+              {title}
+            </p>
+            {titleAction}
+          </div>
+          {icon && <span className='w-4 h-4 shrink-0'>{icon}</span>}
         </div>
-        <p className='text-[28px] leading-8 font-semibold text-blackish'>
-          {value}
-        </p>
+        {valueContent ?? (
+          <p className='text-[28px] leading-8 font-semibold text-blackish'>
+            {value}
+          </p>
+        )}
       </div>
       <div className='flex flex-col gap-1'>
         <div className='flex justify-between items-end'>

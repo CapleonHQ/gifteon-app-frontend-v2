@@ -144,7 +144,7 @@ const Header = () => {
   return (
     <MotionConfig reducedMotion='user'>
       <motion.header
-        className={`sticky top-0 z-50 border-b-[0.2px] border-grey-50 bg-base-bg transition-[box-shadow,backdrop-filter,background-color] duration-300 ${
+        className={`sticky top-0 z-50 border-b-[0.2px] px-4 md:px-8 lg:px-20 border-grey-50 bg-base-bg transition-[box-shadow,backdrop-filter,background-color] duration-300 ${
           isScrolled
             ? isMobileMenuOpen
               ? 'shadow-[0px_8px_26px_-14px_#10192833]'
@@ -155,7 +155,7 @@ const Header = () => {
         animate='show'
         variants={headerVariants}
       >
-        <div className='mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 py-4 lg:py-5 px-4 md:px-8 xl:px-20'>
+        <div className='mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 py-4 lg:py-5'>
           <Link href='/' className='h-10 w-[104px] shrink-0'>
             <Image
               src='/assets/images/logo/logo.svg'
@@ -273,7 +273,7 @@ const Header = () => {
                 <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
                   <Link
                     href='/login'
-                    className='text-base font-medium leading-5 text-primary-500 transition-colors hover:text-primary-600'
+                    className='xl:w-[110px] inline-flex items-center justify-center text-base font-medium leading-5 text-primary-500 transition-colors hover:text-primary-600'
                   >
                     Log In
                   </Link>

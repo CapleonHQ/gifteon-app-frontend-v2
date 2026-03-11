@@ -9,6 +9,10 @@ export interface WalletTransactionsParams extends PaginationParams {
   endDate?: string
 }
 
+export interface WalletWithdrawalsParams extends PaginationParams {
+  status?: string
+}
+
 export interface WithdrawRequestBody {
   amount: number
   bankId: string
@@ -49,6 +53,47 @@ export interface WalletDetails {
   totalWithdrawn: number
   currency: string
   isLocked: boolean
+}
+
+export interface WalletWithdrawalDeviceInfo {
+  os: string
+  device: string
+  browser: string
+  isMobile: boolean
+}
+
+export interface WalletWithdrawalApiItem {
+  id: string
+  userId: string
+  walletId: string
+  amount: string
+  currency: string
+  bankId: string
+  bankName: string
+  accountNumber: string
+  accountName: string
+  bankCode: string
+  reference: string
+  status: string
+  scheduledAt: string
+  processedAt: string | null
+  kycLevelAtRequest: number
+  ipAddress: string
+  userAgent: string
+  deviceInfo: WalletWithdrawalDeviceInfo
+  walletTransactionId: string | null
+  failedReason: string | null
+  metadata: {
+    balanceAfter?: number | string
+    balanceBefore?: number | string
+  } | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WalletWithdrawalsApiData {
+  withdrawals: WalletWithdrawalApiItem[]
+  pagination: WalletTransactionsPagination
 }
 
 export interface WalletTransactionApiItem {
@@ -95,6 +140,36 @@ export type WalletTransaction = {
 
 export type WalletTransactionsData = {
   transactions: WalletTransaction[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+export type WalletWithdrawalStatus = string
+
+export type WalletWithdrawal = {
+  id: string
+  amount: number
+  currency: string
+  bankName: string
+  accountNumber: string
+  accountName: string
+  reference: string
+  status: WalletWithdrawalStatus
+  scheduledAt: string
+  processedAt: string | null
+  failedReason: string | null
+  createdAt: string
+  updatedAt: string
+  balanceAfter: number
+  balanceBefore: number
+}
+
+export type WalletWithdrawalsData = {
+  withdrawals: WalletWithdrawal[]
   pagination: {
     page: number
     limit: number

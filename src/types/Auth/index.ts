@@ -2,6 +2,7 @@ export interface RegisterRequestBody {
   firstName: string
   lastName: string
   email: string
+  referralCode?: string
   gender?: string
   country?: string
   password?: string

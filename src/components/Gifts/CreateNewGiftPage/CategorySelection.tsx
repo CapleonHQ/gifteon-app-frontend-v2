@@ -23,13 +23,13 @@ type CategorySelectionProps = {
 }
 
 const LoadingCards = () => (
-  <div className='mb-8 grid grid-cols-1 gap-5 md:grid-cols-2'>
+  <div className='mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4'>
     {Array.from({ length: 4 }).map((_, index) => (
       <div
         key={index}
         className='overflow-hidden rounded-[20px] border border-grey-100 bg-white'
       >
-        <div className='h-52 animate-pulse bg-grey-100' />
+        <div className='aspect-4/3 animate-pulse bg-grey-100 lg:aspect-5/4' />
         <div className='space-y-3 p-5'>
           <div className='h-5 w-2/3 animate-pulse rounded bg-grey-100' />
           <div className='h-4 w-full animate-pulse rounded bg-grey-50' />
@@ -97,7 +97,7 @@ export default function CategorySelection({
       ) : null}
 
       {!isLoading && !isError && categories.length > 0 ? (
-        <div className='mb-8 grid grid-cols-1 gap-5 md:grid-cols-2'>
+        <div className='mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4'>
           {categories.map((category) => {
             const isSelected = category.id === selectedCategoryId
 
@@ -106,49 +106,54 @@ export default function CategorySelection({
                 key={category.id}
                 type='button'
                 onClick={() => onSelectCategory(category.id)}
-                className={`group overflow-hidden rounded-[20px] border text-left transition-all ${
-                  isSelected
-                    ? 'border-primary-500 bg-primary-50/40 shadow-[0px_16px_30px_-18px_#2E319280]'
-                    : 'border-grey-100 bg-white hover:border-grey-200 hover:shadow-[0px_12px_24px_-18px_#10192830]'
-                }`}
+                className='group relative rounded-[20px] text-left transition-all'
               >
-                <div className='relative h-52 overflow-hidden'>
-                  <Image
-                    src={category.image}
-                    alt={category.title}
-                    fill
-                    className='object-cover transition-transform duration-500 group-hover:scale-[1.03]'
-                  />
-                  <div className='absolute inset-0 bg-linear-to-t from-[#10192866] via-transparent to-transparent' />
-                  <div className='absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-grey-700'>
-                    {category.sourceName}
+                {isSelected ? (
+                  <div className='absolute -right-1 -top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-success-400'>
+                    <svg
+                      className='h-4 w-4 text-white'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={3}
+                        d='M5 13l4 4L19 7'
+                      />
+                    </svg>
                   </div>
-                  {isSelected ? (
-                    <div className='absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg'>
-                      <svg
-                        className='h-4 w-4'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={3}
-                          d='M5 13l4 4L19 7'
-                        />
-                      </svg>
-                    </div>
-                  ) : null}
-                </div>
+                ) : null}
 
-                <div className='p-5'>
+                <div
+                  className={`flex h-full flex-col overflow-hidden rounded-[20px] border bg-white transition-all ${
+                    isSelected
+                      ? 'border-success-400 shadow-[0px_1.5px_4px_-1px_#10192812]'
+                      : 'border-grey-100 hover:border-grey-200 hover:shadow-[0px_12px_24px_-18px_#10192830]'
+                  }`}
+                >
+                  <div className='relative aspect-4/3 overflow-hidden lg:aspect-5/4'>
+                    <Image
+                      src={category.image}
+                      alt={category.title}
+                      fill
+                      className='object-cover transition-transform duration-500 group-hover:scale-[1.03]'
+                    />
+                    <div className='absolute inset-0 bg-linear-to-t from-[#10192866] via-transparent to-transparent' />
+                    <div className='absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-grey-700'>
+                      {category.sourceName}
+                    </div>
+                  </div>
+
+                <div className='flex flex-1 flex-col p-5'>
                   <h3 className='text-lg font-semibold text-blackish'>
                     {category.title}
                   </h3>
-                  <p className='mt-2 text-sm leading-6 text-grey-700'>
+                  <p className='mt-2 line-clamp-3 text-sm leading-6 text-grey-700'>
                     {category.description}
                   </p>
+                </div>
                 </div>
               </button>
             )

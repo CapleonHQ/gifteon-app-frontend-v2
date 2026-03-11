@@ -23,6 +23,7 @@ const RegisterPage = () => {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [country, setCountry] = useState('NG')
   const [gender, setGender] = useState<Gender>('')
   const [isLoading, setIsLoading] = useState(false)
@@ -92,6 +93,7 @@ const RegisterPage = () => {
         firstName,
         lastName,
         email,
+        referralCode: referralCode.trim() || undefined,
         gender: gender ? `${gender[0].toUpperCase()}${gender.slice(1)}` : undefined,
         country,
       })
@@ -223,6 +225,7 @@ const RegisterPage = () => {
             firstName={firstName}
             lastName={lastName}
             email={email}
+            referralCode={referralCode}
             country={country}
             gender={gender}
             emailError={emailError}
@@ -232,6 +235,7 @@ const RegisterPage = () => {
             onFirstNameChange={(event) => setFirstName(event.target.value)}
             onLastNameChange={(event) => setLastName(event.target.value)}
             onEmailChange={handleEmailChange}
+            onReferralCodeChange={(event) => setReferralCode(event.target.value)}
             onCountryChange={(value) => setCountry(value)}
             onGenderChange={(value) => setGender(value)}
             onRegister={handleRegister}

@@ -6,6 +6,8 @@ import {
   WalletDetails,
   WalletWithdrawalData,
   WalletTopupLocalsResponse,
+  WalletWithdrawalsApiData,
+  WalletWithdrawalsParams,
   WalletTransactionsApiData,
   WalletTransactionsParams,
   WithdrawRequestBody,
@@ -27,6 +29,14 @@ export const getWalletTransactions = async (
   return resp.data
 }
 
+export const getWalletWithdrawals = async (
+  params?: WalletWithdrawalsParams
+): Promise<ApiResponse<WalletWithdrawalsApiData>> => {
+  const resp: AxiosResponse<ApiResponse<WalletWithdrawalsApiData>> =
+    await apiService.appPrivate.get('/wallet/withdrawals', { params })
+  return resp.data
+}
+
 export const getWalletOverview = async (): Promise<
   ApiResponse<Record<string, unknown>>
 > => {
@@ -40,6 +50,14 @@ export const withdrawFromWallet = async (
 ): Promise<ApiResponse<WalletWithdrawalData>> => {
   const resp: AxiosResponse<ApiResponse<WalletWithdrawalData>> =
     await apiService.appPrivate.post('/wallet/withdraw', data)
+  return resp.data
+}
+
+export const cancelWalletWithdrawal = async (
+  withdrawalId: string
+): Promise<ApiResponse<WalletWithdrawalData>> => {
+  const resp: AxiosResponse<ApiResponse<WalletWithdrawalData>> =
+    await apiService.appPrivate.post(`/wallet/withdrawals/${withdrawalId}/cancel`)
   return resp.data
 }
 

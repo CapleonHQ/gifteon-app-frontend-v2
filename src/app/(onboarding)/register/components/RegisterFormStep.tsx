@@ -18,6 +18,7 @@ type RegisterFormStepProps = {
   firstName: string
   lastName: string
   email: string
+  referralCode: string
   country: string
   gender: 'male' | 'female' | ''
   emailError: string
@@ -27,6 +28,7 @@ type RegisterFormStepProps = {
   onFirstNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onLastNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void
+  onReferralCodeChange: (event: ChangeEvent<HTMLInputElement>) => void
   onCountryChange: (country: string) => void
   onGenderChange: (gender: 'male' | 'female') => void
   onRegister: (event: SyntheticEvent) => void
@@ -38,6 +40,7 @@ const RegisterFormStep = ({
   firstName,
   lastName,
   email,
+  referralCode,
   country,
   gender,
   emailError,
@@ -47,6 +50,7 @@ const RegisterFormStep = ({
   onFirstNameChange,
   onLastNameChange,
   onEmailChange,
+  onReferralCodeChange,
   onCountryChange,
   onGenderChange,
   onRegister,
@@ -191,6 +195,24 @@ const RegisterFormStep = ({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className='flex flex-col gap-1'>
+          <label
+            htmlFor='referralCode'
+            className='text-sm font-medium leading-[145%] text-grey-900'
+          >
+            Referral Code{' '}
+            <span className='text-grey-500 font-normal'>(Optional)</span>
+          </label>
+          <input
+            type='text'
+            id='referralCode'
+            value={referralCode}
+            onChange={onReferralCodeChange}
+            placeholder='Enter referral code'
+            className='w-full text-sm px-3 py-3.5 border border-grey-50 rounded-[12px] outline-none focus:ring-1 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-blackish placeholder-grey-400'
+          />
         </div>
 
         <div className='flex flex-col gap-2'>

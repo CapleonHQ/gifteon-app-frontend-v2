@@ -61,8 +61,9 @@ const WalletTransactionsHeader = ({
             </SelectTrigger>
             <SelectContent className='rounded-[12px] border-grey-50'>
               <SelectItem value='all'>All Status</SelectItem>
-              <SelectItem value='completed'>Completed</SelectItem>
+              <SelectItem value='success'>Success</SelectItem>
               <SelectItem value='pending'>Pending</SelectItem>
+              <SelectItem value='failed'>Failed</SelectItem>
             </SelectContent>
           </Select>
         </div>

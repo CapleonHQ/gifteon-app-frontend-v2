@@ -2,6 +2,9 @@ import type { WalletTransactionsApiData } from '@/types/Wallet'
 import type {
   WalletTransaction,
   WalletTransactionsData,
+  WalletWithdrawal,
+  WalletWithdrawalsApiData,
+  WalletWithdrawalsData,
 } from '@/types/Wallet'
 
 const toNumber = (value: string | number | undefined): number => {
@@ -46,6 +49,38 @@ const emptyWalletTransactionsData: WalletTransactionsData = {
   },
 }
 
+const toUiWithdrawal = (
+  item: WalletWithdrawalsApiData['withdrawals'][number]
+): WalletWithdrawal => {
+  return {
+    id: item.id,
+    amount: toNumber(item.amount),
+    currency: item.currency,
+    bankName: item.bankName,
+    accountNumber: item.accountNumber,
+    accountName: item.accountName,
+    reference: item.reference,
+    status: item.status.trim().toLowerCase(),
+    scheduledAt: item.scheduledAt,
+    processedAt: item.processedAt,
+    failedReason: item.failedReason,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    balanceAfter: toNumber(item.metadata?.balanceAfter),
+    balanceBefore: toNumber(item.metadata?.balanceBefore),
+  }
+}
+
+const emptyWalletWithdrawalsData: WalletWithdrawalsData = {
+  withdrawals: [],
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  },
+}
+
 export const mapWalletTransactionsData = (
   data: WalletTransactionsApiData | undefined
 ): WalletTransactionsData => {
@@ -66,4 +101,20 @@ export const parseWalletBalance = (
   value: string | number | undefined
 ): number => {
   return toNumber(value)
+}
+
+export const mapWalletWithdrawalsData = (
+  data: WalletWithdrawalsApiData | undefined
+): WalletWithdrawalsData => {
+  if (!data) return emptyWalletWithdrawalsData
+
+  return {
+    withdrawals: data.withdrawals.map(toUiWithdrawal),
+    pagination: {
+      page: data.pagination.page,
+      limit: data.pagination.limit,
+      total: data.pagination.total,
+      totalPages: data.pagination.totalPages,
+    },
+  }
 }

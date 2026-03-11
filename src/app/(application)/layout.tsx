@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { resolvePageTitle } from '@/lib/utils/pageTitle'
 import { MobileBackProvider } from '@/components/Layout/MobileTitleContext'
 import ApplicationShell from '@/components/Layout/ApplicationShell'
+import OfflineBanner from '@/components/Layout/OfflineBanner'
 import { SuccessModalProvider } from '@/context/SuccessModalContext'
 import AuthGuard from '@/components/Auth/AuthGuard'
 import ApplicationPinGuard from '@/components/Dashboard/ApplicationPinGuard'
@@ -38,7 +39,10 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
           }}
         />
         <AuthGuard>
-          <ApplicationShell pageTitle={pageTitle}>{children}</ApplicationShell>
+          <ApplicationShell pageTitle={pageTitle}>
+            <OfflineBanner />
+            {children}
+          </ApplicationShell>
           <ApplicationPinGuard />
         </AuthGuard>
       </SuccessModalProvider>
