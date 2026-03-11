@@ -648,15 +648,15 @@ const WalletWithdrawModal = ({
                 </button>
                 <button
                   type='button'
-                  disabled={!isPinComplete || isSubmitting}
+                  disabled={!isPinComplete || withdrawMutation.isPending}
                   onClick={handleWithdrawSubmit}
                   className={`flex-1 py-2.5 rounded-[10px] font-medium text-white transition-colors ${
-                    isPinComplete && !isSubmitting
+                    isPinComplete && !withdrawMutation.isPending
                       ? 'bg-primary-500 hover:bg-primary-600'
                       : 'bg-primary-200 cursor-not-allowed'
                   }`}
                 >
-                  {isSubmitting ? 'Processing...' : 'Confirm'}
+                  {withdrawMutation.isPending ? 'Processing...' : 'Confirm'}
                 </button>
               </div>
               <ShakeOnError
