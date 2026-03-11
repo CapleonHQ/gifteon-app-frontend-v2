@@ -4,26 +4,25 @@ import { useState } from 'react'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import { Loader2 } from 'lucide-react'
+import { useTopupWalletLocals } from '@/hooks/tanstack/wallet'
 import { MIN_WALLET_TOPUP_AMOUNT } from '@/lib/constants/payments'
+import { storePaymentReturnPath } from '@/lib/payments/paystackReturn'
 
 type WalletTopUpModalProps = {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (amount: number) => void
-  isSubmitting?: boolean
-  errorMessage?: string
   minAmount?: number
 }
+
+const TOPUP_ERROR_MESSAGE = 'Unable to initialize top-up. Please try again.'
 
 const WalletTopUpModal = ({
   isOpen,
   onClose,
-  onSubmit,
-  isSubmitting = false,
-  errorMessage,
   minAmount = MIN_WALLET_TOPUP_AMOUNT,
 }: WalletTopUpModalProps) => {
   const [amountInput, setAmountInput] = useState('')
+  const topupMutation = useTopupWalletLocals()
 
   if (!isOpen) return null
 
@@ -32,16 +31,33 @@ const WalletTopUpModal = ({
     : ''
   const amountValue = Number(amountInput.replace(/\D/g, ''))
   const isBelowMinimum = amountValue > 0 && amountValue < minAmount
-  const isDisabled = amountValue <= 0 || isBelowMinimum || isSubmitting
+  const isDisabled =
+    amountValue <= 0 || isBelowMinimum || topupMutation.isPending
+  const errorMessage =
+    topupMutation.error instanceof Error
+      ? topupMutation.error.message
+      : topupMutation.isError
+      ? TOPUP_ERROR_MESSAGE
+      : undefined
 
   const handleClose = () => {
     setAmountInput('')
+    topupMutation.reset()
     onClose()
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isDisabled) return
-    onSubmit(amountValue)
+
+    try {
+      const data = await topupMutation.mutateAsync(amountValue)
+      if (typeof window !== 'undefined') {
+        storePaymentReturnPath(data.reference)
+        window.location.assign(data.authorizationUrl)
+      }
+    } catch {
+      // Error state is rendered inline.
+    }
   }
 
   const actions = (
@@ -59,7 +75,7 @@ const WalletTopUpModal = ({
         disabled={isDisabled}
         className='flex-1 py-2.5 rounded-[12px] font-medium text-white bg-primary-400 hover:bg-primary-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2'
       >
-        {isSubmitting ? (
+        {topupMutation.isPending ? (
           <>
             <Loader2 className='w-4 h-4 animate-spin' />
             Initializing...

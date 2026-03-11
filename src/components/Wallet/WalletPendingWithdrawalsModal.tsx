@@ -5,7 +5,10 @@ import { format, formatDistanceToNowStrict } from 'date-fns'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import ClockIcon from '@/assets/icons/ClockIcon'
 import CloseIcon from '@/assets/icons/CloseIcon'
+import WalletCancelWithdrawalConfirmModal from './WalletCancelWithdrawalConfirmModal'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
+import { useSuccessModal } from '@/context/SuccessModalContext'
+import { useCancelWalletWithdrawal } from '@/hooks/tanstack/wallet'
 import { formatCurrency } from '@/lib/utils/currency'
 import type { WalletWithdrawal } from '@/types/Wallet'
 
@@ -13,8 +16,6 @@ type WalletPendingWithdrawalsModalProps = {
   isOpen: boolean
   onClose: () => void
   withdrawals: WalletWithdrawal[]
-  isCancelling?: boolean
-  onCancel: (withdrawal: WalletWithdrawal) => void
 }
 
 const formatDateTime = (value: string) => {
@@ -56,12 +57,14 @@ const WalletPendingWithdrawalsModal = ({
   isOpen,
   onClose,
   withdrawals,
-  isCancelling = false,
-  onCancel,
 }: WalletPendingWithdrawalsModalProps) => {
+  const { openSuccess } = useSuccessModal()
+  const cancelWithdrawalMutation = useCancelWalletWithdrawal()
   const [selectedWithdrawalId, setSelectedWithdrawalId] = useState<
     string | null
   >(null)
+  const [withdrawalToCancel, setWithdrawalToCancel] =
+    useState<WalletWithdrawal | null>(null)
 
   const selectedWithdrawal = useMemo(() => {
     return (
@@ -71,14 +74,34 @@ const WalletPendingWithdrawalsModal = ({
     )
   }, [selectedWithdrawalId, withdrawals])
 
+  const handleClose = () => {
+    setWithdrawalToCancel(null)
+    cancelWithdrawalMutation.reset()
+    onClose()
+  }
+
+  const handleCancelPendingWithdrawal = async () => {
+    if (!withdrawalToCancel) return
+
+    const response = await cancelWithdrawalMutation.mutateAsync(
+      withdrawalToCancel.id
+    )
+
+    setWithdrawalToCancel(null)
+    openSuccess({
+      message: response.message || 'Withdrawal cancelled successfully.',
+    })
+    handleClose()
+  }
+
   const header = (
     <div className='relative'>
-      <button
-        type='button'
-        onClick={onClose}
-        className='absolute -right-5 -top-5 hidden h-9 w-9 items-center justify-center rounded-full hover:bg-grey-50 lg:flex'
-        aria-label='Close'
-      >
+        <button
+          type='button'
+          onClick={handleClose}
+          className='absolute -right-5 -top-5 hidden h-9 w-9 items-center justify-center rounded-full hover:bg-grey-50 lg:flex'
+          aria-label='Close'
+        >
         <span className='h-5 w-5 text-grey-700'>
           <CloseIcon />
         </span>
@@ -87,7 +110,7 @@ const WalletPendingWithdrawalsModal = ({
       <div className='flex items-center gap-2 lg:hidden'>
         <button
           type='button'
-          onClick={onClose}
+          onClick={handleClose}
           className='h-6 w-6'
           aria-label='Go back'
         >
@@ -202,11 +225,13 @@ const WalletPendingWithdrawalsModal = ({
           <p className='text-sm text-grey-500'>Need to stop this payout?</p>
           <button
             type='button'
-            onClick={() => onCancel(selectedWithdrawal)}
-            disabled={isCancelling}
+            onClick={() => setWithdrawalToCancel(selectedWithdrawal)}
+            disabled={cancelWithdrawalMutation.isPending}
             className='inline-flex items-center justify-center rounded-[10px] px-0 py-1 text-sm font-medium text-error-500 transition-colors hover:text-error-600 disabled:cursor-not-allowed disabled:opacity-60'
           >
-            {isCancelling ? 'Cancelling request...' : 'Cancel request'}
+            {cancelWithdrawalMutation.isPending
+              ? 'Cancelling request...'
+              : 'Cancel request'}
           </button>
         </div>
       </div>
@@ -223,13 +248,25 @@ const WalletPendingWithdrawalsModal = ({
   )
 
   return (
-    <ResponsiveModal
-      isOpen={isOpen}
-      onClose={onClose}
-      header={header}
-      body={body}
-      desktopMaxWidthClass='max-w-[640px]'
-    />
+    <>
+      <ResponsiveModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        header={header}
+        body={body}
+        desktopMaxWidthClass='max-w-[640px]'
+      />
+      <WalletCancelWithdrawalConfirmModal
+        isOpen={Boolean(withdrawalToCancel)}
+        onClose={() => {
+          if (cancelWithdrawalMutation.isPending) return
+          setWithdrawalToCancel(null)
+        }}
+        withdrawal={withdrawalToCancel}
+        isSubmitting={cancelWithdrawalMutation.isPending}
+        onConfirm={handleCancelPendingWithdrawal}
+      />
+    </>
   )
 }
 
