@@ -14,12 +14,17 @@ import WalletTransactionsSkeleton from './WalletTransactionsSkeleton'
 import WalletTopUpModal from './WalletTopUpModal'
 import WalletWithdrawModal from './WalletWithdrawModal'
 import WalletDisputeModal from './WalletDisputeModal'
+import WalletPendingWithdrawalsBanner from './WalletPendingWithdrawalsBanner'
+import WalletPendingWithdrawalsModal from './WalletPendingWithdrawalsModal'
+import WalletCancelWithdrawalConfirmModal from './WalletCancelWithdrawalConfirmModal'
 import WalletSummarySkeleton from './WalletSummarySkeleton'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import {
+  useCancelWalletWithdrawal,
   useWalletDetails,
   useTopupWalletLocals,
   useWithdrawFromWallet,
+  useWalletWithdrawals,
   useWalletTransactions,
 } from '@/hooks/tanstack/wallet'
 import { useConnectedBanks } from '@/hooks/tanstack/banks'
@@ -30,11 +35,13 @@ import { storePaymentReturnPath } from '@/lib/payments/paystackReturn'
 import { MIN_WALLET_TOPUP_AMOUNT } from '@/lib/constants/payments'
 import { toApiError } from '@/api/errorHelpers'
 import { type WalletTransaction } from './types'
+import type { WalletWithdrawal } from '@/types/Wallet'
 
 const PAGE_SIZE = 10
 const EMPTY_TRANSACTIONS: WalletTransaction[] = []
 const TOPUP_ERROR_MESSAGE = 'Unable to initialize top-up. Please try again.'
-const WITHDRAWAL_ERROR_MESSAGE = 'Unable to initiate withdrawal. Please try again.'
+const WITHDRAWAL_ERROR_MESSAGE =
+  'Unable to initiate withdrawal. Please try again.'
 const WALLET_BALANCE_VISIBILITY_KEY = 'wallet-balance-hidden'
 
 const maskAccountNumber = (value: string): string => {
@@ -47,6 +54,10 @@ const WalletPageClient = () => {
   const [isTopUpOpen, setIsTopUpOpen] = useState(false)
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
   const [isDisputeOpen, setIsDisputeOpen] = useState(false)
+  const [isPendingWithdrawalsOpen, setIsPendingWithdrawalsOpen] =
+    useState(false)
+  const [withdrawalToCancel, setWithdrawalToCancel] =
+    useState<WalletWithdrawal | null>(null)
   const [openMobileId, setOpenMobileId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
@@ -54,9 +65,7 @@ const WalletPageClient = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [isBalanceHidden, setIsBalanceHidden] = useState(() => {
     if (typeof window === 'undefined') return false
-    return (
-      window.localStorage.getItem(WALLET_BALANCE_VISIBILITY_KEY) === 'true'
-    )
+    return window.localStorage.getItem(WALLET_BALANCE_VISIBILITY_KEY) === 'true'
   })
   const { openSuccess } = useSuccessModal()
   const router = useRouter()
@@ -66,6 +75,8 @@ const WalletPageClient = () => {
   const connectedBanksQuery = useConnectedBanks()
   const topupMutation = useTopupWalletLocals()
   const withdrawMutation = useWithdrawFromWallet()
+  const pendingWithdrawalsQuery = useWalletWithdrawals({ page: 1, limit: 20 })
+  const cancelWithdrawalMutation = useCancelWalletWithdrawal()
   const transactionsQuery = useWalletTransactions({
     page: currentPage,
     limit: PAGE_SIZE,
@@ -92,6 +103,7 @@ const WalletPageClient = () => {
     [connectedBanksQuery.data?.data?.banks]
   )
   const transactionsData = transactionsQuery.data?.data
+  const withdrawalHistory = pendingWithdrawalsQuery.data?.data
 
   const availableBalance = parseWalletBalance(walletDetails?.balance)
   const totalReceived = parseWalletBalance(walletDetails?.totalReceived)
@@ -100,6 +112,13 @@ const WalletPageClient = () => {
   const transactions = useMemo(
     () => transactionsData?.transactions ?? EMPTY_TRANSACTIONS,
     [transactionsData?.transactions]
+  )
+  const pendingWithdrawals = useMemo(
+    () =>
+      (withdrawalHistory?.withdrawals ?? []).filter(
+        (withdrawal) => withdrawal.status === 'pending'
+      ),
+    [withdrawalHistory?.withdrawals]
   )
   const pagination = transactionsData?.pagination
 
@@ -121,9 +140,7 @@ const WalletPageClient = () => {
   const totalPages = pagination?.totalPages ?? 1
   const startItem = totalCount > 0 ? (currentPage - 1) * pageLimit + 1 : 0
   const endItem =
-    totalCount > 0
-      ? Math.min(startItem + pageLimit - 1, totalCount)
-      : 0
+    totalCount > 0 ? Math.min(startItem + pageLimit - 1, totalCount) : 0
   const isPrevDisabled = currentPage <= 1 || transactionsQuery.isFetching
   const isNextDisabled =
     currentPage >= totalPages || transactionsQuery.isFetching || totalPages <= 1
@@ -140,21 +157,23 @@ const WalletPageClient = () => {
       : topupMutation.isError
       ? TOPUP_ERROR_MESSAGE
       : undefined
-  const withdrawalError =
-    withdrawMutation.isError
-      ? toApiError(withdrawMutation.error).message || WITHDRAWAL_ERROR_MESSAGE
-      : undefined
+  const withdrawalError = withdrawMutation.isError
+    ? toApiError(withdrawMutation.error).message || WITHDRAWAL_ERROR_MESSAGE
+    : undefined
   const withdrawalApiError = withdrawMutation.isError
     ? toApiError(withdrawMutation.error)
     : null
   const showWithdrawalKycCta = Boolean(
     withdrawalApiError &&
       (withdrawalApiError.code === 'FORBIDDEN' ||
-        withdrawalApiError.message.toLowerCase().includes('verify your identity') ||
+        withdrawalApiError.message
+          .toLowerCase()
+          .includes('verify your identity') ||
         withdrawalApiError.message.toLowerCase().includes('kyc') ||
         withdrawalApiError.message.toLowerCase().includes('nin') ||
         withdrawalApiError.message.toLowerCase().includes('bvn'))
   )
+  const hasPendingWithdrawals = pendingWithdrawals.length > 0
 
   const handleTopupSubmit = async (amount: number) => {
     if (amount < MIN_WALLET_TOPUP_AMOUNT) return
@@ -184,43 +203,65 @@ const WalletPageClient = () => {
     })
   }
 
+  const handleCancelPendingWithdrawal = async () => {
+    if (!withdrawalToCancel) return
+
+    const response = await cancelWithdrawalMutation.mutateAsync(
+      withdrawalToCancel.id
+    )
+    setWithdrawalToCancel(null)
+    setIsPendingWithdrawalsOpen(false)
+    openSuccess({
+      message: response.message || 'Withdrawal cancelled successfully.',
+    })
+  }
+
   return (
     <div className='w-full flex flex-col gap-10 lg:gap-6 mt-2 mb-10 lg:mt-0 lg:mb-0'>
-      {showOverviewSkeleton ? (
-        <WalletSummarySkeleton />
-      ) : (
-        <WalletSummarySection
-          availableBalance={formattedBalance}
-          totalReceived={formatCurrency(totalReceived, {
-            currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-          totalWithdrawn={formatCurrency(totalWithdrawn, {
-            currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-          onTopUp={() => setIsTopUpOpen(true)}
-          onWithdraw={() => setIsWithdrawOpen(true)}
-          hasError={hasOverviewError}
-          isRetrying={hasOverviewError && detailsQuery.isFetching}
-          onRetry={() => detailsQuery.refetch()}
-          isBalanceHidden={isBalanceHidden}
-          onToggleBalanceVisibility={() => {
-            setIsBalanceHidden((prev) => {
-              const nextValue = !prev
-              if (typeof window !== 'undefined') {
-                window.localStorage.setItem(
-                  WALLET_BALANCE_VISIBILITY_KEY,
-                  String(nextValue)
-                )
-              }
-              return nextValue
-            })
-          }}
-        />
-      )}
+      <div className='flex flex-col gap-4'>
+        {showOverviewSkeleton ? (
+          <WalletSummarySkeleton />
+        ) : (
+          <WalletSummarySection
+            availableBalance={formattedBalance}
+            totalReceived={formatCurrency(totalReceived, {
+              currency,
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            totalWithdrawn={formatCurrency(totalWithdrawn, {
+              currency,
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            onTopUp={() => setIsTopUpOpen(true)}
+            onWithdraw={() => setIsWithdrawOpen(true)}
+            hasError={hasOverviewError}
+            isRetrying={hasOverviewError && detailsQuery.isFetching}
+            onRetry={() => detailsQuery.refetch()}
+            isBalanceHidden={isBalanceHidden}
+            onToggleBalanceVisibility={() => {
+              setIsBalanceHidden((prev) => {
+                const nextValue = !prev
+                if (typeof window !== 'undefined') {
+                  window.localStorage.setItem(
+                    WALLET_BALANCE_VISIBILITY_KEY,
+                    String(nextValue)
+                  )
+                }
+                return nextValue
+              })
+            }}
+          />
+        )}
+
+        {hasPendingWithdrawals ? (
+          <WalletPendingWithdrawalsBanner
+            count={pendingWithdrawals.length}
+            onOpen={() => setIsPendingWithdrawalsOpen(true)}
+          />
+        ) : null}
+      </div>
 
       <div className='bg-white lg:rounded-[20px] lg:shadow-[0px_10px_18px_-2px_#10192812] pb-3 flex flex-col gap-1'>
         <WalletTransactionsHeader
@@ -395,6 +436,28 @@ const WalletPageClient = () => {
               'This dispute has been raised successfully. A ticket has been created for you and you can track this by going to support tab > chat with an agent > last ticket to monitor the process.',
           })
         }
+      />
+
+      <WalletPendingWithdrawalsModal
+        isOpen={isPendingWithdrawalsOpen}
+        onClose={() => {
+          setIsPendingWithdrawalsOpen(false)
+          setWithdrawalToCancel(null)
+          cancelWithdrawalMutation.reset()
+        }}
+        withdrawals={pendingWithdrawals}
+        isCancelling={cancelWithdrawalMutation.isPending}
+        onCancel={setWithdrawalToCancel}
+      />
+      <WalletCancelWithdrawalConfirmModal
+        isOpen={Boolean(withdrawalToCancel)}
+        onClose={() => {
+          if (cancelWithdrawalMutation.isPending) return
+          setWithdrawalToCancel(null)
+        }}
+        withdrawal={withdrawalToCancel}
+        isSubmitting={cancelWithdrawalMutation.isPending}
+        onConfirm={handleCancelPendingWithdrawal}
       />
     </div>
   )
