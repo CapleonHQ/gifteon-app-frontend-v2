@@ -32,7 +32,4 @@ export const getTransactionTypeLabel = (type: WalletTransactionType): string =>
 
 export const getTransactionStatusLabel = (
   status: WalletTransactionStatus
-): string => {
-  if (status === 'success') return 'Completed'
-  return capitalize(status)
-}
+): string => capitalize(status)
