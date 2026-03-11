@@ -33,6 +33,10 @@ const DatePickerField = ({
   const [open, setOpen] = useState(false)
   const minDay = minDate ? startOfDay(minDate) : undefined
   const maxDay = maxDate ? startOfDay(maxDate) : undefined
+  const today = startOfDay(new Date())
+  const startMonth =
+    minDay ?? startOfDay(new Date(today.getFullYear() - 100, 0, 1))
+  const endMonth = maxDay ?? today
 
   return (
     <div>
@@ -69,10 +73,14 @@ const DatePickerField = ({
             <span>{value ? format(value, displayFormat) : placeholder}</span>
           </button>
         </PopoverTrigger>
-        <PopoverContent className='w-auto p-0' align='start'>
+        <PopoverContent className='w-auto overflow-hidden p-0' align='start'>
           <Calendar
             mode='single'
             selected={value}
+            defaultMonth={value ?? endMonth}
+            captionLayout='dropdown'
+            startMonth={startMonth}
+            endMonth={endMonth}
             onSelect={(date) => {
               onChange(date)
               setOpen(false)
