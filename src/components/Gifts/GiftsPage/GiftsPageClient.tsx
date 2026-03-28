@@ -16,6 +16,7 @@ import GiftsNoResults from '@/components/Gifts/GiftsPage/GiftsNoResults'
 import GiftsSkeleton from '@/components/Gifts/GiftsPage/GiftsSkeleton'
 import { type GiftPageItem } from '@/components/Gifts/GiftsPage/types'
 import { useArchivePage, usePages, useUnarchivePage } from '@/hooks/tanstack/pages'
+import { analytics } from '@/lib/analytics/events'
 import { useGiftsFilters } from './hooks/useGiftsFilters'
 import { useGiftsSelection } from './hooks/useGiftsSelection'
 
@@ -102,13 +103,49 @@ const GiftsPageClient = () => {
     setOffset((prev) => prev + limit)
   }
 
+  const handleApplyFilters = () => {
+    const status = filterValues.status !== 'all' ? filterValues.status : null
+    const category = filterValues.category !== 'all' ? filterValues.category : null
+    const visibility =
+      filterValues.visibility !== 'all' ? filterValues.visibility : null
+    const hasDateRange = Boolean(filterValues.fromDate || filterValues.toDate)
+    const filterCount =
+      [status, category, visibility].filter(Boolean).length +
+      (hasDateRange ? 1 : 0)
+
+    analytics.trackGiftListFiltersApplied({
+      has_search: Boolean(searchValue.trim()),
+      filter_count: filterCount,
+      has_date_range: hasDateRange,
+      status,
+      category,
+      visibility,
+    })
+    applyFilters()
+  }
+
+  const handleResetFilters = () => {
+    analytics.trackGiftListFiltersReset()
+    resetAppliedFilters()
+  }
+
+  const handleClearAllFiltersAndSearch = () => {
+    analytics.trackGiftListFiltersReset()
+    clearAllFiltersAndSearch()
+  }
+
   const handleViewPage = (id: string) => {
+    analytics.trackGiftPageViewedFromList({ gift_id: id })
     router.push(`/gifts/${id}`)
   }
 
   const handleSharePage = (id: string) => {
     const page = giftPages.find((item) => item.id === id)
     if (!page) return
+    analytics.trackGiftShareModalOpened({
+      gift_id: id,
+      source: 'gifts_list',
+    })
     const slug = page.publicUrl.replace(/^\/u\//, '').trim()
     setSharePage({
       title: page.title,
@@ -164,7 +201,7 @@ const GiftsPageClient = () => {
                 </button>
               </div>
             ) : !hasResults ? (
-              <GiftsNoResults onReset={clearAllFiltersAndSearch} />
+              <GiftsNoResults onReset={handleClearAllFiltersAndSearch} />
             ) : (
               <div className='flex flex-col min-h-full'>
                 <GiftsTable
@@ -221,6 +258,11 @@ const GiftsPageClient = () => {
           if (deactivateIds.length === 0) return
           try {
             await archiveMutation.mutateAsync(deactivateIds)
+            analytics.trackGiftDeactivated({
+              source: 'gifts_list',
+              gift_count: deactivateIds.length,
+              gift_id: deactivateIds.length === 1 ? deactivateIds[0] : null,
+            })
             setIsDeactivateOpen(false)
             clearSelection()
             openSuccess({ message: successMessage })
@@ -241,6 +283,7 @@ const GiftsPageClient = () => {
           if (!reactivateId) return
           try {
             await unarchiveMutation.mutateAsync([reactivateId])
+            analytics.trackGiftReactivated({ gift_id: reactivateId })
             setIsReactivateOpen(false)
             setReactivateId(null)
             openSuccess({
@@ -259,8 +302,8 @@ const GiftsPageClient = () => {
         onSearchChange={setSearchAndReset}
         onChange={handleFilterChange}
         onClose={() => setIsFilterOpen(false)}
-        onReset={resetAppliedFilters}
-        onApply={applyFilters}
+        onReset={handleResetFilters}
+        onApply={handleApplyFilters}
       />
       <ShareGiftPageModal
         isOpen={Boolean(sharePage)}

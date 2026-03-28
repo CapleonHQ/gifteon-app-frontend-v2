@@ -17,6 +17,7 @@ import {
 } from '@/hooks/tanstack/kyc'
 import { uploadDocument, uploadImage } from '@/api/services/upload'
 import { toApiError } from '@/api/errorHelpers'
+import { analytics } from '@/lib/analytics/events'
 import type { KycStatusItem } from '@/types/Kyc'
 import type { KycRequiredAction, KycStep } from './kycVerificationModal/types'
 
@@ -293,6 +294,7 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
           type: requiredAction.toUpperCase() as 'NIN' | 'BVN',
           documentNumber: documentNumber.trim(),
         })
+        analytics.trackKycSubmitted({ action: requiredAction })
 
         openSuccess({
           title: 'Submitted',
@@ -329,6 +331,7 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
         const response = await submitUtilityBillMutation.mutateAsync({
           utilityBillUrl: uploadResponse.data.url,
         })
+        analytics.trackKycSubmitted({ action: 'utility' })
 
         openSuccess({
           title: 'Submitted',
@@ -364,6 +367,7 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
       const response = await submitFaceMutation.mutateAsync({
         faceVerificationUrl: uploadResponse.data.url,
       })
+      analytics.trackKycSubmitted({ action: 'face' })
 
       openSuccess({
         title: 'Submitted',
@@ -373,7 +377,12 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
       })
       handleClose()
     } catch (error: unknown) {
-      setFormError(toApiError(error).message || 'Unable to submit KYC details.')
+      const message = toApiError(error).message || 'Unable to submit KYC details.'
+      analytics.trackKycSubmitFailed({
+        action: requiredAction,
+        error_message: message,
+      })
+      setFormError(message)
     }
   }
 

@@ -21,6 +21,7 @@ import ShakeOnError from '@/components/common/ShakeOnError'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import { useWithdrawFromWallet } from '@/hooks/tanstack/wallet'
 import { toApiError } from '@/api/errorHelpers'
+import { analytics } from '@/lib/analytics/events'
 import { CURRENCY_WITHDRAWAL_LIMITS } from '@/lib/constants/payments'
 import { formatCurrency } from '@/lib/utils/currency'
 import { maskAccountNumber } from './utils'
@@ -231,6 +232,11 @@ const WalletWithdrawModal = ({
 
   const openPinStep = () => {
     withdrawMutation.reset()
+    analytics.trackWalletWithdrawPinStepOpened({
+      amount: amountValue,
+      currency,
+      bank_id: effectiveSelectedBank,
+    })
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       setIsPinModalOpen(true)
       return
@@ -241,10 +247,20 @@ const WalletWithdrawModal = ({
   const handleWithdrawSubmit = async () => {
     if (!isPinComplete || withdrawMutation.isPending) return
     try {
+      analytics.trackWalletWithdrawSubmitted({
+        amount: amountValue,
+        currency,
+        bank_id: effectiveSelectedBank,
+      })
       const response = await withdrawMutation.mutateAsync({
         amount: amountValue,
         bankId: effectiveSelectedBank,
         pin: pin.join(''),
+      })
+      analytics.trackWalletWithdrawSucceeded({
+        amount: amountValue,
+        currency,
+        bank_id: effectiveSelectedBank,
       })
       openSuccess({
         message:
@@ -254,7 +270,23 @@ const WalletWithdrawModal = ({
       })
       handleClose()
     } catch (error: unknown) {
-      const apiErrorMessage = toApiError(error).message?.toLowerCase() ?? ''
+      const apiError = toApiError(error)
+      const apiErrorMessage = apiError.message?.toLowerCase() ?? ''
+      const reason = apiErrorMessage.includes('pin')
+        ? 'pin'
+        : apiErrorMessage.includes('kyc') ||
+          apiErrorMessage.includes('verify your identity') ||
+          apiErrorMessage.includes('nin') ||
+          apiErrorMessage.includes('bvn')
+        ? 'kyc'
+        : 'other'
+      analytics.trackWalletWithdrawFailed({
+        amount: amountValue,
+        currency,
+        bank_id: effectiveSelectedBank,
+        reason,
+        error_message: apiError.message || WITHDRAWAL_ERROR_MESSAGE,
+      })
       setPin(['', '', '', ''])
       pinRefs.current[0]?.focus()
       const shouldReturnToForm = !apiErrorMessage.includes('pin')

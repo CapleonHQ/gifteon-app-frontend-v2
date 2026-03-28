@@ -11,9 +11,8 @@ import type { GiftItem } from '@/types/Gifts/index'
 import { useStatsOverview } from '@/hooks/tanstack/stats'
 import type { DashboardRecentGift } from '@/types/Stats'
 import { formatCurrency } from '@/lib/utils/currency'
-import KycBanner from './KycBanner'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { analytics } from '@/lib/analytics/events'
 
 const FALLBACK_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
 
@@ -75,7 +74,6 @@ const mapRecentGiftItem = (
 
 const DashboardPageClient = () => {
   const { openSuccess } = useSuccessModal()
-  const router = useRouter()
   const statsOverview = useStatsOverview()
   const [claimItem, setClaimItem] = useState<GiftItem | null>(null)
   const [deliverItem, setDeliverItem] = useState<GiftItem | null>(null)
@@ -116,6 +114,10 @@ const DashboardPageClient = () => {
   }, [claimItem, isCashClaim])
 
   const handleGiftAction = (item: GiftItem) => {
+    analytics.trackDashboardRecentGiftActionOpened({
+      action_type: item.actionType || 'none',
+      gift_id: item.id,
+    })
     if (item.actionType === 'deliver') {
       setDeliverItem(item)
       return
@@ -185,7 +187,10 @@ const DashboardPageClient = () => {
 
       <button
         type='button'
-        onClick={() => console.log('button clicked')}
+        onClick={() => {
+          analytics.trackDashboardAiAssistantClicked()
+          console.log('button clicked')
+        }}
         className='fixed bottom-6 right-6 w-[94px] h-[84px] rounded-[70px] border-2 border-[#B8B8EA0D] shadow-[0px_16px_24px_-4px_#10192814] overflow-hidden flex items-center justify-center bg-white'
         aria-label='AI assistant'
       >

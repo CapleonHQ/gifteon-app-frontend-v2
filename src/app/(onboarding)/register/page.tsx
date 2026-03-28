@@ -11,6 +11,7 @@ import { registerUser, resendVerification, verifyOtp } from '@/api/services'
 import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
+import { analytics } from '@/lib/analytics/events'
 
 type RegisterStep = 'register' | 'verification' | 'success'
 
@@ -89,6 +90,11 @@ const RegisterPage = () => {
     setError('')
 
     try {
+      analytics.trackAuthRegisterSubmitted({
+        method: 'email',
+        country,
+        has_referral_code: Boolean(referralCode.trim()),
+      })
       await registerUser({
         firstName,
         lastName,
@@ -100,6 +106,10 @@ const RegisterPage = () => {
       setCurrentStep('verification')
     } catch (error: unknown) {
       const apiError = toApiError(error)
+      analytics.trackAuthRegisterFailed({
+        stage: 'request',
+        error_message: apiError.message,
+      })
       setError(apiError.message)
       if (apiError.fieldErrors?.email?.length) {
         setEmailError(apiError.fieldErrors.email[0])
@@ -110,6 +120,7 @@ const RegisterPage = () => {
   }
 
   const handleSocialRegister = (provider: 'google' | 'apple') => {
+    analytics.trackAuthRegisterSubmitted({ method: provider })
     console.log(`Register with ${provider}`)
   }
 
@@ -168,6 +179,7 @@ const RegisterPage = () => {
     try {
       if (otp.every((digit) => digit !== '')) {
         setIsLoading(true)
+        analytics.trackAuthRegisterOtpSubmitted()
         const resp = await verifyOtp({ email, otp: otp.join('') })
         if (resp.accessToken) {
           setAccessToken(resp.accessToken)
@@ -176,10 +188,15 @@ const RegisterPage = () => {
           setRefreshToken(resp.refreshToken)
         }
         await refreshUser()
+        analytics.trackAuthRegisterSucceeded()
         setCurrentStep('success')
       }
     } catch (error: unknown) {
       const apiError = toApiError(error)
+      analytics.trackAuthRegisterFailed({
+        stage: 'otp',
+        error_message: apiError.message,
+      })
       setError(apiError.message)
     } finally {
       setIsLoading(false)
@@ -195,6 +212,10 @@ const RegisterPage = () => {
         setCanResend(false)
       } catch (error: unknown) {
         const apiError = toApiError(error)
+        analytics.trackAuthRegisterFailed({
+          stage: 'resend',
+          error_message: apiError.message,
+        })
         setError(apiError.message)
       } finally {
         setIsResending(false)

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import degular from '@/assets/fonts/degular'
 import georgia from '@/assets/fonts/georgia'
+import PostHogAuthBridge from '@/components/Providers/PostHogAuthBridge'
 import QueryProvider from '@/components/Providers/QueryProvider'
 import { AuthProvider } from '@/context/AuthContext'
 
@@ -136,7 +137,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${degular.variable} ${georgia.variable} antialiased`}
       >
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <PostHogAuthBridge />
+            {children}
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

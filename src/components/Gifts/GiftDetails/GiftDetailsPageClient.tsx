@@ -29,6 +29,7 @@ import GiftDetailsErrorState from './GiftDetailsErrorState'
 import { useGiftDetailsData } from './hooks/useGiftDetailsData'
 import { useGiftDetailsUiState } from './hooks/useGiftDetailsUiState'
 import { useArchivePage, useUnarchivePage } from '@/hooks/tanstack/pages'
+import { analytics } from '@/lib/analytics/events'
 import {
   giftDistributionChartOptions,
   pageVisitsChartOptions,
@@ -90,6 +91,11 @@ const GiftDetailsPageClient = () => {
   const handleDeactivateConfirm = async () => {
     try {
       await archiveMutation.mutateAsync([giftId])
+      analytics.trackGiftDeactivated({
+        source: 'gift_details',
+        gift_count: 1,
+        gift_id: giftId,
+      })
       ui.setIsDeactivateOpen(false)
       ui.markInactive()
       await pageQuery.refetch()
@@ -104,6 +110,7 @@ const GiftDetailsPageClient = () => {
   const handleReactivateConfirm = async () => {
     try {
       await unarchiveMutation.mutateAsync([giftId])
+      analytics.trackGiftReactivated({ gift_id: giftId })
       ui.setIsReactivateOpen(false)
       ui.markActive()
       await pageQuery.refetch()
@@ -152,7 +159,13 @@ const GiftDetailsPageClient = () => {
             onBack={() => router.back()}
             onView={handleViewPage}
             onEdit={() => ui.setIsEditOpen(true)}
-            onShare={() => ui.setIsShareOpen(true)}
+            onShare={() => {
+              analytics.trackGiftShareModalOpened({
+                gift_id: giftId,
+                source: 'gift_details',
+              })
+              ui.setIsShareOpen(true)
+            }}
             onToggleActive={() =>
               isActive
                 ? ui.setIsDeactivateOpen(true)

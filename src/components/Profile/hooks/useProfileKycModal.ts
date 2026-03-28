@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { analytics } from '@/lib/analytics/events'
 
 export const useProfileKycModal = () => {
   const router = useRouter()
@@ -11,6 +12,7 @@ export const useProfileKycModal = () => {
 
   const isKycModalOpen =
     isLocalKycModalOpen || searchParams.get('modal') === 'kyc'
+  const source = searchParams.get('source') || 'profile'
 
   const openKycModal = useCallback(() => {
     setIsLocalKycModalOpen(true)
@@ -26,6 +28,11 @@ export const useProfileKycModal = () => {
     const query = params.toString()
     router.replace(`${pathname}${query ? `?${query}` : ''}`)
   }, [pathname, router, searchParams])
+
+  useEffect(() => {
+    if (!isKycModalOpen) return
+    analytics.trackKycModalOpened({ source })
+  }, [isKycModalOpen, source])
 
   return {
     isKycModalOpen,

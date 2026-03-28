@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { getPageCategories } from '@/api/services/pages'
 import { findGiftCategoryMetaByName } from '@/lib/constants/giftCategories'
+import { analytics } from '@/lib/analytics/events'
 import CategorySelection, {
   type CreatePageCategoryOption,
 } from '@/components/Gifts/CreateNewGiftPage/CategorySelection'
@@ -81,6 +82,10 @@ const CreateNewGiftPage = () => {
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId)
+    analytics.trackGiftCreateTemplateSelected({
+      template_id: templateId,
+      category_id: effectiveSelectedCategoryId,
+    })
   }
 
   const handleContinueFromCategory = () => {
@@ -106,6 +111,10 @@ const CreateNewGiftPage = () => {
   const handleCreated = (link: string) => {
     setGiftPageLink(link)
     setShowSuccessModal(true)
+    analytics.trackGiftCreateSucceeded({
+      category_id: effectiveSelectedCategoryId,
+      template_id: selectedTemplate,
+    })
     if (redirectTimerRef.current) {
       clearTimeout(redirectTimerRef.current)
     }
@@ -113,6 +122,20 @@ const CreateNewGiftPage = () => {
       router.push('/gifts')
     }, 10000)
   }
+
+  useEffect(() => {
+    analytics.trackGiftCreateStepViewed({
+      step,
+      has_preselected_category: Boolean(preselectedCategorySlug),
+      category_id: effectiveSelectedCategoryId,
+      template_id: selectedTemplate,
+    })
+  }, [
+    effectiveSelectedCategoryId,
+    preselectedCategorySlug,
+    selectedTemplate,
+    step,
+  ])
 
   useEffect(() => {
     return () => {
