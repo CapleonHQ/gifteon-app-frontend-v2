@@ -40,4 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-PROJECT_OVERVIEW.md
+AGENTS.md
