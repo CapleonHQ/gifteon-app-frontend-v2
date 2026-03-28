@@ -26,6 +26,7 @@ export const PAGE_TITLE_ROUTES: Array<{
   { pattern: /^\/dashboard$/, title: 'Dashboard' },
   { pattern: /^\/wallet$/, title: 'Wallet' },
   { pattern: /^\/profile$/, title: 'Profile' },
+  { pattern: /^\/stores\/bills$/, title: 'Bills & Utilities' },
   { pattern: /^\/stores$/, title: 'Stores' },
   { pattern: /^\/settings$/, title: 'Settings' },
 ]

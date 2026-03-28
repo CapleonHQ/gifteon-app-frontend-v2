@@ -1,7 +1,7 @@
-import StoresComingSoonPage from '@/components/Stores/StoresComingSoonPage'
+import StoresHubPage from '@/components/Stores/StoresHubPage'
 
 const StoresPage = () => {
-  return <StoresComingSoonPage />
+  return <StoresHubPage />
 }
 
 export default StoresPage

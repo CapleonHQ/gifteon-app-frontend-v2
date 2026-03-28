@@ -202,4 +202,13 @@ export const analytics = {
     capture('profile_interests_saved', properties),
   trackProfileInterestsSaveFailed: (properties: { error_message: string }) =>
     capture('profile_interests_save_failed', properties),
+  trackStoreCategorySelected: (properties: {
+    category: string
+    enabled: boolean
+    source: 'stores_hub'
+  }) => capture('store_category_selected', properties),
+  trackStoreCategoryComingSoonClicked: (properties: {
+    category: string
+    source: 'stores_hub'
+  }) => capture('store_category_coming_soon_clicked', properties),
 }
