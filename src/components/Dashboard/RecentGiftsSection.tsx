@@ -7,6 +7,7 @@ import RecentGiftsMobileList from './RecentGiftsMobileList'
 import DashboardEmptyState from './DashboardEmptyState'
 import EmptyBox from '@/assets/icons/EmptyBox'
 import RecentGiftsSkeleton from './Skeletons/RecentGiftsSkeleton'
+import { analytics } from '@/lib/analytics/events'
 
 type RecentGiftsSectionProps = {
   items: GiftItem[]
@@ -37,6 +38,7 @@ const RecentGiftsSection = ({
         <h2 className='text-lg font-medium text-blackish'>Recent Gifts</h2>
         <Link
           href='/gifts'
+          onClick={() => analytics.trackDashboardSeeAllGiftPagesClicked()}
           className='text-xs text-primary-600 font-medium hover:text-primary-700 transition-colors duration-300 underline'
         >
           See all Gift Pages
@@ -52,7 +54,10 @@ const RecentGiftsSection = ({
           </p>
           <button
             type='button'
-            onClick={onRetry}
+            onClick={() => {
+              analytics.trackDashboardRecentGiftsRetryClicked()
+              onRetry?.()
+            }}
             disabled={isRetrying || !onRetry}
             className='mt-4 inline-flex items-center justify-center px-4 py-2 rounded-[10px] border border-grey-200 text-sm text-grey-800 hover:bg-grey-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200'
           >

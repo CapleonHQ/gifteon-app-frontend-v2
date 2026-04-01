@@ -11,6 +11,7 @@ import { verifyMagicLink } from '@/api/services/auth'
 import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
+import { analytics } from '@/lib/analytics/events'
 
 type VerificationState = 'loading' | 'success' | 'error'
 
@@ -25,6 +26,13 @@ const MagicLinkVerifyContent = () => {
   useEffect(() => {
     const verifyToken = async () => {
       const token = searchParams.get('token')
+      const actionParam = searchParams.get('action')?.toLowerCase()
+      const action =
+        actionParam === 'register'
+          ? 'register'
+          : actionParam === 'login'
+          ? 'login'
+          : 'unknown'
 
       if (!token) {
         router.push('/')
@@ -33,7 +41,6 @@ const MagicLinkVerifyContent = () => {
 
       try {
         const resp = await verifyMagicLink(token)
-        const action = searchParams.get('action')?.toLowerCase()
 
         if (resp.accessToken) {
           setAccessToken(resp.accessToken)
@@ -42,6 +49,7 @@ const MagicLinkVerifyContent = () => {
           setRefreshToken(resp.refreshToken)
         }
         await refreshUser()
+        analytics.trackMagicLinkVerificationSucceeded({ action })
 
         if (action === 'register') {
           setVerificationState('success')
@@ -50,6 +58,10 @@ const MagicLinkVerifyContent = () => {
         }
       } catch (error: unknown) {
         const apiError = toApiError(error)
+        analytics.trackMagicLinkVerificationFailed({
+          action,
+          error_message: apiError.message,
+        })
         setVerificationState('error')
         if (
           apiError.code === 'UNAUTHORIZED' ||

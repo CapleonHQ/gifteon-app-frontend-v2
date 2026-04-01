@@ -35,6 +35,7 @@ import { toast } from 'sonner'
 import { uploadImage } from '@/api/services/upload'
 import { useDebounce } from '@/hooks/useDebounce'
 import { verifyTag } from '@/api/services/account'
+import { analytics } from '@/lib/analytics/events'
 
 const MAX_PROFILE_PHOTO_SIZE_BYTES = 5 * 1024 * 1024
 const GIFTSEON_TAG_PATTERN = /^[a-z0-9_-]+$/
@@ -272,6 +273,7 @@ const ProfilePageClient = () => {
 
   const handleOpenGiftseonTagModal = () => {
     if (!canChangeGiftseonTag) return
+    analytics.trackProfileTagModalOpened()
     setIsGiftseonTagModalOpen(true)
     setGiftseonTagDraft(profileFromApi.giftseonTag)
     setHasGiftseonTagError(false)
@@ -300,9 +302,14 @@ const ProfilePageClient = () => {
           : undefined,
       })
       await refreshUser()
+      analytics.trackProfileSaved()
       handleCancelProfileEdit()
       openSuccess({ message: 'Your profile has been successfully updated.' })
-    } catch {
+    } catch (error: unknown) {
+      analytics.trackProfileSaveFailed({
+        error_message:
+          toApiError(error).message || 'Unable to update profile. Please try again.',
+      })
       setProfileErrorMessage('Unable to update profile. Please try again.')
     }
   }
@@ -337,6 +344,7 @@ const ProfilePageClient = () => {
     try {
       await changeTagMutation.mutateAsync({ tag: nextTag })
       await refreshUser()
+      analytics.trackProfileTagSaved()
       setIsGiftseonTagModalOpen(false)
       setVerifiedAvailableGiftseonTag('')
       setHasGiftseonTagError(false)
@@ -344,7 +352,10 @@ const ProfilePageClient = () => {
         'Your Giftseon tag has already been changed and can no longer be edited.'
       )
       openSuccess({ message: 'Your Giftseon tag has been successfully updated.' })
-    } catch {
+    } catch (error: unknown) {
+      analytics.trackProfileTagSaveFailed({
+        error_message: toApiError(error).message || 'Unable to update tag. Please try again.',
+      })
       setHasGiftseonTagError(true)
       setGiftseonTagMessage('Unable to update tag. Please try again.')
     }
@@ -367,6 +378,7 @@ const ProfilePageClient = () => {
     })
 
     setIsUploadingProfilePhoto(true)
+    analytics.trackProfilePhotoUploadStarted()
     try {
       const uploadResponse = await uploadImage({
         file,
@@ -382,12 +394,18 @@ const ProfilePageClient = () => {
         profilePicture: uploadedImageUrl,
       })
       await refreshUser()
+      analytics.trackProfilePhotoUploadSucceeded()
       setProfilePhotoPreviewUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev)
         return ''
       })
       toast.success('Your profile photo has been successfully updated.')
-    } catch {
+    } catch (error: unknown) {
+      analytics.trackProfilePhotoUploadFailed({
+        error_message:
+          toApiError(error).message ||
+          'Unable to upload profile photo. Please try again.',
+      })
       setProfilePhotoPreviewUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev)
         return ''
@@ -425,10 +443,18 @@ const ProfilePageClient = () => {
       })
       setSelectedInterests(interestsDraft)
       setIsInterestsOpen(false)
+      analytics.trackProfileInterestsSaved({
+        count: interestsDraft.length,
+      })
       openSuccess({
         message: 'Your interests have been successfully updated.',
       })
-    } catch {
+    } catch (error: unknown) {
+      analytics.trackProfileInterestsSaveFailed({
+        error_message:
+          toApiError(error).message ||
+          'Unable to update interests. Please try again.',
+      })
       toast.error('Unable to update interests. Please try again.')
     }
   }
@@ -514,6 +540,7 @@ const ProfilePageClient = () => {
                 isSavingProfile={updateProfileMutation.isPending}
                 profileErrorMessage={profileErrorMessage}
                 onEditProfile={() => {
+                  analytics.trackProfileEditStarted()
                   setIsEditingProfile(true)
                   setProfileDraft(profileFromApi)
                   setProfileErrorMessage('')

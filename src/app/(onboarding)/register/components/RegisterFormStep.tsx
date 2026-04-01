@@ -144,7 +144,7 @@ const RegisterFormStep = ({
             htmlFor='email'
             className='text-sm font-medium leading-[145%] text-grey-900'
           >
-            Enter Email Address
+            Email Address
           </label>
           <input
             type='email'
@@ -171,48 +171,6 @@ const RegisterFormStep = ({
               </motion.p>
             )}
           </AnimatePresence>
-        </div>
-
-        <div className='flex flex-col gap-1'>
-          <label
-            htmlFor='country'
-            className='text-sm font-medium leading-[145%] text-grey-900'
-          >
-            Country
-          </label>
-          <Select value={country} onValueChange={onCountryChange}>
-            <SelectTrigger
-              id='country'
-              className='w-full border-grey-50 rounded-[12px] text-sm text-blackish font-medium h-[48px]! shadow-none! bg-white'
-            >
-              <SelectValue placeholder='Select your country' />
-            </SelectTrigger>
-            <SelectContent className='rounded-[12px] border-grey-50'>
-              {COUNTRIES.map((item) => (
-                <SelectItem key={item.code} value={item.code}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className='flex flex-col gap-1'>
-          <label
-            htmlFor='referralCode'
-            className='text-sm font-medium leading-[145%] text-grey-900'
-          >
-            Referral Code{' '}
-            <span className='text-grey-500 font-normal'>(Optional)</span>
-          </label>
-          <input
-            type='text'
-            id='referralCode'
-            value={referralCode}
-            onChange={onReferralCodeChange}
-            placeholder='Enter referral code'
-            className='w-full text-sm px-3 py-3.5 border border-grey-50 rounded-[12px] outline-none focus:ring-1 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-blackish placeholder-grey-400'
-          />
         </div>
 
         <div className='flex flex-col gap-2'>
@@ -280,6 +238,48 @@ const RegisterFormStep = ({
               <span className='text-sm text-grey-900'>Female</span>
             </motion.button>
           </div>
+        </div>
+
+        <div className='flex flex-col gap-1'>
+          <label
+            htmlFor='country'
+            className='text-sm font-medium leading-[145%] text-grey-900'
+          >
+            Country
+          </label>
+          <Select value={country} onValueChange={onCountryChange}>
+            <SelectTrigger
+              id='country'
+              className='w-full border-grey-50 rounded-[12px] text-sm text-blackish font-medium h-[48px]! shadow-none! bg-white'
+            >
+              <SelectValue placeholder='Select your country' />
+            </SelectTrigger>
+            <SelectContent className='rounded-[12px] border-grey-50'>
+              {COUNTRIES.map((item) => (
+                <SelectItem key={item.code} value={item.code}>
+                  {item.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className='flex flex-col gap-1'>
+          <label
+            htmlFor='referralCode'
+            className='text-sm font-medium leading-[145%] text-grey-900'
+          >
+            Referral Code{' '}
+            <span className='text-grey-500 font-normal'>(Optional)</span>
+          </label>
+          <input
+            type='text'
+            id='referralCode'
+            value={referralCode}
+            onChange={onReferralCodeChange}
+            placeholder='Enter referral code'
+            className='w-full text-sm px-3 py-3.5 border border-grey-50 rounded-[12px] outline-none focus:ring-1 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-blackish placeholder-grey-400'
+          />
         </div>
 
         <motion.button

@@ -12,6 +12,8 @@ import {
   useGiftSettingsContext,
   useRecipientsContext,
 } from './CreateGiftContext'
+import { toApiError } from '@/api/errorHelpers'
+import { analytics } from '@/lib/analytics/events'
 import type { Step } from './EditingSection'
 import { validateCreateGift, validateCustomizeDraft } from './utils/validation'
 import { buildCreatePageFormData } from './utils/formData'
@@ -180,6 +182,12 @@ const TemplatingEditingContent = ({
       onCreated(link)
     },
     onError: (error) => {
+      analytics.trackGiftCreateFailed({
+        category_id: selectedCategoryId,
+        template_id: selectedTemplate,
+        error_message:
+          toApiError(error).message || 'Failed to create gift page.',
+      })
       console.error('Failed to create gift page:', error)
       setFieldErrors({
         form: 'Failed to create gift page. Please try again.',
@@ -226,6 +234,10 @@ const TemplatingEditingContent = ({
         recipientForm,
       })
 
+      analytics.trackGiftCreateSubmitted({
+        category_id: selectedCategoryId,
+        template_id: selectedTemplate,
+      })
       await createPageMutation.mutateAsync(formData)
     } catch {
       // Errors are handled in mutation onError.

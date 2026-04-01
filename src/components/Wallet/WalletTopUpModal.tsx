@@ -5,6 +5,7 @@ import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import { Loader2 } from 'lucide-react'
 import { useTopupWalletLocals } from '@/hooks/tanstack/wallet'
+import { analytics } from '@/lib/analytics/events'
 import { MIN_WALLET_TOPUP_AMOUNT } from '@/lib/constants/payments'
 import { storePaymentReturnPath } from '@/lib/payments/paystackReturn'
 
@@ -50,13 +51,19 @@ const WalletTopUpModal = ({
     if (isDisabled) return
 
     try {
+      analytics.trackWalletTopUpSubmitted({ amount: amountValue })
       const data = await topupMutation.mutateAsync(amountValue)
+      analytics.trackWalletTopUpRedirectStarted({ amount: amountValue })
       if (typeof window !== 'undefined') {
         storePaymentReturnPath(data.reference)
         window.location.assign(data.authorizationUrl)
       }
-    } catch {
-      // Error state is rendered inline.
+    } catch (error) {
+      analytics.trackWalletTopUpFailed({
+        amount: amountValue,
+        error_message:
+          error instanceof Error ? error.message : TOPUP_ERROR_MESSAGE,
+      })
     }
   }
 

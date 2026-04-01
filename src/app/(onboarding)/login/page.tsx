@@ -11,6 +11,7 @@ import { loginUser, verifyOtp } from '@/api/services'
 import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
+import { analytics } from '@/lib/analytics/events'
 
 type LoginStep = 'login' | 'verification' | 'success'
 
@@ -93,14 +94,23 @@ const LoginPage = () => {
     setError('')
 
     try {
+      analytics.trackAuthLoginSubmitted({ method: 'email' })
       const resp = await loginUser({ email })
       if (resp.success) {
         setCurrentStep('verification')
       } else {
+        analytics.trackAuthLoginFailed({
+          stage: 'request',
+          error_message: resp.message || 'Login failed. Please try again.',
+        })
         setError(resp.message || 'Login failed. Please try again.')
       }
     } catch (error: unknown) {
       const apiError = toApiError(error)
+      analytics.trackAuthLoginFailed({
+        stage: 'request',
+        error_message: apiError.message,
+      })
       setError(apiError.message)
       if (apiError.fieldErrors?.email?.length) {
         setEmailError(apiError.fieldErrors.email[0])
@@ -111,6 +121,7 @@ const LoginPage = () => {
   }
 
   const handleSocialLogin = (provider: 'google' | 'apple') => {
+    analytics.trackAuthLoginSubmitted({ method: provider })
     console.log(`Login with ${provider}`)
   }
 
@@ -169,6 +180,7 @@ const LoginPage = () => {
     try {
       if (otp.every((digit) => digit !== '')) {
         setIsLoading(true)
+        analytics.trackAuthLoginOtpSubmitted()
         const resp = await verifyOtp({ email, otp: otp.join('') })
         if (resp.accessToken) {
           setAccessToken(resp.accessToken)
@@ -177,10 +189,15 @@ const LoginPage = () => {
           setRefreshToken(resp.refreshToken)
         }
         await refreshUser()
+        analytics.trackAuthLoginSucceeded()
         router.push(resolvePostLoginPath())
       }
     } catch (error: unknown) {
       const apiError = toApiError(error)
+      analytics.trackAuthLoginFailed({
+        stage: 'otp',
+        error_message: apiError.message,
+      })
       setError(apiError.message)
     } finally {
       setIsLoading(false)
@@ -191,11 +208,16 @@ const LoginPage = () => {
     if (canResend) {
       setIsResending(true)
       try {
+        analytics.trackAuthLoginSubmitted({ method: 'email' })
         await loginUser({ email })
         setCountdown(59)
         setCanResend(false)
       } catch (error: unknown) {
         const apiError = toApiError(error)
+        analytics.trackAuthLoginFailed({
+          stage: 'resend',
+          error_message: apiError.message,
+        })
         setError(apiError.message)
       } finally {
         setIsResending(false)
