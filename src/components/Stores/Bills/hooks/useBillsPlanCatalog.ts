@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   getCableProviderPackages as fetchCableProviderPackages,
   getDataNetworkPlans as fetchDataNetworkPlans,
 } from '@/api/services/bills'
+import { useElectricityDiscos } from '@/hooks/tanstack/bills'
 import { mapCablePackageOptions, mapDataPlanOptions, SelectOption } from '../utils'
 
 const parseNumericAmount = (value: unknown) => {
@@ -15,6 +16,7 @@ const parseNumericAmount = (value: unknown) => {
 }
 
 export const useBillsPlanCatalog = () => {
+  const electricityDiscosQuery = useElectricityDiscos()
   const [dataPlansByNetwork, setDataPlansByNetwork] = useState<
     Record<string, SelectOption[]>
   >({})
@@ -93,6 +95,23 @@ export const useBillsPlanCatalog = () => {
     cablePackagesByProvider[provider]?.find((option) => option.value === code)
       ?.label || code
 
+  const electricityAmountLimitsByProvider = useMemo(() => {
+    const limits = new Map<string, { min: number; max: number }>()
+    for (const plan of electricityDiscosQuery.data?.data?.plans ?? []) {
+      const key = plan.plan_code
+      const min =
+        typeof plan.min_amount === 'number' ? plan.min_amount : Number.NaN
+      const max =
+        typeof plan.max_amount === 'number' ? plan.max_amount : Number.NaN
+      if (Number.isNaN(min) || Number.isNaN(max)) continue
+      limits.set(key, { min, max })
+    }
+    return limits
+  }, [electricityDiscosQuery.data])
+
+  const getElectricityAmountLimits = (provider: string) =>
+    electricityAmountLimitsByProvider.get(provider)
+
   return {
     ensureDataPlans,
     ensureCablePackages,
@@ -102,5 +121,6 @@ export const useBillsPlanCatalog = () => {
     getCablePlanAmount,
     getDataPlanLabel,
     getCablePackageLabel,
+    getElectricityAmountLimits,
   }
 }

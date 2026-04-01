@@ -85,3 +85,34 @@ export const mapCablePackageOptions = (
     }))
   )
 }
+
+export const extractRecentBeneficiaries = (payload: unknown): string[] => {
+  const root =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)
+      : {}
+  const data =
+    root.data && typeof root.data === 'object'
+      ? (root.data as Record<string, unknown>)
+      : root
+  const rawList = [data.beneficiaries, data.items, data.results, data.data].find(
+    (value) => Array.isArray(value)
+  ) as unknown[] | undefined
+  if (!rawList || rawList.length === 0) return []
+
+  const names = rawList
+    .map((item) => {
+      if (!item || typeof item !== 'object') return ''
+      const record = item as Record<string, unknown>
+      return String(
+        record.nickname ||
+          record.name ||
+          record.recipientName ||
+          record.recipient ||
+          ''
+      ).trim()
+    })
+    .filter(Boolean)
+
+  return Array.from(new Set(names)).slice(0, 6)
+}
