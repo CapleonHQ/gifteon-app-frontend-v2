@@ -43,6 +43,9 @@ import type {
   VerifyElectricityMeterRequestBody,
 } from '@/types/Bills'
 
+const BILLS_METADATA_STALE_TIME = 1000 * 60 * 60 * 6 // 6 hours
+const BILLS_METADATA_GC_TIME = 1000 * 60 * 60 * 24 // 24 hours
+
 export const useCreateGiftBillPaymentLink = () => {
   const queryClient = useQueryClient()
   return useMutation({
@@ -185,6 +188,9 @@ export const useAirtimeNetworks = () => {
   return useQuery({
     queryKey: ['bills', 'airtime-networks'],
     queryFn: getAirtimeNetworks,
+    staleTime: BILLS_METADATA_STALE_TIME,
+    gcTime: BILLS_METADATA_GC_TIME,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -192,6 +198,9 @@ export const useDataNetworks = () => {
   return useQuery({
     queryKey: ['bills', 'data-networks'],
     queryFn: getDataNetworks,
+    staleTime: BILLS_METADATA_STALE_TIME,
+    gcTime: BILLS_METADATA_GC_TIME,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -200,6 +209,9 @@ export const useDataNetworkPlans = (network: string) => {
     queryKey: ['bills', 'data-network-plans', network],
     queryFn: () => getDataNetworkPlans(network),
     enabled: network.length > 0,
+    staleTime: BILLS_METADATA_STALE_TIME,
+    gcTime: BILLS_METADATA_GC_TIME,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -207,6 +219,9 @@ export const useCableProviders = () => {
   return useQuery({
     queryKey: ['bills', 'cable-providers'],
     queryFn: getCableProviders,
+    staleTime: BILLS_METADATA_STALE_TIME,
+    gcTime: BILLS_METADATA_GC_TIME,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -215,6 +230,9 @@ export const useCableProviderPackages = (provider: string) => {
     queryKey: ['bills', 'cable-provider-packages', provider],
     queryFn: () => getCableProviderPackages(provider),
     enabled: provider.length > 0,
+    staleTime: BILLS_METADATA_STALE_TIME,
+    gcTime: BILLS_METADATA_GC_TIME,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -222,6 +240,9 @@ export const useElectricityDiscos = () => {
   return useQuery({
     queryKey: ['bills', 'electricity-discos'],
     queryFn: getElectricityDiscos,
+    staleTime: BILLS_METADATA_STALE_TIME,
+    gcTime: BILLS_METADATA_GC_TIME,
+    refetchOnWindowFocus: false,
   })
 }
 

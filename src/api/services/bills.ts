@@ -3,9 +3,15 @@ import apiService from '../'
 import { ApiResponse } from '@/types/Common'
 import {
   AirtimePurchaseRequestBody,
+  AirtimeNetworksData,
+  CableProviderPackagesData,
+  CableProvidersData,
   ClaimGiftBillRequestBody,
   CreateGiftBillPaymentLinkRequestBody,
   DataPurchaseRequestBody,
+  DataNetworkPlansData,
+  DataNetworksData,
+  ElectricityDiscosData,
   GiftBillPaginationParams,
   GiftBillPaymentLinksParams,
   PayElectricityBillRequestBody,
@@ -137,49 +143,49 @@ export const deleteGiftBillBeneficiary = async (
 }
 
 export const getAirtimeNetworks = async (): Promise<
-  ApiResponse<Record<string, unknown>>
+  ApiResponse<AirtimeNetworksData>
 > => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+  const resp: AxiosResponse<ApiResponse<AirtimeNetworksData>> =
     await apiService.appPrivate.get('/bills/airtime/networks')
   return resp.data
 }
 
 export const getDataNetworks = async (): Promise<
-  ApiResponse<Record<string, unknown>>
+  ApiResponse<DataNetworksData>
 > => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+  const resp: AxiosResponse<ApiResponse<DataNetworksData>> =
     await apiService.appPrivate.get('/bills/data/networks')
   return resp.data
 }
 
 export const getDataNetworkPlans = async (
   network: string
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+): Promise<ApiResponse<DataNetworkPlansData>> => {
+  const resp: AxiosResponse<ApiResponse<DataNetworkPlansData>> =
     await apiService.appPrivate.get(`/bills/data/plans/${network}`)
   return resp.data
 }
 
 export const getCableProviders = async (): Promise<
-  ApiResponse<Record<string, unknown>>
+  ApiResponse<CableProvidersData>
 > => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+  const resp: AxiosResponse<ApiResponse<CableProvidersData>> =
     await apiService.appPrivate.get('/bills/cable/providers')
   return resp.data
 }
 
 export const getCableProviderPackages = async (
   provider: string
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+): Promise<ApiResponse<CableProviderPackagesData>> => {
+  const resp: AxiosResponse<ApiResponse<CableProviderPackagesData>> =
     await apiService.appPrivate.get(`/bills/cable/packages/${provider}`)
   return resp.data
 }
 
 export const getElectricityDiscos = async (): Promise<
-  ApiResponse<Record<string, unknown>>
+  ApiResponse<ElectricityDiscosData>
 > => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+  const resp: AxiosResponse<ApiResponse<ElectricityDiscosData>> =
     await apiService.appPrivate.get('/bills/electricity/discos')
   return resp.data
 }

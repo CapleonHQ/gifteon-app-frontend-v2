@@ -74,13 +74,16 @@ export interface SendGiftBillRecipientInput {
 }
 
 export type SendGiftBillSingleRequestBody = SendGiftBillRecipientInput &
-  GiftBillRecurringBase
+  GiftBillRecurringBase & {
+    pin?: string
+  }
 
 export interface SendGiftBillToMultipleRecipientsRequestBody
   extends GiftBillRecurringBase {
   groupName?: string
   groupDescription?: string
   recipients: SendGiftBillRecipientInput[]
+  pin?: string
 }
 
 export interface UpdateGiftBillBeneficiaryNicknameRequestBody {
@@ -91,6 +94,7 @@ export interface AirtimePurchaseRequestBody {
   network: string
   phoneNumber: string
   amount: number
+  pin?: string
 }
 
 export interface DataPurchaseRequestBody {
@@ -98,6 +102,7 @@ export interface DataPurchaseRequestBody {
   phoneNumber: string
   amount: number
   planCode: string
+  pin?: string
 }
 
 export interface VerifyCableIucRequestBody {
@@ -116,7 +121,7 @@ export interface SubscribeCableTvRequestBody {
   iucNumber: string
   packageCode: string
   amount: number
-  phoneNumber: string
+  pin?: string
 }
 
 export interface PayElectricityBillRequestBody {
@@ -124,5 +129,75 @@ export interface PayElectricityBillRequestBody {
   meterNumber: string
   meterType: GiftBillMeterType
   amount: number
-  phoneNumber: string
+  pin?: string
+}
+
+export interface AirtimeNetworkItem {
+  id: string
+  name: string
+}
+
+export interface AirtimeNetworksData {
+  networks: AirtimeNetworkItem[]
+}
+
+export interface DataNetworkItem {
+  identifier: string
+  name: string
+}
+
+export interface DataNetworksData {
+  networks: DataNetworkItem[]
+}
+
+export interface DataNetworkPlanItem {
+  plan_code: string
+  amount: number
+  label: string
+}
+
+export interface DataNetworkPlansData {
+  status?: string
+  provider?: string
+  identifier?: string
+  plans: DataNetworkPlanItem[]
+}
+
+export interface CableProviderItem {
+  identifier: string
+  name: string
+}
+
+export interface CableProvidersData {
+  status: string
+  providers: CableProviderItem[]
+}
+
+export interface CableProviderPackagesData {
+  status: string
+  provider: string
+  identifier: string
+  plans: CablePackagePlanItem[]
+}
+
+export interface CablePackagePlanItem {
+  plan_code: string
+  amount: number | string
+  display: string
+  description: string
+}
+
+export interface ElectricityDiscosData {
+  status: string
+  provider: string
+  identifier: string
+  plans: ElectricityDiscoPlanItem[]
+}
+
+export interface ElectricityDiscoPlanItem {
+  plan_id: string
+  plan_code: string
+  plan_name: string
+  min_amount: number
+  max_amount: number
 }
