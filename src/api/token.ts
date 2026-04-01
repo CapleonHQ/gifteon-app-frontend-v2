@@ -14,6 +14,51 @@ const ACCESS_TOKEN_COOKIE = 'giftseon_access_token'
 const REFRESH_TOKEN_COOKIE = 'giftseon_refresh_token'
 
 const isBrowser = (): boolean => typeof document !== 'undefined'
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
+  const parts = token.split('.')
+  if (parts.length < 2) return null
+
+  try {
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    const decoded = atob(normalized)
+    const parsed = JSON.parse(decoded) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+      return null
+    return parsed as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
+const inferTokenMaxAgeSeconds = (token: string): number | null => {
+  const payload = decodeJwtPayload(token)
+  if (!payload) return null
+
+  const exp = payload.exp
+
+  if (typeof exp !== 'number' || !Number.isFinite(exp)) return null
+
+  const remainingMs = exp * 1000 - Date.now()
+  if (remainingMs <= 0) return null
+
+  return Math.floor(remainingMs / 1000)
+}
+
+const resolveCookieExpires = (
+  token: string,
+  maxAgeSeconds?: number
+): number | undefined => {
+  const resolvedMaxAgeSeconds =
+    typeof maxAgeSeconds === 'number'
+      ? maxAgeSeconds
+      : inferTokenMaxAgeSeconds(token)
+
+  if (typeof resolvedMaxAgeSeconds !== 'number') return undefined
+  return resolvedMaxAgeSeconds / (MS_PER_DAY / 1000)
+}
 
 export const setAccessToken = (
   token: string,
@@ -27,10 +72,7 @@ export const setAccessToken = (
       (typeof window !== 'undefined' && window.location.protocol === 'https:'),
     path: options.path ?? '/',
     domain: options.domain,
-    expires:
-      typeof options.maxAgeSeconds === 'number'
-        ? options.maxAgeSeconds / (60 * 60 * 24)
-        : undefined,
+    expires: resolveCookieExpires(token, options.maxAgeSeconds),
   })
 }
 
@@ -46,10 +88,7 @@ export const setRefreshToken = (
       (typeof window !== 'undefined' && window.location.protocol === 'https:'),
     path: options.path ?? '/',
     domain: options.domain,
-    expires:
-      typeof options.maxAgeSeconds === 'number'
-        ? options.maxAgeSeconds / (60 * 60 * 24)
-        : undefined,
+    expires: resolveCookieExpires(token, options.maxAgeSeconds),
   })
 }
 
