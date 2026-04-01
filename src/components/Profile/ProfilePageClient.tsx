@@ -36,6 +36,7 @@ import { uploadImage } from '@/api/services/upload'
 import { useDebounce } from '@/hooks/useDebounce'
 import { verifyTag } from '@/api/services/account'
 import { analytics } from '@/lib/analytics/events'
+import { toApiError } from '@/api/errorHelpers'
 
 const MAX_PROFILE_PHOTO_SIZE_BYTES = 5 * 1024 * 1024
 const GIFTSEON_TAG_PATTERN = /^[a-z0-9_-]+$/
