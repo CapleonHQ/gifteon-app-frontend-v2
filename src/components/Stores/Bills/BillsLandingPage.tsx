@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toApiError } from '@/api/errorHelpers'
+import { analytics } from '@/lib/analytics/events'
 import SuccessModal from '@/components/common/SuccessModal'
 import { useProfile } from '@/hooks/tanstack/account'
 import {
@@ -409,10 +410,36 @@ const BillsLandingPage = () => {
 
     setIsSubmitting(true)
     setFeedback(null)
+    const hasGift = activeCards.some((card) => card.sendAsGift)
+    const hasScheduled = activeCards.some((card) => card.timingMode === 'scheduled')
+    const recurringCount = activeCards.filter(
+      (card) => card.timingMode === 'recurring'
+    ).length
+    const hasRecurring = recurringCount > 0
+    analytics.trackBillsSubmitStarted({
+      bill_type: activeTab,
+      recipients_count: activeCards.length,
+      has_gift: hasGift,
+      has_scheduled: hasScheduled,
+      has_recurring: hasRecurring,
+    })
 
     try {
       for (const card of activeCards) {
         await submitCard(card, activeCards.length, pinValue)
+      }
+      analytics.trackBillsSubmitSucceeded({
+        bill_type: activeTab,
+        recipients_count: activeCards.length,
+        has_gift: hasGift,
+        has_scheduled: hasScheduled,
+        has_recurring: hasRecurring,
+      })
+      if (recurringCount > 0) {
+        analytics.trackBillsRecurringCreated({
+          bill_type: activeTab,
+          recurring_count: recurringCount,
+        })
       }
 
       setIsPinOpen(false)
@@ -425,6 +452,14 @@ const BillsLandingPage = () => {
       setIsSuccessOpen(true)
     } catch (error) {
       const message = toApiError(error).message || 'Transaction failed.'
+      analytics.trackBillsSubmitFailed({
+        bill_type: activeTab,
+        recipients_count: activeCards.length,
+        has_gift: hasGift,
+        has_scheduled: hasScheduled,
+        has_recurring: hasRecurring,
+        error_message: message,
+      })
       const normalizedMessage = message.toLowerCase()
       const isPinRelatedApiError = normalizedMessage.includes('pin')
 

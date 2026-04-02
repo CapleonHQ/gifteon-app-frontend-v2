@@ -1,4 +1,5 @@
 import { useState, type RefObject } from 'react'
+import { analytics } from '@/lib/analytics/events'
 import {
   useAirtimeNetworks,
   useCableProviders,
@@ -106,6 +107,10 @@ const BillsBuilderSection = ({
           extractVerifiedCustomerName(resp) || 'Meter verified successfully'
         onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: true }))
         setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: customerName }))
+        analytics.trackBillsVerifySucceeded({
+          bill_type: activeTab,
+          verify_type: 'meter',
+        })
       }
 
       if (
@@ -121,12 +126,21 @@ const BillsBuilderSection = ({
           extractVerifiedCustomerName(resp) || 'IUC verified successfully'
         onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: true }))
         setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: customerName }))
+        analytics.trackBillsVerifySucceeded({
+          bill_type: activeTab,
+          verify_type: 'iuc',
+        })
       }
     } catch {
       const message =
         activeTab === 'electricity'
           ? 'Could not verify meter number.'
           : 'Could not verify IUC number.'
+      analytics.trackBillsVerifyFailed({
+        bill_type: activeTab,
+        verify_type: activeTab === 'electricity' ? 'meter' : 'iuc',
+        error_message: message,
+      })
       onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: false }))
       setVerifyErrorByCard((prev) => ({ ...prev, [card.id]: message }))
       setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: '' }))
@@ -153,6 +167,7 @@ const BillsBuilderSection = ({
     setSelectedBeneficiaryCardId(cardId)
     setBeneficiariesModalSession((prev) => prev + 1)
     setIsBeneficiariesModalOpen(true)
+    analytics.trackBillsBeneficiaryPickerOpened({ bill_type: activeTab })
   }
 
   const getCardIdentifierSuggestions = (card: RecipientCard) => {
@@ -176,6 +191,7 @@ const BillsBuilderSection = ({
   }
 
   const applyIdentifierSuggestion = (cardId: string, identifier: string) => {
+    analytics.trackBillsIdentifierSuggestionSelected({ bill_type: activeTab })
     onUpdateCard(cardId, (current) => ({
       ...current,
       identifierValue: identifier,
@@ -197,6 +213,10 @@ const BillsBuilderSection = ({
     const mapped = mapBeneficiaryToRecipient(activeTab, targetCard.sendAsGift, beneficiary)
     const identifier = mapped.identifierValue
     if (mapped.matchedBy === 'none' || !identifier) return
+    analytics.trackBillsBeneficiarySelected({
+      bill_type: activeTab,
+      matched_by: mapped.matchedBy,
+    })
 
     onUpdateCard(targetCardId, (current) => ({
       ...current,

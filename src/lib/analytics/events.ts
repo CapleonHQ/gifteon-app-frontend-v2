@@ -211,4 +211,49 @@ export const analytics = {
     category: string
     source: 'stores_hub'
   }) => capture('store_category_coming_soon_clicked', properties),
+  trackBillsVerifySucceeded: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+    verify_type: 'meter' | 'iuc'
+  }) => capture('bills_verify_succeeded', properties),
+  trackBillsVerifyFailed: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+    verify_type: 'meter' | 'iuc'
+    error_message: string
+  }) => capture('bills_verify_failed', properties),
+  trackBillsSubmitStarted: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+    recipients_count: number
+    has_gift: boolean
+    has_scheduled: boolean
+    has_recurring: boolean
+  }) => capture('bills_submit_started', properties),
+  trackBillsSubmitSucceeded: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+    recipients_count: number
+    has_gift: boolean
+    has_scheduled: boolean
+    has_recurring: boolean
+  }) => capture('bills_submit_succeeded', properties),
+  trackBillsSubmitFailed: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+    recipients_count: number
+    has_gift: boolean
+    has_scheduled: boolean
+    has_recurring: boolean
+    error_message: string
+  }) => capture('bills_submit_failed', properties),
+  trackBillsRecurringCreated: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+    recurring_count: number
+  }) => capture('bills_recurring_created', properties),
+  trackBillsBeneficiaryPickerOpened: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+  }) => capture('bills_beneficiary_picker_opened', properties),
+  trackBillsBeneficiarySelected: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+    matched_by: 'tag' | 'phone' | 'none'
+  }) => capture('bills_beneficiary_selected', properties),
+  trackBillsIdentifierSuggestionSelected: (properties: {
+    bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
+  }) => capture('bills_identifier_suggestion_selected', properties),
 }

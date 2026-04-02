@@ -19,67 +19,6 @@ import type { GiftBillBeneficiary } from '@/types/Bills'
 import type { BillsTabKey } from '../constants'
 import { getBeneficiaryIdentifiersForContext } from '../utils'
 
-const DUMMY_BENEFICIARIES: GiftBillBeneficiary[] = [
-  {
-    id: 'dummy-beneficiary-tag',
-    nickname: 'Demo Tag User',
-    recipientName: 'Ada Demo',
-    recipientTag: 'adademo',
-  },
-  {
-    id: 'dummy-beneficiary-phone',
-    nickname: 'Demo Phone User',
-    recipientName: 'Bola Demo',
-    recipientPhone: '08012345678',
-  },
-  {
-    id: 'dummy-beneficiary-electricity',
-    nickname: 'Demo Meter User',
-    recipientName: 'Emeka Demo',
-    recipient: '11122233344',
-    billType: 'electricity',
-  },
-  {
-    id: 'dummy-beneficiary-cable',
-    nickname: 'Demo IUC User',
-    recipientName: 'Ifeoma Demo',
-    recipient: '9988776655',
-    billType: 'cable_tv',
-  },
-  {
-    id: 'dummy-beneficiary-phone-2',
-    nickname: 'Kemi Airtime',
-    recipientName: 'Kemi Demo',
-    recipientPhone: '08123456789',
-  },
-  {
-    id: 'dummy-beneficiary-phone-3',
-    nickname: 'Tunde Data',
-    recipientName: 'Tunde Demo',
-    recipientPhone: '07012345678',
-  },
-  {
-    id: 'dummy-beneficiary-tag-2',
-    nickname: 'Tag Tester',
-    recipientName: 'Tag Demo',
-    recipientTag: 'tagtester',
-  },
-  {
-    id: 'dummy-beneficiary-electricity-2',
-    nickname: 'Meter Backup',
-    recipientName: 'Meter Demo',
-    recipient: '44556677889',
-    billType: 'electricity',
-  },
-  {
-    id: 'dummy-beneficiary-cable-2',
-    nickname: 'IUC Backup',
-    recipientName: 'IUC Demo',
-    recipient: '7766554433',
-    billType: 'cable_tv',
-  },
-]
-
 type BillsBeneficiariesModalProps = {
   isOpen: boolean
   onClose: () => void
@@ -112,8 +51,7 @@ const BillsBeneficiariesModal = ({
 
   const beneficiaries = useMemo(() => {
     const liveBeneficiaries = beneficiariesQuery.data?.data?.beneficiaries ?? []
-    const source =
-      liveBeneficiaries.length > 0 ? liveBeneficiaries : DUMMY_BENEFICIARIES
+    const source = liveBeneficiaries
     const term = search.trim().toLowerCase()
 
     const matchesContext = (beneficiary: GiftBillBeneficiary) => {
