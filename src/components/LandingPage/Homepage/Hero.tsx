@@ -114,7 +114,9 @@ const Hero = () => {
               Create a Gift Page
             </Link>
             <Link
-              href='/merchant'
+              href='https://merchant.giftseon.com/'
+              target='_blank'
+              rel='noopener noreferrer'
               className='w-full sm:w-[200px] flex items-center justify-center py-3.5 bg-primary-50/70 hover:bg-primary-50 text-primary-500 rounded-[12px] border border-primary-500 transition-colors duration-300 font-medium'
             >
               Become a Merchant

@@ -90,6 +90,28 @@ export interface UpdateGiftBillBeneficiaryNicknameRequestBody {
   nickname: string
 }
 
+export interface GiftBillBeneficiary {
+  id: string
+  nickname?: string
+  recipientName?: string
+  recipientTag?: string
+  recipientPhone?: string
+  recipientEmail?: string
+  recipient?: string
+  billType?: GiftBillType
+  provider?: string
+}
+
+export interface GiftBillBeneficiariesData {
+  beneficiaries: GiftBillBeneficiary[]
+  pagination?: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
 export interface AirtimePurchaseRequestBody {
   network: string
   phoneNumber: string

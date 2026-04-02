@@ -12,6 +12,7 @@ import {
   DataNetworkPlansData,
   DataNetworksData,
   ElectricityDiscosData,
+  GiftBillBeneficiariesData,
   GiftBillPaginationParams,
   GiftBillPaymentLinksParams,
   PayElectricityBillRequestBody,
@@ -116,8 +117,8 @@ export const cancelSentGiftBill = async (
 
 export const listGiftBillBeneficiaries = async (
   params?: GiftBillPaginationParams
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
+): Promise<ApiResponse<GiftBillBeneficiariesData>> => {
+  const resp: AxiosResponse<ApiResponse<GiftBillBeneficiariesData>> =
     await apiService.appPrivate.get('/gift-bills/beneficiaries', { params })
   return resp.data
 }

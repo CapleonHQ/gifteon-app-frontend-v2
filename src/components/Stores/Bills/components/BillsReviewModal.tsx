@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
-import { formatTimingSummary, parseAmount } from '../models'
-import { useBillsFlow } from '../context/BillsFlowContext'
+import { RecipientCard, formatTimingSummary, parseAmount } from '../models'
+import { BillsTabKey } from '../constants'
 import { useWalletDetails } from '@/hooks/tanstack/wallet'
 import { parseWalletBalance } from '@/lib/wallet/transformers'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -18,24 +18,32 @@ import {
   mapElectricityDiscoOptions,
 } from '../utils'
 
-const BillsReviewModal = () => {
-  const {
-    isReviewOpen,
-    onCloseReview,
-    onOpenPinFromReview,
-    activeTab,
-    activeCards,
-    totalAmount,
-    getDataPlanLabel,
-    getCablePackageLabel,
-  } = useBillsFlow()
+type BillsReviewModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  onContinue: () => void
+  activeTab: BillsTabKey
+  cards: RecipientCard[]
+  totalAmount: number
+  getDataPlanLabel: (network: string, code: string) => string
+  getCablePackageLabel: (provider: string, code: string) => string
+}
+
+const BillsReviewModal = ({
+  isOpen,
+  onClose,
+  onContinue,
+  activeTab,
+  cards,
+  totalAmount,
+  getDataPlanLabel,
+  getCablePackageLabel,
+}: BillsReviewModalProps) => {
   const airtimeOptions = mapAirtimeNetworkOptions(useAirtimeNetworks().data)
   const dataNetworkOptions = mapDataNetworkOptions(useDataNetworks().data)
   const electricityOptions = mapElectricityDiscoOptions(useElectricityDiscos().data)
   const cableProviderOptions = mapCableProviderOptions(useCableProviders().data)
 
-  const cards = activeCards
-  const isOpen = isReviewOpen
   const walletDetailsQuery = useWalletDetails()
   const walletData = walletDetailsQuery.data?.data
   const walletCurrency = walletData?.currency || 'NGN'
@@ -116,13 +124,13 @@ const BillsReviewModal = () => {
   return (
     <ResponsiveModal
       isOpen={isOpen}
-      onClose={onCloseReview}
+      onClose={onClose}
       desktopMaxWidthClass='max-w-2xl'
       header={
         <div className='relative'>
           <button
             type='button'
-            onClick={onCloseReview}
+            onClick={onClose}
             className='absolute -right-5 -top-5 w-9 h-9 rounded-full hidden lg:flex items-center justify-center hover:bg-grey-50'
             aria-label='Close'
           >
@@ -222,14 +230,14 @@ const BillsReviewModal = () => {
           <div className='flex items-center gap-3'>
             <button
               type='button'
-              onClick={onCloseReview}
+              onClick={onClose}
               className='flex-1 py-2.5 rounded-[10px] border border-grey-200 text-grey-700 font-medium bg-grey-50/70 hover:bg-grey-100/70 transition-colors'
             >
               Cancel
             </button>
             <button
               type='button'
-              onClick={onOpenPinFromReview}
+              onClick={onContinue}
               disabled={isBalanceLoading || hasInsufficientBalance}
               className='flex-1 py-2.5 rounded-[10px] font-medium text-white bg-primary-500 hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >

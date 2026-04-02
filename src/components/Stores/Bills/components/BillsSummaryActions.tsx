@@ -1,8 +1,16 @@
-import { useBillsFlow } from '../context/BillsFlowContext'
+type BillsSummaryActionsProps = {
+  totalAmount: number
+  recipientsCount: number
+  isActionBusy: boolean
+  onReview: () => void
+}
 
-const BillsSummaryActions = () => {
-  const { totalAmount, activeCards, isActionBusy, onOpenReview } = useBillsFlow()
-  const recipientsCount = activeCards.length
+const BillsSummaryActions = ({
+  totalAmount,
+  recipientsCount,
+  isActionBusy,
+  onReview,
+}: BillsSummaryActionsProps) => {
 
   return (
     <>
@@ -22,7 +30,7 @@ const BillsSummaryActions = () => {
 
           <button
             type='button'
-            onClick={onOpenReview}
+            onClick={onReview}
             disabled={isActionBusy || recipientsCount === 0}
             className='w-full h-11 rounded-xl bg-primary-500 text-white font-medium hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed'
           >
@@ -52,7 +60,7 @@ const BillsSummaryActions = () => {
           </div>
           <button
             type='button'
-            onClick={onOpenReview}
+            onClick={onReview}
             disabled={isActionBusy || recipientsCount === 0}
             className='h-11 px-5 rounded-xl bg-primary-500 text-white font-medium hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed'
           >

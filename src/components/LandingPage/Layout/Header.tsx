@@ -24,7 +24,7 @@ const celebrationTypes = [
   { label: 'Weddings', icon: '💍', href: '#' },
   { label: 'Anniversaries', icon: '🎊', href: '#' },
   { label: 'Graduations', icon: '🎓', href: '#' },
-  { label: 'Perpetual / Donation', icon: '🔑', href: '#' },
+  // { label: 'Perpetual / Donation', icon: '🔑', href: '#' },
 ]
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
@@ -245,14 +245,14 @@ const Header = () => {
                 {navLinks[2].label}
               </Link>
             </motion.div>
-            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }}>
+            {/* <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }}>
               <Link
                 href={navLinks[3].href}
                 className='text-base leading-6 text-grey-700 transition-colors hover:text-grey-900'
               >
                 {navLinks[3].label}
               </Link>
-            </motion.div>
+            </motion.div> */}
           </nav>
 
           <div className='hidden items-center gap-5 lg:flex'>
@@ -420,7 +420,7 @@ const Header = () => {
                         {navLinks[2].label}
                       </Link>
                     </motion.li>
-                    <motion.li className='py-4' variants={mobileItemVariants}>
+                    {/* <motion.li className='py-4' variants={mobileItemVariants}>
                       <Link
                         href={navLinks[3].href}
                         onClick={closeMobileMenu}
@@ -428,7 +428,7 @@ const Header = () => {
                       >
                         {navLinks[3].label}
                       </Link>
-                    </motion.li>
+                    </motion.li> */}
                   </motion.ul>
                 </nav>
 
