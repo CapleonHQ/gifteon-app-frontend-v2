@@ -187,33 +187,40 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
                   </div>
                 </div>
                 <div className='max-h-96 overflow-y-auto'>
-                  {NOTIFICATIONS.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`px-4 py-3 hover:bg-grey-50 cursor-pointer transition-colors border-b border-grey-50 last:border-0 ${
-                        notification.unread ? 'bg-primary-50/30' : ''
-                      }`}
-                    >
-                      <div className='flex gap-3'>
-                        <div className='flex-1'>
-                          <div className='flex items-start justify-between gap-2'>
-                            <p className='text-sm font-medium text-grey-900'>
-                              {notification.title}
+                  {NOTIFICATIONS.length > 0 ? (
+                    NOTIFICATIONS.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`px-4 py-3 hover:bg-grey-50 cursor-pointer transition-colors border-b border-grey-50 last:border-0 ${
+                          notification.unread ? 'bg-primary-50/30' : ''
+                        }`}
+                      >
+                        <div className='flex gap-3'>
+                          <div className='flex-1'>
+                            <div className='flex items-start justify-between gap-2'>
+                              <p className='text-sm font-medium text-grey-900'>
+                                {notification.title}
+                              </p>
+                              {notification.unread && (
+                                <span className='w-2 h-2 bg-primary-500 rounded-full mt-1.5 shrink-0' />
+                              )}
+                            </div>
+                            <p className='text-xs text-grey-600 mt-1'>
+                              {notification.message}
                             </p>
-                            {notification.unread && (
-                              <span className='w-2 h-2 bg-primary-500 rounded-full mt-1.5 shrink-0' />
-                            )}
+                            <p className='text-xs text-grey-400 mt-1'>
+                              {notification.time}
+                            </p>
                           </div>
-                          <p className='text-xs text-grey-600 mt-1'>
-                            {notification.message}
-                          </p>
-                          <p className='text-xs text-grey-400 mt-1'>
-                            {notification.time}
-                          </p>
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className='px-4 py-8 text-center text-sm text-grey-500'>
+                      You&apos;re all caught up. New notifications will appear
+                      here.
                     </div>
-                  ))}
+                  )}
                 </div>
                 <div className='px-4 py-3 border-t border-grey-50'>
                   <button className='w-full text-sm text-primary-600 font-medium hover:text-primary-700 transition-colors'>
