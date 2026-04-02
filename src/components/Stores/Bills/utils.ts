@@ -4,9 +4,11 @@ import type {
   CableProvidersData,
   DataNetworkPlansData,
   DataNetworksData,
+  GiftBillBeneficiary,
   ElectricityDiscosData,
 } from '@/types/Bills'
 import type { ApiResponse } from '@/types/Common'
+import type { BillsTabKey } from './constants'
 
 export type SelectOption = {
   value: string
@@ -114,5 +116,58 @@ export const extractRecentBeneficiaries = (payload: unknown): string[] => {
     })
     .filter(Boolean)
 
-  return Array.from(new Set(names)).slice(0, 6)
+  return Array.from(new Set(names))
+}
+
+export type BeneficiaryRecipientMapping = {
+  matchedBy: 'tag' | 'phone' | 'none'
+  identifierValue?: string
+}
+
+export const getBeneficiaryIdentifiersForContext = (
+  activeTab: BillsTabKey,
+  sendAsGift: boolean,
+  beneficiary: GiftBillBeneficiary
+): string[] => {
+  const identifiers: string[] = []
+  const tag = (beneficiary.recipientTag || '').replace(/^@+/, '').trim()
+  const phone = (beneficiary.recipientPhone || '').trim()
+  const direct = (beneficiary.recipient || '').trim()
+  const isBillTypeMatch = !beneficiary.billType || beneficiary.billType === activeTab
+
+  if (activeTab === 'airtime' || activeTab === 'data') {
+    if (phone) identifiers.push(phone)
+    if (sendAsGift && tag) identifiers.push(`@${tag}`)
+    return identifiers
+  }
+
+  if (activeTab === 'electricity' || activeTab === 'cable_tv') {
+    if (isBillTypeMatch && direct) identifiers.push(direct)
+    if (sendAsGift && tag) identifiers.push(`@${tag}`)
+  }
+
+  return identifiers
+}
+
+export const mapBeneficiaryToRecipient = (
+  activeTab: BillsTabKey,
+  sendAsGift: boolean,
+  beneficiary: GiftBillBeneficiary
+): BeneficiaryRecipientMapping => {
+  const identifiers = getBeneficiaryIdentifiersForContext(
+    activeTab,
+    sendAsGift,
+    beneficiary
+  )
+  if (identifiers.length > 0) {
+    const selected = identifiers[0]
+    return {
+      matchedBy: selected.startsWith('@') ? 'tag' : 'phone',
+      identifierValue: selected,
+    }
+  }
+
+  return {
+    matchedBy: 'none',
+  }
 }

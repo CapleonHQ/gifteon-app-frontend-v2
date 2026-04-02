@@ -1,4 +1,5 @@
-import { Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Loader2, Trash2 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
@@ -43,12 +44,15 @@ type BillsRecipientCardProps = {
   isVerifyingCable: boolean
   onUpdateCard: (cardId: string, updater: (card: RecipientCard) => RecipientCard) => void
   onRemoveRecipientCard: (cardId: string) => void
+  onOpenBeneficiaryPicker: (cardId: string) => void
   onVerifyCard: (card: RecipientCard) => Promise<void>
   onClearVerificationState: (cardId: string) => void
   onEnsureDataPlans: (network: string) => Promise<void>
   onEnsureCablePackages: (provider: string) => Promise<void>
   getDataPlanAmount: (network: string, code: string) => number | undefined
   getCablePlanAmount: (provider: string, code: string) => number | undefined
+  identifierSuggestions: string[]
+  onSelectIdentifierSuggestion: (cardId: string, identifier: string) => void
 }
 
 const BillsRecipientCard = ({
@@ -70,15 +74,33 @@ const BillsRecipientCard = ({
   isVerifyingCable,
   onUpdateCard,
   onRemoveRecipientCard,
+  onOpenBeneficiaryPicker,
   onVerifyCard,
   onClearVerificationState,
   onEnsureDataPlans,
   onEnsureCablePackages,
   getDataPlanAmount,
   getCablePlanAmount,
+  identifierSuggestions,
+  onSelectIdentifierSuggestion,
 }: BillsRecipientCardProps) => {
   const visibleCardError = showValidationErrors ? cardError : null
   const isTag = card.sendAsGift && card.identifierValue.trim().startsWith('@')
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false)
+  const suggestionsContainerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!suggestionsContainerRef.current) return
+      if (suggestionsContainerRef.current.contains(event.target as Node)) return
+      setIsSuggestionsOpen(false)
+    }
+
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick)
+    }
+  }, [])
 
   return (
     <div className='rounded-xl border border-grey-100 bg-white p-4 space-y-3'>
@@ -311,79 +333,117 @@ const BillsRecipientCard = ({
         </div>
       </div>
       <div className='space-y-1.5'>
-        <p className='text-xs font-medium text-grey-700'>
-          {activeTab === 'electricity'
-            ? card.sendAsGift
-              ? 'Meter Number or @Giftseon Tag'
-              : 'Meter Number'
-            : activeTab === 'cable_tv'
-            ? card.sendAsGift
-              ? 'IUC Number or @Giftseon Tag'
-              : 'IUC Number'
-            : card.sendAsGift
-            ? 'Phone Number or @Giftseon Tag'
-            : 'Phone Number'}
-        </p>
-        <input
-          type='text'
-          value={card.identifierValue}
-          onChange={(event) => {
-            onUpdateCard(card.id, (current) => ({
-              ...current,
-              identifierValue: event.target.value,
-              selfTagError: undefined,
-              ...(activeTab === 'electricity' || activeTab === 'cable_tv'
-                ? { recipientVerified: false }
-                : {}),
-            }))
-            if (activeTab === 'electricity' || activeTab === 'cable_tv') {
-              onClearVerificationState(card.id)
-            }
-          }}
-          placeholder={
-            activeTab === 'electricity'
+        <div className='flex items-center justify-between gap-3'>
+          <p className='text-xs font-medium text-grey-700'>
+            {activeTab === 'electricity'
               ? card.sendAsGift
-                ? 'Enter meter number or @giftseonTag'
-                : 'Enter meter number'
+                ? 'Meter Number or @Giftseon Tag'
+                : 'Meter Number'
               : activeTab === 'cable_tv'
               ? card.sendAsGift
-                ? 'Enter IUC number or @giftseonTag'
-                : 'Enter IUC number'
+                ? 'IUC Number or @Giftseon Tag'
+                : 'IUC Number'
               : card.sendAsGift
-              ? 'Enter phone number or @giftseonTag'
-              : 'e.g. 08012345678'
-          }
-          className={`w-full px-3 py-3 border rounded-xl text-sm text-grey-800 placeholder:text-grey-500 bg-white focus:outline-none focus:ring-1 focus:ring-primary-300 ${
-            verifyError || visibleCardError?.field === 'identifierValue'
-              ? 'border-error-300'
-              : 'border-grey-50'
-          }`}
-        />
+              ? 'Phone Number or @Giftseon Tag'
+              : 'Phone Number'}
+          </p>
+          <button
+            type='button'
+            onClick={() => onOpenBeneficiaryPicker(card.id)}
+            className='text-xs font-medium text-primary-600 hover:text-primary-700'
+          >
+            Use beneficiary
+          </button>
+        </div>
+        <div className='relative' ref={suggestionsContainerRef}>
+          <input
+            type='text'
+            value={card.identifierValue}
+            onFocus={() => {
+              if (identifierSuggestions.length > 0) {
+                setIsSuggestionsOpen(true)
+              }
+            }}
+            onChange={(event) => {
+              onUpdateCard(card.id, (current) => ({
+                ...current,
+                identifierValue: event.target.value,
+                selfTagError: undefined,
+                ...(activeTab === 'electricity' || activeTab === 'cable_tv'
+                  ? { recipientVerified: false }
+                  : {}),
+              }))
+              if (activeTab === 'electricity' || activeTab === 'cable_tv') {
+                onClearVerificationState(card.id)
+              }
+              setIsSuggestionsOpen(true)
+            }}
+            placeholder={
+              activeTab === 'electricity'
+                ? card.sendAsGift
+                  ? 'Enter meter number or @giftseonTag'
+                  : 'Enter meter number'
+                : activeTab === 'cable_tv'
+                ? card.sendAsGift
+                  ? 'Enter IUC number or @giftseonTag'
+                  : 'Enter IUC number'
+                : card.sendAsGift
+                ? 'Enter phone number or @giftseonTag'
+                : 'e.g. 08012345678'
+            }
+            className={`w-full px-3 py-3 ${
+              (activeTab === 'electricity' || activeTab === 'cable_tv') && !isTag
+                ? 'pr-28'
+                : ''
+            } border rounded-xl text-sm text-grey-800 placeholder:text-grey-500 bg-white focus:outline-none focus:ring-1 focus:ring-primary-300 ${
+              verifyError || visibleCardError?.field === 'identifierValue'
+                ? 'border-error-300'
+                : 'border-grey-50'
+            }`}
+          />
+          {(activeTab === 'electricity' || activeTab === 'cable_tv') && !isTag ? (
+            <button
+              type='button'
+              onClick={() => void onVerifyCard(card)}
+              disabled={isActionBusy || !card.identifierValue.trim() || !card.provider}
+              className='absolute right-2 top-1/2 -translate-y-1/2 h-8 px-2 rounded-lg text-xs font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              {(activeTab === 'electricity' && isVerifyingElectricity) ||
+              (activeTab === 'cable_tv' && isVerifyingCable) ? (
+                <Loader2 className='h-4 w-4 animate-spin' />
+              ) : (
+                'Verify'
+              )}
+            </button>
+          ) : null}
+          {isSuggestionsOpen && identifierSuggestions.length > 0 ? (
+            <div className='absolute left-0 right-0 top-full mt-1 z-30 border border-grey-100 rounded-xl bg-white shadow-[0px_10px_18px_-2px_#10192812] max-h-48 overflow-y-auto'>
+              {identifierSuggestions.map((suggestion) => (
+                <button
+                  key={`${card.id}-${suggestion}`}
+                  type='button'
+                  onClick={() => {
+                    onSelectIdentifierSuggestion(card.id, suggestion)
+                    setIsSuggestionsOpen(false)
+                  }}
+                  className='w-full text-left px-3 py-2 text-sm text-grey-700 hover:bg-grey-50'
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
         {verifyError || visibleCardError?.field === 'identifierValue' ? (
           <InlineError message={verifyError || visibleCardError?.message} />
         ) : null}
-        {(activeTab === 'electricity' || activeTab === 'cable_tv') && !isTag ? (
-          <div className='flex items-center justify-between gap-3 mt-2'>
-            {card.recipientVerified ? (
-              <span className='text-xs font-medium text-success-600'>
-                {verifiedName || 'Verified'}
-              </span>
-            ) : (
-              <button
-                type='button'
-                onClick={() => void onVerifyCard(card)}
-                disabled={isActionBusy || !card.identifierValue.trim() || !card.provider}
-                className='text-xs font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed'
-              >
-                {activeTab === 'electricity'
-                  ? isVerifyingElectricity
-                    ? 'Verifying...'
-                    : 'Verify meter'
-                  : isVerifyingCable
-                  ? 'Verifying...'
-                  : 'Verify IUC'}
-              </button>
-            )}
+        {(activeTab === 'electricity' || activeTab === 'cable_tv') &&
+        !isTag &&
+        card.recipientVerified ? (
+          <div className='mt-2'>
+            <span className='text-xs font-medium text-success-600'>
+              {verifiedName || 'Verified'}
+            </span>
           </div>
         ) : null}
       </div>
@@ -457,18 +517,13 @@ const BillsRecipientCard = ({
             <>
               <p className='text-xs text-grey-600'>Notify recipient via</p>
               <div className='flex flex-wrap gap-4'>
-                <label className='inline-flex items-center gap-2 text-sm text-grey-700'>
+                <label className='inline-flex items-center gap-2 text-sm text-grey-500'>
                   <Checkbox
-                    checked={card.notifySms}
-                    onCheckedChange={(checked) =>
-                      onUpdateCard(card.id, (current) => ({
-                        ...current,
-                        notifySms: Boolean(checked),
-                      }))
-                    }
+                    checked={false}
+                    disabled
                     className='data-[state=checked]:bg-primary-500 data-[state=checked]:border-primary-500 data-[state=indeterminate]:bg-primary-500 data-[state=indeterminate]:border-primary-500 focus-visible:ring-primary-200/60'
                   />
-                  SMS
+                  SMS (disabled)
                 </label>
                 <label className='inline-flex items-center gap-2 text-sm text-grey-700'>
                   <Checkbox
@@ -534,21 +589,23 @@ const BillsRecipientCard = ({
 
           {!card.isAnonymous ? (
             <>
-              <div className='space-y-1.5'>
-                <p className='text-xs font-medium text-grey-700'>Recipient Name (optional)</p>
-                <input
-                  type='text'
-                  value={card.recipientName}
-                  onChange={(event) =>
-                    onUpdateCard(card.id, (current) => ({
-                      ...current,
-                      recipientName: event.target.value,
-                    }))
-                  }
-                  placeholder='e.g. Adeola'
-                  className='w-full px-3 py-3 border border-grey-50 rounded-xl text-sm text-grey-800 placeholder:text-grey-500 bg-white focus:outline-none focus:ring-1 focus:ring-primary-300'
-                />
-              </div>
+              {!isTag ? (
+                <div className='space-y-1.5'>
+                  <p className='text-xs font-medium text-grey-700'>Recipient Name (optional)</p>
+                  <input
+                    type='text'
+                    value={card.recipientName}
+                    onChange={(event) =>
+                      onUpdateCard(card.id, (current) => ({
+                        ...current,
+                        recipientName: event.target.value,
+                      }))
+                    }
+                    placeholder='e.g. Adeola'
+                    className='w-full px-3 py-3 border border-grey-50 rounded-xl text-sm text-grey-800 placeholder:text-grey-500 bg-white focus:outline-none focus:ring-1 focus:ring-primary-300'
+                  />
+                </div>
+              ) : null}
 
               <div className='space-y-1.5'>
                 <p className='text-xs font-medium text-grey-700'>Sender Note (optional)</p>

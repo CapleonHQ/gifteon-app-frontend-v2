@@ -229,18 +229,6 @@ const BillsLandingPage = () => {
       }
 
       if (card.sendAsGift && !card.isAnonymous && !isTag) {
-        if (!card.notifySms && !card.notifyEmail) {
-          return {
-            field: 'notifyMethod',
-            message: 'Choose at least one notification method (SMS or Email).',
-          }
-        }
-        if (card.notifySms && !card.notificationPhone.trim()) {
-          return {
-            field: 'notificationPhone',
-            message: 'Notification phone is required for SMS.',
-          }
-        }
         if (card.notifyEmail && !card.notificationEmail.trim()) {
           return {
             field: 'notificationEmail',
@@ -357,9 +345,7 @@ const BillsLandingPage = () => {
     await sendGiftSingleMutation.mutateAsync({
       recipientTag: isTag ? identifier.replace(/^@+/, '') : undefined,
       recipientPhone:
-        card.notifySms && card.notificationPhone.trim()
-          ? card.notificationPhone.trim()
-          : activeTab === 'airtime' || activeTab === 'data'
+        activeTab === 'airtime' || activeTab === 'data'
           ? isTag
             ? undefined
             : identifier
@@ -367,7 +353,7 @@ const BillsLandingPage = () => {
       recipientEmail: card.notifyEmail
         ? card.notificationEmail.trim() || undefined
         : undefined,
-      recipientName: card.isAnonymous
+      recipientName: card.isAnonymous || isTag
         ? undefined
         : card.recipientName.trim() || undefined,
       bill: {
@@ -386,8 +372,7 @@ const BillsLandingPage = () => {
       },
       isAnonymous: card.isAnonymous,
       senderNote: card.isAnonymous ? undefined : card.senderNote.trim() || undefined,
-      notifySms:
-        card.sendAsGift && !card.isAnonymous ? card.notifySms : undefined,
+      notifySms: undefined,
       notifyEmail:
         card.sendAsGift && !card.isAnonymous ? card.notifyEmail : undefined,
       scheduledAt:

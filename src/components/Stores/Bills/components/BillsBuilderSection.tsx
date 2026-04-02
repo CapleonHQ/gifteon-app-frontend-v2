@@ -1,5 +1,4 @@
 import { useState, type RefObject } from 'react'
-import { toApiError } from '@/api/errorHelpers'
 import {
   useAirtimeNetworks,
   useCableProviders,
@@ -13,6 +12,8 @@ import type { BillsTabKey } from '../constants'
 import type { CardValidationIssue, RecipientCard } from '../models'
 import {
   extractRecentBeneficiaries,
+  getBeneficiaryIdentifiersForContext,
+  mapBeneficiaryToRecipient,
   mapAirtimeNetworkOptions,
   mapCableProviderOptions,
   mapDataNetworkOptions,
@@ -21,6 +22,8 @@ import {
 import { useBillsPlanCatalog } from '../hooks/useBillsPlanCatalog'
 import BillsRecipientCard from './BillsRecipientCard'
 import BillsQuickActions from './BillsQuickActions'
+import BillsBeneficiariesModal from './BillsBeneficiariesModal'
+import type { GiftBillBeneficiary } from '@/types/Bills'
 
 type BillsBuilderSectionProps = {
   activeTab: BillsTabKey
@@ -61,6 +64,9 @@ const BillsBuilderSection = ({
 }: BillsBuilderSectionProps) => {
   const [verifyErrorByCard, setVerifyErrorByCard] = useState<Record<string, string>>({})
   const [verifiedNameByCard, setVerifiedNameByCard] = useState<Record<string, string>>({})
+  const [isBeneficiariesModalOpen, setIsBeneficiariesModalOpen] = useState(false)
+  const [beneficiariesModalSession, setBeneficiariesModalSession] = useState(0)
+  const [selectedBeneficiaryCardId, setSelectedBeneficiaryCardId] = useState('')
 
   const plansCatalog = useBillsPlanCatalog()
   const verifyElectricityMutation = useVerifyElectricityMeter()
@@ -70,13 +76,14 @@ const BillsBuilderSection = ({
   const dataNetworksQuery = useDataNetworks()
   const electricityDiscosQuery = useElectricityDiscos()
   const cableProvidersQuery = useCableProviders()
-  const beneficiariesQuery = useGiftBillBeneficiaries({ page: 1, limit: 6 })
+  const beneficiariesQuery = useGiftBillBeneficiaries({ page: 1, limit: 100 })
 
   const airtimeOptions = mapAirtimeNetworkOptions(airtimeNetworksQuery.data)
   const dataNetworkOptions = mapDataNetworkOptions(dataNetworksQuery.data)
   const electricityOptions = mapElectricityDiscoOptions(electricityDiscosQuery.data)
   const cableProviderOptions = mapCableProviderOptions(cableProvidersQuery.data)
   const recentBeneficiaries = extractRecentBeneficiaries(beneficiariesQuery.data)
+  const beneficiaries = beneficiariesQuery.data?.data?.beneficiaries ?? []
 
   const clearVerificationState = (cardId: string) => {
     setVerifyErrorByCard((prev) => ({ ...prev, [cardId]: '' }))
@@ -115,8 +122,11 @@ const BillsBuilderSection = ({
         onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: true }))
         setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: customerName }))
       }
-    } catch (error) {
-      const message = toApiError(error).message || 'Verification failed.'
+    } catch {
+      const message =
+        activeTab === 'electricity'
+          ? 'Could not verify meter number.'
+          : 'Could not verify IUC number.'
       onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: false }))
       setVerifyErrorByCard((prev) => ({ ...prev, [card.id]: message }))
       setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: '' }))
@@ -137,6 +147,70 @@ const BillsBuilderSection = ({
     if (activeTab === 'electricity' || activeTab === 'cable_tv') {
       clearVerificationState(firstCard.id)
     }
+  }
+
+  const openBeneficiaryPicker = (cardId: string) => {
+    setSelectedBeneficiaryCardId(cardId)
+    setBeneficiariesModalSession((prev) => prev + 1)
+    setIsBeneficiariesModalOpen(true)
+  }
+
+  const getCardIdentifierSuggestions = (card: RecipientCard) => {
+    const query = card.identifierValue.trim().toLowerCase()
+    if (query.length < 2) return []
+
+    const unique = new Set<string>()
+    for (const beneficiary of beneficiaries) {
+      const identifiers = getBeneficiaryIdentifiersForContext(
+        activeTab,
+        card.sendAsGift,
+        beneficiary
+      )
+      for (const identifier of identifiers) {
+        if (identifier.toLowerCase().includes(query)) {
+          unique.add(identifier)
+        }
+      }
+    }
+    return Array.from(unique).slice(0, 8)
+  }
+
+  const applyIdentifierSuggestion = (cardId: string, identifier: string) => {
+    onUpdateCard(cardId, (current) => ({
+      ...current,
+      identifierValue: identifier,
+      ...(activeTab === 'electricity' || activeTab === 'cable_tv'
+        ? { recipientVerified: false }
+        : {}),
+    }))
+    if (activeTab === 'electricity' || activeTab === 'cable_tv') {
+      clearVerificationState(cardId)
+    }
+  }
+
+  const applyBeneficiaryToCard = (beneficiary: GiftBillBeneficiary) => {
+    const targetCardId = selectedBeneficiaryCardId || activeCards[0]?.id
+    if (!targetCardId) return
+    const targetCard = activeCards.find((card) => card.id === targetCardId)
+    if (!targetCard) return
+
+    const mapped = mapBeneficiaryToRecipient(activeTab, targetCard.sendAsGift, beneficiary)
+    const identifier = mapped.identifierValue
+    if (mapped.matchedBy === 'none' || !identifier) return
+
+    onUpdateCard(targetCardId, (current) => ({
+      ...current,
+      identifierValue: identifier,
+      ...(activeTab === 'electricity' || activeTab === 'cable_tv'
+        ? { recipientVerified: false }
+        : {}),
+    }))
+
+    if (activeTab === 'electricity' || activeTab === 'cable_tv') {
+      clearVerificationState(targetCardId)
+    }
+
+    setIsBeneficiariesModalOpen(false)
   }
 
   return (
@@ -176,12 +250,15 @@ const BillsBuilderSection = ({
                 isVerifyingCable={verifyCableMutation.isPending}
                 onUpdateCard={onUpdateCard}
                 onRemoveRecipientCard={onRemoveRecipientCard}
+                onOpenBeneficiaryPicker={openBeneficiaryPicker}
                 onVerifyCard={handleVerifyCard}
                 onClearVerificationState={clearVerificationState}
                 onEnsureDataPlans={plansCatalog.ensureDataPlans}
                 onEnsureCablePackages={plansCatalog.ensureCablePackages}
                 getDataPlanAmount={plansCatalog.getDataPlanAmount}
                 getCablePlanAmount={plansCatalog.getCablePlanAmount}
+                identifierSuggestions={getCardIdentifierSuggestions(card)}
+                onSelectIdentifierSuggestion={applyIdentifierSuggestion}
               />
             </div>
           )
@@ -193,6 +270,18 @@ const BillsBuilderSection = ({
           onApplyQuickRecipient={applyQuickRecipient}
         />
       </div>
+
+      <BillsBeneficiariesModal
+        key={`beneficiaries-picker-${beneficiariesModalSession}`}
+        isOpen={isBeneficiariesModalOpen}
+        onClose={() => setIsBeneficiariesModalOpen(false)}
+        onPickBeneficiary={applyBeneficiaryToCard}
+        activeTab={activeTab}
+        sendAsGift={
+          (activeCards.find((card) => card.id === selectedBeneficiaryCardId) ||
+            activeCards[0])?.sendAsGift || false
+        }
+      />
     </section>
   )
 }
