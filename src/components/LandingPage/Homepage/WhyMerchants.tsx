@@ -148,7 +148,9 @@ const WhyMerchants = () => {
             className='w-fit rounded-[12px]'
           >
             <Link
-              href='/merchant'
+              href='https://merchant.giftseon.com/'
+              target='_blank'
+              rel='noopener noreferrer'
               className='inline-flex w-[200px] items-center justify-center rounded-[12px] py-3.5 border border-primary-500 bg-linear-to-b from-primary-400 from-17% to-primary-600 text-base font-medium leading-5 text-white transition-colors duration-300 hover:from-primary-500 hover:to-primary-700'
             >
               Become a Merchant

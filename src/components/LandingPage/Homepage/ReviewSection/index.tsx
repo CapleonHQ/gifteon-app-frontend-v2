@@ -11,8 +11,8 @@ const AUTO_PLAY_RESUME_IDLE_MS = 6000
 
 const reviews = [
   {
-    name: 'Michael Johnson',
-    image: '/assets/images/review-author-1.jpg',
+    name: 'Tunde Alabi',
+    image: '',
     copy: 'Instead of 20 different bank alerts, all my birthday money came in one place with sweet notes too. Loved it!',
   },
   {
@@ -21,13 +21,13 @@ const reviews = [
     copy: 'Instead of 20 different bank alerts, all my birthday money came in one place with sweet notes too. Loved it!',
   },
   {
-    name: 'Sofia Chen',
-    image: '/assets/images/review-author-3.jpg',
+    name: 'Chiamaka Okafor',
+    image: '',
     copy: 'Instead of 20 different bank alerts, all my birthday money came in one place with sweet notes too. Loved it!',
   },
   {
-    name: 'Raj Patel',
-    image: '/assets/images/review-author-4.jpg',
+    name: 'Musa Bello',
+    image: '',
     copy: 'Instead of 20 different bank alerts, all my birthday money came in one place with sweet notes too. Loved it!',
   },
 ]
@@ -177,7 +177,9 @@ const ReviewSection = () => {
           Create a Gift Page
         </Link>
         <Link
-          href='/merchant'
+          href='https://merchant.giftseon.com/'
+          target='_blank'
+          rel='noopener noreferrer'
           className='w-full sm:w-[200px] flex items-center justify-center py-3.5 bg-primary-50/70 hover:bg-primary-50 text-primary-500 rounded-[12px] border border-primary-500 transition-colors duration-300 font-medium'
         >
           Become a Merchant

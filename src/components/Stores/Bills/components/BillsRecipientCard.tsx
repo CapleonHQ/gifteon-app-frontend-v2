@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import DatePickerField from '@/components/Gifts/CreateNewGiftPage/Components/DatePickerField'
-import TimePickerField from '@/components/Gifts/CreateNewGiftPage/Components/TimePickerField'
+import BillsDatePickerField from './BillsDatePickerField'
+import BillsTimePickerField from './BillsTimePickerField'
 import { METER_TYPES, type BillsTabKey } from '../constants'
 import type { CardValidationIssue, RecipientCard } from '../models'
 import { formatAmountDigits, formatTimingSummary } from '../models'
@@ -710,7 +710,7 @@ const BillsRecipientCard = ({
 
         {card.timingMode !== 'instant' ? (
           <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-            <DatePickerField
+            <BillsDatePickerField
               label={card.timingMode === 'recurring' ? 'Start date' : 'Date'}
               value={card.scheduledDate}
               onChange={(value) =>
@@ -721,7 +721,7 @@ const BillsRecipientCard = ({
               }
               minDate={new Date()}
             />
-            <TimePickerField
+            <BillsTimePickerField
               label='Time'
               value={card.scheduledTime}
               onChange={(value) =>
@@ -784,7 +784,7 @@ const BillsRecipientCard = ({
 
             {card.recurringEndType === 'date' ? (
               <div>
-                <DatePickerField
+                <BillsDatePickerField
                   label='End date'
                   value={card.recurringEndDate}
                   onChange={(value) =>

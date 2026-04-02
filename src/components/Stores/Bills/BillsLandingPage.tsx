@@ -264,11 +264,7 @@ const BillsLandingPage = () => {
 
       return null
     },
-    [
-      activeTab,
-      ownTag,
-      plansCatalog,
-    ]
+    [activeTab, ownTag, plansCatalog]
   )
 
   const cardErrors = useMemo(
@@ -354,9 +350,10 @@ const BillsLandingPage = () => {
       recipientEmail: card.notifyEmail
         ? card.notificationEmail.trim() || undefined
         : undefined,
-      recipientName: card.isAnonymous || isTag
-        ? undefined
-        : card.recipientName.trim() || undefined,
+      recipientName:
+        card.isAnonymous || isTag
+          ? undefined
+          : card.recipientName.trim() || undefined,
       bill: {
         billType: activeTab,
         provider:
@@ -372,7 +369,9 @@ const BillsLandingPage = () => {
         meterType: activeTab === 'electricity' ? card.meterType : undefined,
       },
       isAnonymous: card.isAnonymous,
-      senderNote: card.isAnonymous ? undefined : card.senderNote.trim() || undefined,
+      senderNote: card.isAnonymous
+        ? undefined
+        : card.senderNote.trim() || undefined,
       notifySms: undefined,
       notifyEmail:
         card.sendAsGift && !card.isAnonymous ? card.notifyEmail : undefined,
@@ -411,7 +410,9 @@ const BillsLandingPage = () => {
     setIsSubmitting(true)
     setFeedback(null)
     const hasGift = activeCards.some((card) => card.sendAsGift)
-    const hasScheduled = activeCards.some((card) => card.timingMode === 'scheduled')
+    const hasScheduled = activeCards.some(
+      (card) => card.timingMode === 'scheduled'
+    )
     const recurringCount = activeCards.filter(
       (card) => card.timingMode === 'recurring'
     ).length
@@ -505,7 +506,7 @@ const BillsLandingPage = () => {
   const meta = TAB_META[activeTab]
 
   return (
-      <div className='w-full bg-white lg:rounded-[20px] mt-4 lg:mt-0 flex-1 h-full pb-24 lg:pb-0'>
+    <div className='w-full bg-white lg:rounded-[20px] mt-4 lg:mt-0 flex-1 h-full pb-24 lg:pb-0'>
       <div className='flex flex-col gap-4 lg:gap-5 h-full px-4 lg:px-6 py-4 lg:py-6'>
         <div className='space-y-1'>
           <h1 className='text-lg lg:text-2xl font-semibold text-grey-900'>
@@ -546,7 +547,7 @@ const BillsLandingPage = () => {
           </div>
         ) : null}
 
-        <div className='grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4'>
+        <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4'>
           <BillsBuilderSection
             activeTab={activeTab}
             activeCards={activeCards}
@@ -599,7 +600,7 @@ const BillsLandingPage = () => {
         title='Payment successful'
         message='Your bills transaction has been processed successfully.'
       />
-      </div>
+    </div>
   )
 }
 
