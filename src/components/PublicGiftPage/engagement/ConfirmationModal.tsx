@@ -3,6 +3,7 @@ import ResponsiveModal from '@/components/common/ResponsiveModal'
 import { checkoutPayment } from '@/api/services/payment'
 import { toApiError } from '@/api/errorHelpers'
 import { formatCurrency } from '@/lib/utils/currency'
+import { storePaymentReturnPath } from '@/lib/payments/paystackReturn'
 import type { CheckoutPaymentRequestBody } from '@/types/Payment'
 import type { GiftOption } from './types'
 import CheckoutPinModal from './CheckoutPinModal'
@@ -359,6 +360,7 @@ export default function ConfirmationModal({
         'authorizationUrl' in responseData &&
         responseData.authorizationUrl
       ) {
+        storePaymentReturnPath(responseData.reference)
         window.location.assign(responseData.authorizationUrl)
         return
       }

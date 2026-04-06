@@ -72,16 +72,10 @@ export type PublicPageApiSettings = {
 }
 
 export type PublicPageApiActivity = {
-  id?: string
-  uid?: string
-  title?: string
-  action?: string
-  description?: string
-  message?: string
-  label?: string
-  createdAt?: string
-  timestamp?: string
-  date?: string
+  id: string
+  message: string
+  createdAt: string
+  updatedAt: string
 }
 
 export type PublicPageActivitiesData = {

@@ -3,6 +3,7 @@ import type {
   PublicPageApiData,
 } from '@/api/services/publicPages'
 import { formatRelativeTimeOrDate } from '@/lib/utils/dateTime'
+import { formatCurrency } from '@/lib/utils/currency'
 import type { PublicActivityItem, GiftOption } from './types'
 
 export const DEFAULT_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
@@ -198,23 +199,31 @@ export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
 export const mapActivities = (
   items: PublicPageApiActivity[]
 ): PublicActivityItem[] => {
-  return items.map((item, index) => {
-    const name =
-      readString(item.title) ||
-      readString(item.action) ||
-      readString(item.description) ||
-      readString(item.message) ||
-      readString(item.label) ||
-      'Activity update'
-    const createdAt =
-      readString(item.createdAt) ||
-      readString(item.timestamp) ||
-      readString(item.date)
+  const formatActivityMessage = (message: string) => {
+    const sanitized = message
+      .replace(/[{}]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
 
+    return sanitized.replace(
+      /\b([A-Z]{3})\s*([0-9][0-9,]*(?:\.[0-9]+)?)\b/g,
+      (_fullMatch, currencyCode: string, rawAmount: string) => {
+        const numeric = Number(rawAmount.replace(/,/g, ''))
+        if (!Number.isFinite(numeric)) return `${currencyCode} ${rawAmount}`
+        const hasDecimals = rawAmount.includes('.') && numeric % 1 !== 0
+        return formatCurrency(numeric, {
+          currency: currencyCode,
+          maximumFractionDigits: hasDecimals ? 2 : 0,
+        })
+      }
+    )
+  }
+
+  return items.map((item, index) => {
     return {
-      id: readString(item.id) || readString(item.uid) || `activity-${index}`,
-      label: name,
-      time: toRelativeTime(createdAt),
+      id: item.id || `activity-${index}`,
+      label: formatActivityMessage(item.message),
+      time: toRelativeTime(item.createdAt),
     }
   })
 }
