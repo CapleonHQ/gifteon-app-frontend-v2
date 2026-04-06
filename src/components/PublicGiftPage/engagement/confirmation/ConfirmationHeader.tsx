@@ -16,10 +16,16 @@ export default function ConfirmationHeader({
   onBack,
 }: ConfirmationHeaderProps) {
   const title = step === 'review' ? 'Confirmation' : 'Payment Method'
-  const subtitle =
-    step === 'review'
-      ? 'This gift will be delivered as its cash equivalent.'
-      : 'Review your final summary and choose how to pay.'
+  const subtitle = (() => {
+    if (step === 'review') {
+      return 'This gift will be delivered as its cash equivalent.'
+    }
+    if (step === 'pin') {
+      return 'Provide your account PIN to move forward'
+    }
+    return 'Review your final summary and choose how to pay.'
+  })()
+  const resolvedTitle = step === 'pin' ? 'Confirmation' : title
 
   return (
     <div className='relative'>
@@ -59,7 +65,9 @@ export default function ConfirmationHeader({
         </button>
       </div>
       <div className='text-center mt-2 lg:mt-0'>
-        <h3 className='text-xl leading-7 font-medium text-blackish'>{title}</h3>
+        <h3 className='text-xl leading-7 font-medium text-blackish'>
+          {resolvedTitle}
+        </h3>
         <p className='text-sm leading-[18px] text-grey-700 mt-1'>{subtitle}</p>
       </div>
     </div>

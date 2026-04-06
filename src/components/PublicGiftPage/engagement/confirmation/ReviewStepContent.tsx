@@ -66,7 +66,8 @@ export default function ReviewStepContent({
                         type='text'
                         inputMode='numeric'
                         value={formatAmountDigits(
-                          cashAmountInputs[item.id] ?? getDefaultCashAmount(item)
+                          cashAmountInputs[item.id] ??
+                            getDefaultCashAmount(item)
                         )}
                         onChange={(event) =>
                           onCashAmountChange(item, event.target.value)
@@ -124,7 +125,7 @@ export default function ReviewStepContent({
           </p>
         </div>
         <div className='flex items-center justify-between'>
-          <p className='text-sm leading-5 text-[#143535]'>Service charge (7%):</p>
+          <p className='text-sm leading-5 text-[#143535]'>Service charge:</p>
           <p className='text-sm leading-5 text-[#143535] font-medium'>
             {formatCurrency(serviceCharge, {
               currency,

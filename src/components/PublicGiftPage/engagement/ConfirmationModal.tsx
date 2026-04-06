@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
 import { checkoutPayment } from '@/api/services/payment'
 import { toApiError } from '@/api/errorHelpers'
+import { formatCurrency } from '@/lib/utils/currency'
 import type { CheckoutPaymentRequestBody } from '@/types/Payment'
 import type { GiftOption } from './types'
 import CheckoutPinModal from './CheckoutPinModal'
 import ConfirmationHeader from './confirmation/ConfirmationHeader'
 import PaymentStepContent from './confirmation/PaymentStepContent'
 import ReviewStepContent from './confirmation/ReviewStepContent'
-import type { CheckoutStep, GuestDetails, GuestErrors } from './confirmation/types'
+import DesktopPinStepContent from './confirmation/DesktopPinStepContent'
+import type { CheckoutStep, GuestDetails } from './confirmation/types'
 import {
   EMAIL_REGEX,
   getCashAmountError,
@@ -27,8 +29,6 @@ type ConfirmationModalProps = {
   }) => void
   pageId: string
   isAuthenticated: boolean
-  defaultPayerEmail?: string
-  defaultPayerName?: string
   initialStep?: CheckoutStep
   initialCashAmountInputs?: Record<string, string>
   selectedGiftItems: GiftOption[]
@@ -44,8 +44,6 @@ export default function ConfirmationModal({
   onRequestWalletSignIn,
   pageId,
   isAuthenticated,
-  defaultPayerEmail,
-  defaultPayerName,
   initialStep = 'review',
   initialCashAmountInputs = {},
   selectedGiftItems,
@@ -59,17 +57,50 @@ export default function ConfirmationModal({
   const [paymentError, setPaymentError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPinModalOpen, setIsPinModalOpen] = useState(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
   const [pinError, setPinError] = useState('')
   const [guestDetails, setGuestDetails] = useState<GuestDetails>({
-    fullName: defaultPayerName ?? '',
-    email: defaultPayerEmail ?? '',
+    fullName: '',
+    email: '',
   })
-  const [guestErrors, setGuestErrors] = useState<GuestErrors>({})
+  const [guestErrors, setGuestErrors] = useState<{
+    fullName?: string
+    email?: string
+  }>({})
 
   const cashItems = useMemo(
     () => selectedGiftItems.filter((item) => item.kind === 'cash'),
     [selectedGiftItems]
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const updateViewport = () => {
+      setIsMobileViewport(window.innerWidth < 1024)
+    }
+    updateViewport()
+    window.addEventListener('resize', updateViewport)
+    return () => window.removeEventListener('resize', updateViewport)
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    if (isMobileViewport && step === 'pin' && !isPinModalOpen) {
+      setIsPinModalOpen(true)
+      return
+    }
+
+    if (!isMobileViewport && isPinModalOpen) {
+      setIsPinModalOpen(false)
+      setStep('pin')
+      return
+    }
+
+    if (step !== 'pin' && isPinModalOpen) {
+      setIsPinModalOpen(false)
+    }
+  }, [isMobileViewport, isOpen, isPinModalOpen, step])
 
   useEffect(() => {
     if (!isOpen) {
@@ -86,12 +117,10 @@ export default function ConfirmationModal({
     setStep(initialStep)
     setCashAmountInputs(initialCashAmountInputs)
     setGuestDetails({
-      fullName: defaultPayerName ?? '',
-      email: defaultPayerEmail ?? '',
+      fullName: '',
+      email: '',
     })
   }, [
-    defaultPayerEmail,
-    defaultPayerName,
     initialCashAmountInputs,
     initialStep,
     isOpen,
@@ -137,10 +166,18 @@ export default function ConfirmationModal({
     return Object.keys(nextErrors).length === 0
   }
 
-  const validateGuestDetails = (): GuestErrors => {
+  const handleCashAmountChange = (item: GiftOption, raw: string) => {
+    const sanitized = raw.replace(/\D/g, '')
+    setCashAmountInputs((prev) => ({ ...prev, [item.id]: sanitized }))
+    const nextError = getCashAmountError(item, sanitized, currency)
+    setCashAmountErrors((prev) => ({ ...prev, [item.id]: nextError }))
+    if (paymentError) setPaymentError('')
+  }
+
+  const validateGuestDetailsForExternal = () => {
     if (isAuthenticated) return {}
 
-    const nextErrors: GuestErrors = {}
+    const nextErrors: { fullName?: string; email?: string } = {}
     const fullName = guestDetails.fullName.trim()
     const email = guestDetails.email.trim()
 
@@ -157,14 +194,6 @@ export default function ConfirmationModal({
     }
 
     return nextErrors
-  }
-
-  const handleCashAmountChange = (item: GiftOption, raw: string) => {
-    const sanitized = raw.replace(/\D/g, '')
-    setCashAmountInputs((prev) => ({ ...prev, [item.id]: sanitized }))
-    const nextError = getCashAmountError(item, sanitized, currency)
-    setCashAmountErrors((prev) => ({ ...prev, [item.id]: nextError }))
-    if (paymentError) setPaymentError('')
   }
 
   const handleGuestDetailsChange = (field: keyof GuestDetails, value: string) => {
@@ -195,7 +224,7 @@ export default function ConfirmationModal({
       pageId,
       ...(wishListItems.length > 0 ? { wishListItems } : {}),
       ...(cashGiftAmount > 0 ? { cashGiftAmount } : {}),
-      ...(!isAuthenticated
+      ...(!isAuthenticated && paymentMethod === 'external'
         ? {
             userDetails: {
               fullName: guestDetails.fullName.trim(),
@@ -240,7 +269,31 @@ export default function ConfirmationModal({
     }
 
     if (message.includes('cashgiftamount') || message.includes('cash gift')) {
-      return 'Cash gift amount is not valid for this page. Adjust the amount and try again.'
+      const minMaxMatch = rawMessage.match(
+        /between\s+([0-9]+(?:\.[0-9]+)?)\s+and\s+([0-9]+(?:\.[0-9]+)?|null)\s+([A-Z]{3})/i
+      )
+      if (minMaxMatch) {
+        const min = Number(minMaxMatch[1])
+        const maxRaw = minMaxMatch[2]
+        const parsedCurrency = minMaxMatch[3]?.toUpperCase() || currency
+
+        if (maxRaw.toLowerCase() === 'null') {
+          return `Cash gift amount must be at least ${formatCurrency(min, {
+            currency: parsedCurrency,
+            maximumFractionDigits: 0,
+          })}.`
+        }
+
+        const max = Number(maxRaw)
+        return `Cash gift amount must be between ${formatCurrency(min, {
+          currency: parsedCurrency,
+          maximumFractionDigits: 0,
+        })} and ${formatCurrency(max, {
+          currency: parsedCurrency,
+          maximumFractionDigits: 0,
+        })}.`
+      }
+      return rawMessage.trim() || 'Cash gift amount is not valid for this page.'
     }
 
     if (message.includes('email')) {
@@ -254,15 +307,29 @@ export default function ConfirmationModal({
     return rawMessage.trim() || 'Unable to initialize payment. Please try again.'
   }
 
+  const isPinRelatedCheckoutError = (
+    rawMessage: string,
+    fieldErrors?: Record<string, string[]>
+  ) => {
+    const messageIncludesPin = rawMessage.toLowerCase().includes('pin')
+    const fieldErrorIncludesPin = Object.entries(fieldErrors ?? {}).some(
+      ([field, messages]) =>
+        field.toLowerCase().includes('pin') ||
+        messages.some((entry) => entry.toLowerCase().includes('pin'))
+    )
+    return messageIncludesPin || fieldErrorIncludesPin
+  }
+
   const submitCheckout = async (
     paymentMethod: 'external' | 'wallet',
     pin?: string
   ) => {
     if (!validateCashAmounts()) return
-
-    const nextGuestErrors = validateGuestDetails()
-    setGuestErrors(nextGuestErrors)
-    if (Object.keys(nextGuestErrors).length > 0) return
+    if (!isAuthenticated && paymentMethod === 'external') {
+      const nextGuestErrors = validateGuestDetailsForExternal()
+      setGuestErrors(nextGuestErrors)
+      if (Object.keys(nextGuestErrors).length > 0) return
+    }
 
     if (selectedGiftItems.length === 0) {
       setPaymentError('No gift items selected.')
@@ -296,14 +363,26 @@ export default function ConfirmationModal({
       onClose()
     } catch (error) {
       const apiError = toApiError(error)
+      const rawErrorMessage = apiError.message || ''
+      const isPinError = isPinRelatedCheckoutError(
+        rawErrorMessage,
+        apiError.fieldErrors
+      )
       const message = resolveFriendlyCheckoutError(
-        apiError.message || '',
+        rawErrorMessage,
         paymentMethod,
         apiError.fieldErrors
       )
 
       if (paymentMethod === 'wallet') {
-        setPinError(message)
+        if (isPinError) {
+          setPinError(message)
+          return
+        }
+        setPinError('')
+        setIsPinModalOpen(false)
+        setStep('payment')
+        setPaymentError(message)
       } else {
         setPaymentError(message)
       }
@@ -319,6 +398,11 @@ export default function ConfirmationModal({
   }
 
   const handleHeaderBack = () => {
+    if (step === 'pin') {
+      setStep('payment')
+      setPinError('')
+      return
+    }
     if (step === 'payment') {
       setStep('review')
       setPaymentError('')
@@ -353,7 +437,7 @@ export default function ConfirmationModal({
                 serviceCharge={serviceCharge}
                 total={total}
               />
-            ) : (
+            ) : step === 'payment' ? (
               <PaymentStepContent
                 selectedCount={selectedGiftItems.length}
                 breakdownItems={paymentBreakdownItems}
@@ -370,7 +454,7 @@ export default function ConfirmationModal({
                 onExternalPay={() => void submitCheckout('external')}
                 onWalletPay={() => {
                   setPinError('')
-                  setIsPinModalOpen(true)
+                  setStep('pin')
                 }}
                 onRequestWalletSignIn={onRequestWalletSignIn}
                 onGoBack={() => {
@@ -378,6 +462,22 @@ export default function ConfirmationModal({
                   setPaymentError('')
                 }}
               />
+            ) : (
+              <>{!isMobileViewport ? (
+                <DesktopPinStepContent
+                  isActive={step === 'pin'}
+                  pinError={pinError}
+                  isSubmitting={isSubmitting}
+                  onBack={() => {
+                    setStep('payment')
+                    setPinError('')
+                  }}
+                  onConfirm={async (pin) => {
+                    await submitCheckout('wallet', pin)
+                  }}
+                  onClearError={() => setPinError('')}
+                />
+              ) : null}</>
             )}
           </div>
         }
@@ -411,6 +511,7 @@ export default function ConfirmationModal({
           isSubmitting={isSubmitting}
           onClose={() => {
             setIsPinModalOpen(false)
+            setStep('payment')
             setPinError('')
           }}
           onClearError={() => setPinError('')}

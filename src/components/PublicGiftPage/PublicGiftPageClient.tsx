@@ -328,8 +328,6 @@ export default function PublicGiftPageClient({
         onRequestWalletSignIn={handleRequestWalletSignIn}
         pageId={pageData.id}
         isAuthenticated={isAuthenticated}
-        defaultPayerEmail={user?.email ?? ''}
-        defaultPayerName={`${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim()}
         initialStep={confirmationInitialStep}
         initialCashAmountInputs={confirmationCashAmountInputs}
         selectedGiftItems={confirmationGiftItems}

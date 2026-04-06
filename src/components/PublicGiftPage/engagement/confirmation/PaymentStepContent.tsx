@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import ShakeOnError from '@/components/common/ShakeOnError'
 import { formatCurrency } from '@/lib/utils/currency'
-import type { GuestDetails, GuestErrors } from './types'
+import type { GuestDetails } from './types'
 
 type PaymentBreakdownItem = {
   id: string
@@ -21,7 +21,7 @@ type PaymentStepContentProps = {
   isAuthenticated: boolean
   isSubmitting: boolean
   guestDetails: GuestDetails
-  guestErrors: GuestErrors
+  guestErrors: { fullName?: string; email?: string }
   paymentError: string
   cashAmountInputs: Record<string, string>
   onChangeGuestDetails: (field: keyof GuestDetails, value: string) => void
@@ -75,7 +75,9 @@ export default function PaymentStepContent({
         >
           {showPaymentBreakdown ? 'Hide breakdown' : 'Show breakdown'}
           <ChevronDown
-            className={`size-3 transition-transform ${showPaymentBreakdown ? 'rotate-180' : ''}`}
+            className={`size-3 transition-transform ${
+              showPaymentBreakdown ? 'rotate-180' : ''
+            }`}
           />
         </button>
 
@@ -99,7 +101,7 @@ export default function PaymentStepContent({
               </div>
             ))}
             <div className='flex items-center justify-between gap-2 pt-2 border-t border-grey-100'>
-              <p className='text-xs text-grey-700'>Service charge (7%)</p>
+              <p className='text-xs text-grey-700'>Service charge</p>
               <p className='text-xs font-medium text-grey-900'>
                 {formatCurrency(serviceCharge, {
                   currency,
@@ -110,6 +112,14 @@ export default function PaymentStepContent({
           </div>
         ) : null}
       </div>
+
+      {paymentError ? (
+        <ShakeOnError active={true}>
+          <div className='rounded-[8px] border border-error-100 bg-error-50/70 px-3 py-2'>
+            <p className='text-xs text-error-400'>{paymentError}</p>
+          </div>
+        </ShakeOnError>
+      ) : null}
 
       {!isAuthenticated ? (
         <div className='rounded-[10px] border border-grey-100 p-3 space-y-3'>
@@ -131,7 +141,9 @@ export default function PaymentStepContent({
             />
             {guestErrors.fullName ? (
               <ShakeOnError active={true}>
-                <p className='mt-1 text-xs text-error-300'>{guestErrors.fullName}</p>
+                <p className='mt-1 text-xs text-error-300'>
+                  {guestErrors.fullName}
+                </p>
               </ShakeOnError>
             ) : null}
           </div>
@@ -140,7 +152,9 @@ export default function PaymentStepContent({
             <input
               type='email'
               value={guestDetails.email}
-              onChange={(event) => onChangeGuestDetails('email', event.target.value)}
+              onChange={(event) =>
+                onChangeGuestDetails('email', event.target.value)
+              }
               className={`mt-1 h-11 w-full rounded-[10px] border px-3 text-sm text-grey-900 outline-none ${
                 guestErrors.email
                   ? 'border-error-300'
@@ -150,23 +164,21 @@ export default function PaymentStepContent({
             />
             {guestErrors.email ? (
               <ShakeOnError active={true}>
-                <p className='mt-1 text-xs text-error-300'>{guestErrors.email}</p>
+                <p className='mt-1 text-xs text-error-300'>
+                  {guestErrors.email}
+                </p>
               </ShakeOnError>
             ) : null}
           </div>
         </div>
       ) : null}
 
-      {paymentError ? (
-        <ShakeOnError active={true}>
-          <div className='rounded-[8px] border border-error-100 bg-error-50/70 px-3 py-2'>
-            <p className='text-xs text-error-400'>{paymentError}</p>
-          </div>
-        </ShakeOnError>
-      ) : null}
-
       <div className='rounded-[10px] border border-grey-100 p-3 space-y-2'>
-        <p className='text-sm font-medium text-grey-900'>Choose payment method</p>
+        {isAuthenticated ? (
+          <p className='text-sm font-medium text-grey-900'>
+            Choose payment method
+          </p>
+        ) : null}
         <button
           type='button'
           onClick={onExternalPay}
@@ -196,23 +208,30 @@ export default function PaymentStepContent({
             </p>
           </button>
         ) : (
-          <button
-            type='button'
-            onClick={() => {
-              onRequestWalletSignIn?.({
-                step: 'payment',
-                cashAmountInputs,
-              })
-            }}
-            className='w-full rounded-[10px] border border-grey-200 bg-white px-3 py-3 text-left transition-colors hover:bg-grey-50'
-          >
-            <p className='text-sm font-medium text-grey-900'>
-              Sign in to pay with Wallet
-            </p>
-            <p className='text-xs text-grey-600'>
-              Continue to login or create an account, then return here.
-            </p>
-          </button>
+          <>
+            <p className='text-center text-xs text-grey-500 py-1'>OR</p>
+            <button
+              type='button'
+              onClick={() => {
+                onRequestWalletSignIn?.({
+                  step: 'payment',
+                  cashAmountInputs,
+                })
+              }}
+              className='w-full rounded-[10px] border border-primary-500 bg-linear-to-b from-primary-400 to-primary-600 px-3 py-3 text-white transition-colors hover:from-primary-500 hover:to-primary-700'
+            >
+              <p className='text-sm font-medium inline-flex w-full items-center justify-center gap-2'>
+                <Image
+                  src='/assets/images/logo/icon-color-white.svg'
+                  alt='Giftseon'
+                  width={16}
+                  height={16}
+                  className='h-4 w-4'
+                />
+                Sign in to pay with Giftseon
+              </p>
+            </button>
+          </>
         )}
       </div>
 
@@ -225,7 +244,6 @@ export default function PaymentStepContent({
           Go back
         </button>
       </div>
-
     </>
   )
 }

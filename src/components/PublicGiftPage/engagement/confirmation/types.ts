@@ -1,6 +1,6 @@
 import type { GiftOption } from '../types'
 
-export type CheckoutStep = 'review' | 'payment'
+export type CheckoutStep = 'review' | 'payment' | 'pin'
 
 export type GuestDetails = {
   fullName: string
