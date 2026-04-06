@@ -25,12 +25,12 @@ export default function GiftRow({
   onIncrease,
 }: GiftRowProps) {
   const isCashGift = item.kind === 'cash'
-  const raisedAmount = Math.max(0, item.raisedAmount ?? 0)
+  const coveredAmount = Math.max(0, item.coveredAmount ?? 0)
   const targetAmount = Math.max(0, item.targetAmount ?? 0)
   const progressDenominator = isCashGift
-    ? Math.max(targetAmount, raisedAmount, 1)
+    ? Math.max(targetAmount, coveredAmount, 1)
     : Math.max(item.quantity, 1)
-  const progressValue = isCashGift ? raisedAmount : item.fulfilled
+  const progressValue = isCashGift ? coveredAmount : item.claimed
   const progress = Math.min(progressValue / progressDenominator, 1)
   const progressPercent = Number((progress * 100).toFixed(2))
 
@@ -63,7 +63,7 @@ export default function GiftRow({
               <div>
                 <div className='flex justify-between items-center gap-2 text-xs leading-[119%] text-grey-600 font-medium'>
                   <p>
-                    {formatCurrency(raisedAmount, {
+                    {formatCurrency(coveredAmount, {
                       currency,
                       maximumFractionDigits: 0,
                     })}{' '}
@@ -119,7 +119,7 @@ export default function GiftRow({
             <div>
               <div className='flex justify-between items-center gap-2 text-xs leading-[119%] text-grey-600 font-medium'>
                 <p>
-                  {Math.min(item.fulfilled, item.quantity)} of {item.quantity}{' '}
+                  {Math.min(item.claimed, item.quantity)} of {item.quantity}{' '}
                   fulfilled
                 </p>
                 <p>{progressPercent}%</p>

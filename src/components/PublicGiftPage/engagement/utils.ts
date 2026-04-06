@@ -102,14 +102,16 @@ const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
     1,
     pickNumber(record, ['quantity', 'totalQuantity']) || 1
   )
-  const fulfilled = Math.max(
+  const claimed = Math.max(
     0,
     pickNumber(record, [
+      'quantityClaimed',
+      'claimed',
+      'claimedCount',
       'fulfilled',
       'fulfilledCount',
-      'purchasedQuantity',
       'quantityGifted',
-      'quantityClaimed',
+      'purchasedQuantity',
     ]) || 0
   )
   const price = Math.max(
@@ -130,7 +132,7 @@ const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
     imageUrl,
     price,
     quantity,
-    fulfilled,
+    claimed,
     kind,
   }
 }
@@ -164,10 +166,10 @@ export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
 
   const cashGiftItem: GiftOption | null = page.settings?.acceptCashGift
     ? (() => {
-        const raisedAmount = Math.max(0, readNumber(page.settings?.amount) ?? 0)
+        const coveredAmount = Math.max(0, readNumber(page.settings?.amount) ?? 0)
         const targetAmount = Math.max(
           0,
-          readNumber(page.settings?.targetAmount) ?? raisedAmount
+          readNumber(page.settings?.targetAmount) ?? coveredAmount
         )
         const minimumAmount = Math.max(
           0,
@@ -180,9 +182,9 @@ export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
         imageUrl: '',
           price: Math.max(0, amount),
           quantity: 1,
-          fulfilled: 0,
+          claimed: 0,
         kind: 'cash',
-        raisedAmount,
+        coveredAmount,
         targetAmount,
         minimumAmount,
       }

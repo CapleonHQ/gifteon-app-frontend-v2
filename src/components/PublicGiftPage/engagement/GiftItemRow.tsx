@@ -26,10 +26,10 @@ export default function GiftItemRow({
   onRemove,
 }: GiftItemRowProps) {
   const isCashGift = item.kind === 'cash'
-  const raisedAmount = Math.max(0, item.raisedAmount ?? 0)
+  const coveredAmount = Math.max(0, item.coveredAmount ?? 0)
   const targetAmount = Math.max(0, item.targetAmount ?? item.price)
   const cashProgress = Math.min(
-    (raisedAmount / Math.max(targetAmount, raisedAmount, 1)) * 100,
+    (coveredAmount / Math.max(targetAmount, coveredAmount, 1)) * 100,
     100
   )
   const lineAmount = isCashGift ? targetAmount : item.price * quantity
@@ -51,12 +51,14 @@ export default function GiftItemRow({
         )}
 
         <div className='min-w-0 h-full flex-1 flex flex-col justify-between gap-2'>
-          <p className='truncate text-sm leading-[120%] text-grey-600'>{item.title}</p>
+          <p className='truncate text-sm leading-[120%] text-grey-600'>
+            {item.title}
+          </p>
 
           {isCashGift ? (
             <div>
               <p className='text-xs leading-[119%] text-grey-600 font-medium'>
-                {formatCurrency(raisedAmount, {
+                {formatCurrency(coveredAmount, {
                   currency,
                   maximumFractionDigits: 0,
                 })}{' '}
@@ -91,7 +93,9 @@ export default function GiftItemRow({
                 type='button'
                 onClick={onIncrease}
                 className='flex h-8 w-8 items-center justify-center rounded-[6px] border border-primary-100 bg-primary-50/60 text-primary-500 enabled:hover:bg-primary-50'
-                disabled={typeof maxQuantity === 'number' && quantity >= maxQuantity}
+                disabled={
+                  typeof maxQuantity === 'number' && quantity >= maxQuantity
+                }
                 aria-label={`Increase ${item.title} quantity`}
               >
                 <Plus className='size-4' />

@@ -1,11 +1,14 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createPublicPageComment,
+  getPublicPages,
   getPublicPageActivities,
   getPublicPageBySlug,
   getPublicPageComments,
   type CreateCommentRequestBody,
   type PublicPageActivitiesData,
+  type PublicPagesListApiData,
+  type PublicPagesQueryParams,
 } from '@/api/services/publicPages'
 import type { ApiResponse } from '@/types/Common'
 import type { PageCommentsData } from '@/types/Comments'
@@ -21,6 +24,13 @@ export const usePublicPageBySlug = (slug: string) => {
     queryKey: ['public-page', slug],
     queryFn: () => getPublicPageBySlug(slug),
     enabled: slug.length > 0,
+  })
+}
+
+export const usePublicPages = (params?: PublicPagesQueryParams) => {
+  return useQuery<ApiResponse<PublicPagesListApiData>>({
+    queryKey: ['public-pages', params],
+    queryFn: () => getPublicPages(params),
   })
 }
 

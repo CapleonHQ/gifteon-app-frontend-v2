@@ -7,6 +7,7 @@ import type {
   PageCommentsData,
   PageCommentsQueryParams,
 } from '@/types/Comments'
+import type { PagesQueryParams } from '@/types/Pages'
 
 export type PublicPageApiSocial = {
   id?: string
@@ -123,11 +124,48 @@ export type PublicPageApiData = {
   }
 }
 
+export type PublicPageListApiItem = {
+  id: string
+  title: string
+  content: string
+  slug: string
+  coverImageUrl: string
+  status: string
+  createdAt: string
+  updatedAt: string
+  categoryName: string | null
+  templateName: string | null
+  totalGifts: number
+  totalWishes: number
+  totalViews: number
+}
+
+export type PublicPagesListApiData = {
+  pages: PublicPageListApiItem[]
+  total: number
+  limit: number
+  offset: number
+  hasMore: boolean
+}
+
+export type PublicPagesQueryParams = Pick<
+  PagesQueryParams,
+  'limit' | 'offset' | 'startdate' | 'enddate' | 'visibility' | 'status' | 'category' | 's'
+>
+
 export const getPublicPageBySlug = async (
   slug: string
 ): Promise<ApiResponse<PublicPageApiData>> => {
   const resp: AxiosResponse<ApiResponse<PublicPageApiData>> =
     await apiService.appPublic.get(`/pages/${slug}`)
+  return resp.data
+}
+
+export const getPublicPages = async (
+  params?: PublicPagesQueryParams
+): Promise<ApiResponse<PublicPagesListApiData>> => {
+  const resp: AxiosResponse<ApiResponse<PublicPagesListApiData>> =
+    await apiService.appPublic.get('/pages/public', { params })
   return resp.data
 }
 
