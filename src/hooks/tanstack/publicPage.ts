@@ -5,6 +5,7 @@ import {
   getPublicPageBySlug,
   getPublicPageComments,
   type CreateCommentRequestBody,
+  type PublicPageActivitiesData,
 } from '@/api/services/publicPages'
 import type { ApiResponse } from '@/types/Common'
 import type { PageCommentsData } from '@/types/Comments'
@@ -50,7 +51,7 @@ export const usePublicPageActivities = (
   pageId: string,
   limit = DEFAULT_PUBLIC_ACTIVITIES_LIMIT
 ) => {
-  return useInfiniteQuery<ApiResponse<unknown>>({
+  return useInfiniteQuery<ApiResponse<PublicPageActivitiesData>>({
     queryKey: ['public-page', pageId, 'activities', limit],
     queryFn: ({ pageParam }) =>
       getPublicPageActivities(pageId, {
@@ -60,11 +61,7 @@ export const usePublicPageActivities = (
     enabled: pageId.length > 0,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      const pageData = lastPage.data as {
-        hasMore?: boolean
-        offset?: number
-        limit?: number
-      }
+      const pageData = lastPage.data
       if (pageData?.hasMore !== true) return undefined
       return (pageData.offset ?? 0) + (pageData.limit ?? limit)
     },

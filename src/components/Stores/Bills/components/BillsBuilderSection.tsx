@@ -22,7 +22,7 @@ import {
 } from '../utils'
 import { useBillsPlanCatalog } from '../hooks/useBillsPlanCatalog'
 import BillsRecipientCard from './BillsRecipientCard'
-import BillsQuickActions from './BillsQuickActions'
+// import BillsQuickActions from './BillsQuickActions'
 import BillsBeneficiariesModal from './BillsBeneficiariesModal'
 import type { GiftBillBeneficiary } from '@/types/Bills'
 
@@ -33,7 +33,10 @@ type BillsBuilderSectionProps = {
   showValidationErrors: boolean
   recipientRefs: RefObject<Record<string, HTMLDivElement | null>>
   isActionBusy: boolean
-  onUpdateCard: (cardId: string, updater: (card: RecipientCard) => RecipientCard) => void
+  onUpdateCard: (
+    cardId: string,
+    updater: (card: RecipientCard) => RecipientCard
+  ) => void
   onRemoveRecipientCard: (cardId: string) => void
   onAddRecipientCard: () => void
 }
@@ -63,9 +66,14 @@ const BillsBuilderSection = ({
   onRemoveRecipientCard,
   onAddRecipientCard,
 }: BillsBuilderSectionProps) => {
-  const [verifyErrorByCard, setVerifyErrorByCard] = useState<Record<string, string>>({})
-  const [verifiedNameByCard, setVerifiedNameByCard] = useState<Record<string, string>>({})
-  const [isBeneficiariesModalOpen, setIsBeneficiariesModalOpen] = useState(false)
+  const [verifyErrorByCard, setVerifyErrorByCard] = useState<
+    Record<string, string>
+  >({})
+  const [verifiedNameByCard, setVerifiedNameByCard] = useState<
+    Record<string, string>
+  >({})
+  const [isBeneficiariesModalOpen, setIsBeneficiariesModalOpen] =
+    useState(false)
   const [beneficiariesModalSession, setBeneficiariesModalSession] = useState(0)
   const [selectedBeneficiaryCardId, setSelectedBeneficiaryCardId] = useState('')
 
@@ -81,9 +89,13 @@ const BillsBuilderSection = ({
 
   const airtimeOptions = mapAirtimeNetworkOptions(airtimeNetworksQuery.data)
   const dataNetworkOptions = mapDataNetworkOptions(dataNetworksQuery.data)
-  const electricityOptions = mapElectricityDiscoOptions(electricityDiscosQuery.data)
+  const electricityOptions = mapElectricityDiscoOptions(
+    electricityDiscosQuery.data
+  )
   const cableProviderOptions = mapCableProviderOptions(cableProvidersQuery.data)
-  const recentBeneficiaries = extractRecentBeneficiaries(beneficiariesQuery.data)
+  const recentBeneficiaries = extractRecentBeneficiaries(
+    beneficiariesQuery.data
+  )
   const beneficiaries = beneficiariesQuery.data?.data?.beneficiaries ?? []
 
   const clearVerificationState = (cardId: string) => {
@@ -105,7 +117,10 @@ const BillsBuilderSection = ({
         })
         const customerName =
           extractVerifiedCustomerName(resp) || 'Meter verified successfully'
-        onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: true }))
+        onUpdateCard(card.id, (current) => ({
+          ...current,
+          recipientVerified: true,
+        }))
         setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: customerName }))
         analytics.trackBillsVerifySucceeded({
           bill_type: activeTab,
@@ -124,7 +139,10 @@ const BillsBuilderSection = ({
         })
         const customerName =
           extractVerifiedCustomerName(resp) || 'IUC verified successfully'
-        onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: true }))
+        onUpdateCard(card.id, (current) => ({
+          ...current,
+          recipientVerified: true,
+        }))
         setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: customerName }))
         analytics.trackBillsVerifySucceeded({
           bill_type: activeTab,
@@ -141,7 +159,10 @@ const BillsBuilderSection = ({
         verify_type: activeTab === 'electricity' ? 'meter' : 'iuc',
         error_message: message,
       })
-      onUpdateCard(card.id, (current) => ({ ...current, recipientVerified: false }))
+      onUpdateCard(card.id, (current) => ({
+        ...current,
+        recipientVerified: false,
+      }))
       setVerifyErrorByCard((prev) => ({ ...prev, [card.id]: message }))
       setVerifiedNameByCard((prev) => ({ ...prev, [card.id]: '' }))
     }
@@ -210,7 +231,11 @@ const BillsBuilderSection = ({
     const targetCard = activeCards.find((card) => card.id === targetCardId)
     if (!targetCard) return
 
-    const mapped = mapBeneficiaryToRecipient(activeTab, targetCard.sendAsGift, beneficiary)
+    const mapped = mapBeneficiaryToRecipient(
+      activeTab,
+      targetCard.sendAsGift,
+      beneficiary
+    )
     const identifier = mapped.identifierValue
     if (mapped.matchedBy === 'none' || !identifier) return
     analytics.trackBillsBeneficiarySelected({
@@ -284,11 +309,11 @@ const BillsBuilderSection = ({
           )
         })}
 
-        <BillsQuickActions
+        {/* <BillsQuickActions
           recentBeneficiaries={recentBeneficiaries}
           onAddRecipientCard={onAddRecipientCard}
           onApplyQuickRecipient={applyQuickRecipient}
-        />
+        /> */}
       </div>
 
       <BillsBeneficiariesModal
@@ -298,8 +323,10 @@ const BillsBuilderSection = ({
         onPickBeneficiary={applyBeneficiaryToCard}
         activeTab={activeTab}
         sendAsGift={
-          (activeCards.find((card) => card.id === selectedBeneficiaryCardId) ||
-            activeCards[0])?.sendAsGift || false
+          (
+            activeCards.find((card) => card.id === selectedBeneficiaryCardId) ||
+            activeCards[0]
+          )?.sendAsGift || false
         }
       />
     </section>

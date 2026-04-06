@@ -25,9 +25,7 @@ export default function PublicGiftPageEngagementSection({
   variant = 'default',
 }: PublicGiftPageEngagementSectionProps) {
   const [activeTab, setActiveTab] = useState<EngagementTab>('comments')
-  const [commentsTotal, setCommentsTotal] = useState<number>(
-    Array.isArray(page.comments) ? page.comments.length : 0
-  )
+  const [commentsTotal, setCommentsTotal] = useState<number>(0)
   const [sortValue, setSortValue] = useState<'most-recent' | 'oldest'>(
     'most-recent'
   )
@@ -103,7 +101,6 @@ export default function PublicGiftPageEngagementSection({
                 activeTab='comments'
                 pageId={page.id}
                 sortValue={sortValue}
-                initialActivities={page.activities}
                 onCommentsTotalChange={setCommentsTotal}
               />
             </div>
@@ -136,7 +133,6 @@ export default function PublicGiftPageEngagementSection({
                 activeTab='activities'
                 pageId={page.id}
                 sortValue='most-recent'
-                initialActivities={page.activities}
                 onCommentsTotalChange={setCommentsTotal}
               />
             </div>
@@ -160,7 +156,6 @@ export default function PublicGiftPageEngagementSection({
         activeTab={activeTab}
         pageId={page.id}
         sortValue={sortValue}
-        initialActivities={page.activities}
         onCommentsTotalChange={setCommentsTotal}
       />
     </div>

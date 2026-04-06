@@ -1,4 +1,7 @@
-import type { PublicPageApiData } from '@/api/services/publicPages'
+import type {
+  PublicPageApiActivity,
+  PublicPageApiData,
+} from '@/api/services/publicPages'
 import { formatRelativeTimeOrDate } from '@/lib/utils/dateTime'
 import type { PublicActivityItem, GiftOption } from './types'
 
@@ -119,7 +122,13 @@ const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
   const quantity = Math.max(1, pickNumber(record, ['quantity', 'totalQuantity']) || 1)
   const fulfilled = Math.max(
     0,
-    pickNumber(record, ['fulfilled', 'fulfilledCount', 'purchasedQuantity']) || 0
+    pickNumber(record, [
+      'fulfilled',
+      'fulfilledCount',
+      'purchasedQuantity',
+      'quantityGifted',
+      'quantityClaimed',
+    ]) || 0
   )
   const price = Math.max(
     0,
@@ -127,6 +136,9 @@ const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
   )
   const id =
     pickString(record, ['id', 'itemId', 'uid', 'slug']) || `gift-option-${index}`
+  const sourceValue = readString(record.source)?.toLowerCase()
+  const kind: GiftOption['kind'] =
+    sourceValue === 'store' ? 'store' : 'wishlist'
 
   return {
     id,
@@ -136,22 +148,30 @@ const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
     price,
     quantity,
     fulfilled,
+    kind,
   }
 }
 
 export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
-  const customGifts = Array.isArray(page.settings?.customGifts)
-    ? page.settings.customGifts
+  const wishListItems = Array.isArray(page.settings?.wishListItems)
+    ? page.settings.wishListItems
     : []
   const storeItems = Array.isArray(page.settings?.storeItems)
     ? page.settings.storeItems
     : []
 
-  const mapped = [...customGifts, ...storeItems]
+  const mapped = [
+    ...wishListItems.map((item) => ({
+      ...(asRecord(item) || {}),
+      source: 'wishlist',
+    })),
+    ...storeItems.map((item) => ({
+      ...(asRecord(item) || {}),
+      source: 'store',
+    })),
+  ]
     .map((item, index) => parseGiftRecord(item, index))
     .filter((item): item is GiftOption => Boolean(item))
-
-  if (mapped.length > 0) return mapped
 
   const amount =
     readNumber(page.settings?.targetAmount) ??
@@ -159,34 +179,53 @@ export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
     readNumber(page.settings?.minimumAmount) ??
     0
 
-  if (page.settings?.acceptCashGift) {
-    return [
-      {
+  const cashGiftItem: GiftOption | null = page.settings?.acceptCashGift
+    ? (() => {
+    const raisedAmount = Math.max(0, readNumber(page.settings?.amount) ?? 0)
+    const targetAmount = Math.max(
+      0,
+      readNumber(page.settings?.targetAmount) ?? raisedAmount
+    )
+      return {
         id: 'cash-gift',
         title: 'Cash Gift',
         subtitle: 'Send cash directly to the celebrant',
-        imageUrl: page.coverImageUrl || DEFAULT_GIFT_IMAGE,
+        imageUrl: '',
         price: Math.max(0, amount),
         quantity: 1,
         fulfilled: 0,
-      },
-    ]
+        kind: 'cash',
+        raisedAmount,
+        targetAmount,
+      }
+    })()
+    : null
+
+  if (cashGiftItem) {
+    return [cashGiftItem, ...mapped]
   }
 
-  return []
+  return mapped
 }
 
 export const mapActivities = (
-  items: Array<Record<string, unknown>>
+  items: PublicPageApiActivity[]
 ): PublicActivityItem[] => {
   return items.map((item, index) => {
     const name =
-      pickString(item, ['title', 'action', 'description', 'message', 'label']) ||
+      readString(item.title) ||
+      readString(item.action) ||
+      readString(item.description) ||
+      readString(item.message) ||
+      readString(item.label) ||
       'Activity update'
-    const createdAt = pickString(item, ['createdAt', 'timestamp', 'date'])
+    const createdAt =
+      readString(item.createdAt) ||
+      readString(item.timestamp) ||
+      readString(item.date)
 
     return {
-      id: pickString(item, ['id', 'uid']) || `activity-${index}`,
+      id: readString(item.id) || readString(item.uid) || `activity-${index}`,
       label: name,
       time: toRelativeTime(createdAt),
     }

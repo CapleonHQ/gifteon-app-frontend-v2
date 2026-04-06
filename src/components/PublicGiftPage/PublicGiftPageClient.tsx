@@ -9,9 +9,7 @@ import {
 import type { RenderTemplateProps } from '@/lib/config/templates/types'
 import { usePublicPageBySlug } from '@/hooks/tanstack/publicPage'
 import ShareGiftPageModal from '@/components/Gifts/GiftDetails/ShareGiftPageModal'
-import {
-  normalizePublicPageData,
-} from './pageMapper'
+import { normalizePublicPageData } from './pageMapper'
 import {
   PublicGiftPageErrorView,
   PublicGiftPageLoadingView,
@@ -43,9 +41,12 @@ export default function PublicGiftPageClient({
     [pageData]
   )
   const receiverName = useMemo(() => {
-    return pageData ? resolveRecipientName(pageData, normalizedPage?.title || '') : ''
+    return pageData
+      ? resolveRecipientName(pageData, normalizedPage?.title || '')
+      : ''
   }, [normalizedPage?.title, pageData])
-  const currency = readString(pageData?.settings?.currency)?.toUpperCase() || 'NGN'
+  const currency =
+    readString(pageData?.settings?.currency)?.toUpperCase() || 'NGN'
   const giftOptions = useMemo(
     () => (pageData ? resolveGiftOptions(pageData) : []),
     [pageData]
@@ -60,9 +61,9 @@ export default function PublicGiftPageClient({
   const [giftQuantities, setGiftQuantities] = useState<Record<string, number>>(
     {}
   )
-  const [selectedGiftIds, setSelectedGiftIds] = useState<Record<string, boolean>>(
-    {}
-  )
+  const [selectedGiftIds, setSelectedGiftIds] = useState<
+    Record<string, boolean>
+  >({})
 
   const selectedGiftItems = useMemo(
     () => giftOptions.filter((item) => selectedGiftIds[item.id]),
@@ -116,7 +117,10 @@ export default function PublicGiftPageClient({
       templateId: safeTemplateId,
     },
     engagementSection: isTemplate4 ? (
-      <PublicGiftPageEngagementSection page={pageData} variant='spotlightGrid' />
+      <PublicGiftPageEngagementSection
+        page={pageData}
+        variant='spotlightGrid'
+      />
     ) : null,
     mobileShareAction: isTemplate4 ? shareButton : null,
   }
@@ -124,17 +128,20 @@ export default function PublicGiftPageClient({
   return (
     <main className='min-h-screen md:bg-primary-50 md:px-4 md:py-8 lg:py-15'>
       <div className='mx-auto max-w-[924px] border border-white bg-white flex flex-col gap-4 lg:gap-7'>
-        {renderRenderTemplate(
-          safeTemplateId,
-          renderProps
+        {renderRenderTemplate(safeTemplateId, renderProps)}
+        {isTemplate4 ? (
+          <div className='hidden md:block'>{shareButton}</div>
+        ) : (
+          shareButton
         )}
-        {isTemplate4 ? <div className='hidden md:block'>{shareButton}</div> : shareButton}
         {isTemplate4 ? null : (
           <PublicGiftPageEngagementSection page={pageData} />
         )}
         <div
           className={`${
-            isTemplate4 ? 'px-5 pb-8 sm:px-8 lg:px-12 lg:pb-14' : 'px-5 pb-8 sm:px-8 lg:px-15 lg:pb-14'
+            isTemplate4
+              ? 'px-5 sm:px-8 lg:px-12 pb-14'
+              : 'px-5 sm:px-8 lg:px-15 pb-14'
           }`}
         >
           <CommentComposer
@@ -147,6 +154,7 @@ export default function PublicGiftPageClient({
             receiverName={receiverName}
             currency={currency}
             gifts={giftOptions}
+            selectedGiftItems={selectedGiftItems}
             selectedGiftIds={selectedGiftIds}
             giftQuantities={giftQuantities}
             onSelectGift={handleSelectGift}
@@ -160,8 +168,9 @@ export default function PublicGiftPageClient({
         isOpen={isSuccessModalOpen}
         onClose={() => setSuccessModalOpen(false)}
         receiverName={receiverName}
-        selectedGiftItems={selectedGiftItems}
+        giftItems={giftOptions}
         giftQuantities={giftQuantities}
+        onChangeGiftQuantity={updateGiftQuantity}
         currency={currency}
       />
       <ShareGiftPageModal

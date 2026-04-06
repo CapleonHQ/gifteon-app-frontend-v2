@@ -6,11 +6,9 @@ type UseCreateGiftPageOptions = {
   onError?: (error: unknown) => void
 }
 
-const resolveCreatedLink = (data: {
-  slug: string
-}) => {
+const resolveCreatedLink = (data: { slug: string }) => {
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  return `${origin}/gifts/${data.slug}`
+  return `${origin}/u/${data.slug}`
 }
 
 export const useCreateGiftPage = (options?: UseCreateGiftPageOptions) =>

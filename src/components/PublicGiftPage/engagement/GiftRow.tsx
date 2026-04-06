@@ -1,6 +1,7 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import type { GiftOption } from './types'
 import { DEFAULT_GIFT_IMAGE, formatCurrency } from './utils'
+import CashIcon from '@/assets/icons/CashIcon'
 import { Minus, Plus } from 'lucide-react'
 
 type GiftRowProps = {
@@ -22,8 +23,63 @@ export default function GiftRow({
   onDecrease,
   onIncrease,
 }: GiftRowProps) {
-  const progressDenominator = Math.max(item.quantity, 1)
-  const progress = Math.min(item.fulfilled / progressDenominator, 1)
+  const isCashGift = item.kind === 'cash'
+  const raisedAmount = Math.max(0, item.raisedAmount ?? 0)
+  const targetAmount = Math.max(0, item.targetAmount ?? 0)
+  const progressDenominator = isCashGift
+    ? Math.max(targetAmount, raisedAmount, 1)
+    : Math.max(item.quantity, 1)
+  const progressValue = isCashGift ? raisedAmount : item.fulfilled
+  const progress = Math.min(progressValue / progressDenominator, 1)
+  const progressPercent = Number((progress * 100).toFixed(2))
+
+  if (isCashGift) {
+    return (
+      <div className='border-b border-grey-50 px-3 py-2 last:border-b-0 md:pl-4 md:pr-5 md:pt-2 md:pb-3.5'>
+        <div className='min-w-0'>
+          <div className='flex items-center gap-2 md:gap-3'>
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onSelect}
+              className='size-4 md:size-5 rounded-sm'
+            />
+
+            <div className='h-15 md:h-[72px] w-15 md:w-[72px] shrink-0 rounded-[8px] border border-primary-100 bg-primary-50 text-primary-700 flex items-center justify-center'>
+              <span className='h-8 w-8 md:h-10 md:w-10'>
+                <CashIcon />
+              </span>
+            </div>
+
+            <div className='ml-1 md:ml-0 w-full h-full flex flex-col justify-between gap-2'>
+              <div>
+                <p className='truncate leading-[120%] font-medium text-grey-900'>
+                  {item.title}
+                </p>
+                <p className='mt-0.5 truncate text-[10px] leading-[120%] text-grey-700'>
+                  {item.subtitle}
+                </p>
+              </div>
+              <div>
+                <div className='flex justify-between items-center gap-2 text-xs leading-[119%] text-grey-600 font-medium'>
+                  <p>
+                    {formatCurrency(raisedAmount, currency)} raised of{' '}
+                    {formatCurrency(targetAmount, currency)}
+                  </p>
+                  <p>{progressPercent}%</p>
+                </div>
+                <div className='mt-1 h-2 w-full rounded-full bg-grey-50/50 overflow-hidden'>
+                  <div
+                    className='h-full bg-primary-300 transition-all duration-300'
+                    style={{ width: `${Math.max(progress * 100, 1)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className='border-b border-grey-50 px-3 py-2 last:border-b-0 md:grid md:grid-cols-[minmax(0,1fr)_140px_140px] md:items-center md:gap-4 md:pl-4 md:pr-5 md:pt-2 md:pb-3.5'>
@@ -58,7 +114,7 @@ export default function GiftRow({
                   {Math.min(item.fulfilled, item.quantity)} of {item.quantity}{' '}
                   fulfilled
                 </p>
-                <p>{Number((progress * 100).toFixed(2))}%</p>
+                <p>{progressPercent}%</p>
               </div>
               <div className='mt-1 h-2 w-full rounded-full bg-grey-50/50 overflow-hidden'>
                 <div
@@ -99,10 +155,6 @@ export default function GiftRow({
         </div>
       </div>
 
-      <p className='hidden md:block mt-0 pl-0 text-center leading-[140%] font-medium text-grey-900'>
-        {formatCurrency(item.price, currency)}
-      </p>
-
       <div className='hidden md:flex md:mt-0 md:items-center md:justify-center md:gap-2 md:p-3 md:pr-0'>
         <button
           type='button'
@@ -125,6 +177,9 @@ export default function GiftRow({
           <Plus className='size-4' />
         </button>
       </div>
+      <p className='hidden md:block mt-0 pl-0 text-center leading-[140%] font-medium text-grey-900'>
+        {formatCurrency(item.price, currency)}
+      </p>
     </div>
   )
 }

@@ -32,6 +32,21 @@ export type PublicPageApiTemplate = {
   name?: string
 }
 
+export type PublicPageApiWishListItem = {
+  id?: string | null
+  type?: string | null
+  title?: string | null
+  imageUrl?: string | null
+  itemId?: string | null
+  quantity?: number | string | null
+  unitPrice?: number | string | null
+  quantityGifted?: number | string | null
+  quantityClaimed?: number | string | null
+  quantityClaimable?: number | string | null
+  status?: string | null
+  source?: string | null
+}
+
 export type PublicPageApiSettings = {
   id?: string
   whoIsFor?: string | null
@@ -52,8 +67,29 @@ export type PublicPageApiSettings = {
   hasStoreItems?: boolean
   deletedAt?: string | null
   socials?: PublicPageApiSocial[]
-  customGifts?: Array<Record<string, unknown>>
+  wishListItems?: PublicPageApiWishListItem[]
   storeItems?: Array<Record<string, unknown>>
+}
+
+export type PublicPageApiActivity = {
+  id?: string
+  uid?: string
+  title?: string
+  action?: string
+  description?: string
+  message?: string
+  label?: string
+  createdAt?: string
+  timestamp?: string
+  date?: string
+}
+
+export type PublicPageActivitiesData = {
+  activities: PublicPageApiActivity[]
+  total?: number
+  limit?: number
+  offset?: number
+  hasMore?: boolean
 }
 
 export type PublicPageApiData = {
@@ -85,8 +121,6 @@ export type PublicPageApiData = {
   contentColor?: string | null
   contentSize?: number | string | null
   media?: PublicPageApiMedia[]
-  comments?: Array<Record<string, unknown>>
-  activities?: Array<Record<string, unknown>>
   settings?: PublicPageApiSettings | null
 }
 
@@ -131,10 +165,8 @@ export type { CreateCommentRequestBody }
 export const getPublicPageActivities = async (
   pageId: string,
   params?: { limit?: number; offset?: number }
-): Promise<ApiResponse<unknown>> => {
-  const resp: AxiosResponse<ApiResponse<unknown>> = await apiService.appPublic.get(
-    `/pages/${pageId}/activities`,
-    { params }
-  )
+): Promise<ApiResponse<PublicPageActivitiesData>> => {
+  const resp: AxiosResponse<ApiResponse<PublicPageActivitiesData>> =
+    await apiService.appPublic.get(`/pages/${pageId}/activities`, { params })
   return resp.data
 }

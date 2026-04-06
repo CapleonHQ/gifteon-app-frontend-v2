@@ -1,11 +1,20 @@
 import GiftHandIcon from '@/assets/icons/diagrams/GiftHandIcon'
+import CashIcon from '@/assets/icons/CashIcon'
 import GiftRow from './GiftRow'
 import type { GiftOption } from './types'
+import DeleteIcon from '@/assets/icons/DeleteIcon'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 type GiftListSectionProps = {
   receiverName: string
   currency: string
   gifts: GiftOption[]
+  selectedGiftItems: GiftOption[]
   selectedGiftIds: Record<string, boolean>
   giftQuantities: Record<string, number>
   onSelectGift: (giftId: string, checked: boolean) => void
@@ -17,14 +26,32 @@ export default function GiftListSection({
   receiverName,
   currency,
   gifts,
+  selectedGiftItems,
   selectedGiftIds,
   giftQuantities,
   onSelectGift,
   onChangeGiftQuantity,
   onSendCustomGift,
 }: GiftListSectionProps) {
+  const cashGift = gifts.find((item) => item.kind === 'cash')
+  const nonCashGifts = gifts.filter((item) => item.kind !== 'cash')
+  const hasSelectedItems = selectedGiftItems.length > 0
+
+  const renderGiftRow = (item: GiftOption) => (
+    <GiftRow
+      key={item.id}
+      item={item}
+      isSelected={Boolean(selectedGiftIds[item.id])}
+      quantity={giftQuantities[item.id] ?? 1}
+      onSelect={(checked) => onSelectGift(item.id, Boolean(checked))}
+      onDecrease={() => onChangeGiftQuantity(item.id, 'dec')}
+      onIncrease={() => onChangeGiftQuantity(item.id, 'inc')}
+      currency={currency}
+    />
+  )
+
   return (
-    <div className='mt-10 lg:mt-7'>
+    <div className={`mt-10 lg:mt-7 ${hasSelectedItems ? 'pb-28' : ''}`}>
       <h3 className='text-xl lg:text-2xl leading-6 lg:leading-8 font-medium text-blackish'>
         {receiverName}&apos;s Gift List
       </h3>
@@ -48,18 +75,8 @@ export default function GiftListSection({
           </div>
         ) : (
           <div className='flex flex-col mt-2 md:mt-0'>
-            {gifts.map((item) => (
-              <GiftRow
-                key={item.id}
-                item={item}
-                isSelected={Boolean(selectedGiftIds[item.id])}
-                quantity={giftQuantities[item.id] ?? 1}
-                onSelect={(checked) => onSelectGift(item.id, Boolean(checked))}
-                onDecrease={() => onChangeGiftQuantity(item.id, 'dec')}
-                onIncrease={() => onChangeGiftQuantity(item.id, 'inc')}
-                currency={currency}
-              />
-            ))}
+            {cashGift ? renderGiftRow(cashGift) : null}
+            {nonCashGifts.map(renderGiftRow)}
           </div>
         )}
       </div>
@@ -73,7 +90,7 @@ export default function GiftListSection({
           </div>
           <div>
             <p className='md:text-xl leading-[140%] font-medium text-grey-900'>
-              Looking for something more?
+              Still not sure what to send?
             </p>
             <p className='text-xs md:text-sm leading-[120%] text-grey-600 mt-1.5'>
               You can pick your own gift, get AI recommendations, or send cash
@@ -90,6 +107,61 @@ export default function GiftListSection({
           Send Custom Gift
         </button>
       </div>
+
+      {hasSelectedItems ? (
+        <div className='fixed inset-x-0 bottom-0 z-50 bg-white shadow-[0px_-10px_18px_5px_#9494941C]'>
+          <div className='mx-auto flex w-full max-w-[1084px] flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-20 md:py-4'>
+            <TooltipProvider delayDuration={150}>
+              <div className='flex flex-nowrap items-center gap-3 overflow-x-auto pr-1'>
+                {selectedGiftItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className='grid grid-cols-[24px_4px_minmax(0,1fr)_8px_14px] items-center w-[120px] shrink-0 rounded-[6px] bg-grey-50/20 pl-3 pr-1 py-2 shadow-[inset_0_0_2px_0_#AAAAAA40] overflow-hidden'
+                  >
+                    {item.kind === 'cash' ? (
+                      <span className='flex h-6 w-6 p-0.5 rounded-[2px] items-center justify-center bg-primary-50 text-primary-700'>
+                        <CashIcon />
+                      </span>
+                    ) : (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className='h-6 w-6 rounded-[2px] object-cover'
+                      />
+                    )}
+                    <span aria-hidden />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className='min-w-0 font-medium truncate text-sm text-grey-900'>
+                          {item.title}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>{item.title}</TooltipContent>
+                    </Tooltip>
+                    <span aria-hidden />
+                    <button
+                      type='button'
+                      onClick={() => onSelectGift(item.id, false)}
+                      className='w-3.5 h-3.5 bg-error-50 border-[0.7px] border-white rounded-full text-error-300 hover:text-error-500 shrink-0 flex items-center justify-center'
+                      aria-label={`Remove ${item.title}`}
+                    >
+                      <span className='w-[7px] h-[7px]'>
+                        <DeleteIcon />
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </TooltipProvider>
+            <button
+              type='button'
+              className='h-10 min-w-[180px] rounded-[12px] bg-linear-to-b from-primary-400 to-primary-600 px-6 text-sm font-medium text-white hover:from-primary-500 hover:to-primary-700 transition-colors duration-300'
+            >
+              Check Out
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
