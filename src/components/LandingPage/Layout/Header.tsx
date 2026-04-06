@@ -13,17 +13,21 @@ import {
 import { useAuth } from '@/context/AuthContext'
 
 const navLinks = [
-  { label: 'Home', href: '#' },
+  { label: 'Home', href: '/' },
   { label: 'How it Works', href: '#' },
-  { label: 'Explore Pages', href: '#' },
+  { label: 'Explore Pages', href: '/explore' },
   { label: 'Giftseon for Business', href: '#' },
 ]
 
 const celebrationTypes = [
-  { label: 'Birthdays', icon: '🎂', href: '#' },
-  { label: 'Weddings', icon: '💍', href: '#' },
-  { label: 'Anniversaries', icon: '🎊', href: '#' },
-  { label: 'Graduations', icon: '🎓', href: '#' },
+  { label: 'Birthdays', icon: '🎂', href: '/explore?category=birthdays' },
+  { label: 'Weddings', icon: '💍', href: '/explore?category=weddings' },
+  {
+    label: 'Anniversaries',
+    icon: '🎊',
+    href: '/explore?category=anniversaries',
+  },
+  { label: 'Graduations', icon: '🎓', href: '/explore?category=graduations' },
   // { label: 'Perpetual / Donation', icon: '🔑', href: '#' },
 ]
 
