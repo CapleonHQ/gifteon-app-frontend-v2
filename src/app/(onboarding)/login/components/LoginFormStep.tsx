@@ -12,6 +12,7 @@ type LoginFormStepProps = {
   error: string
   isLoading: boolean
   isValidEmail: boolean
+  registerHref?: string
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void
   onLogin: (event: SyntheticEvent) => void
   onDismissError: () => void
@@ -24,6 +25,7 @@ const LoginFormStep = ({
   error,
   isLoading,
   isValidEmail,
+  registerHref = '/register',
   onEmailChange,
   onLogin,
   onDismissError,
@@ -150,7 +152,7 @@ const LoginFormStep = ({
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Don&apos;t have an account?{' '}
           <Link
-            href='/register'
+            href={registerHref}
             className='text-primary-400 font-semibold hover:text-primary-600 transition-colors duration-200 underline'
           >
             Create an account

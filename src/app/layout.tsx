@@ -6,6 +6,7 @@ import georgia from '@/assets/fonts/georgia'
 import PostHogAuthBridge from '@/components/Providers/PostHogAuthBridge'
 import QueryProvider from '@/components/Providers/QueryProvider'
 import { AuthProvider } from '@/context/AuthContext'
+import { SuccessModalProvider } from '@/context/SuccessModalContext'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -138,8 +139,10 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <PostHogAuthBridge />
-            {children}
+            <SuccessModalProvider>
+              <PostHogAuthBridge />
+              {children}
+            </SuccessModalProvider>
           </AuthProvider>
         </QueryProvider>
       </body>
