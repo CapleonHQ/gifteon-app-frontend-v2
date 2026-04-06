@@ -228,7 +228,8 @@ export default function PublicGiftPageClient({
   const updateGiftQuantity = (giftId: string, direction: 'inc' | 'dec') => {
     setGiftQuantities((prev) => {
       const currentItem = giftOptions.find((item) => item.id === giftId)
-      const maxQuantity = currentItem?.kind === 'cash' ? 1 : (currentItem?.quantity ?? 1)
+      const maxQuantity =
+        currentItem?.kind === 'cash' ? 1 : currentItem?.quantity ?? 1
       const current = prev[giftId] ?? 1
       const next =
         direction === 'inc'
@@ -334,6 +335,7 @@ export default function PublicGiftPageClient({
         giftQuantities={giftQuantities}
         onChangeGiftQuantity={updateGiftQuantity}
         currency={currency}
+        ownersName={receiverName}
       />
       <ShareGiftPageModal
         isOpen={isShareModalOpen}

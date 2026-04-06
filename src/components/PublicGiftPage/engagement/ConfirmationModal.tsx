@@ -35,6 +35,7 @@ type ConfirmationModalProps = {
   giftQuantities: Record<string, number>
   onChangeGiftQuantity: (giftId: string, direction: 'inc' | 'dec') => void
   currency: string
+  ownersName: string
 }
 
 export default function ConfirmationModal({
@@ -50,10 +51,15 @@ export default function ConfirmationModal({
   giftQuantities,
   onChangeGiftQuantity,
   currency,
+  ownersName,
 }: ConfirmationModalProps) {
   const [step, setStep] = useState<CheckoutStep>('review')
-  const [cashAmountInputs, setCashAmountInputs] = useState<Record<string, string>>({})
-  const [cashAmountErrors, setCashAmountErrors] = useState<Record<string, string>>({})
+  const [cashAmountInputs, setCashAmountInputs] = useState<
+    Record<string, string>
+  >({})
+  const [cashAmountErrors, setCashAmountErrors] = useState<
+    Record<string, string>
+  >({})
   const [paymentError, setPaymentError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPinModalOpen, setIsPinModalOpen] = useState(false)
@@ -120,11 +126,7 @@ export default function ConfirmationModal({
       fullName: '',
       email: '',
     })
-  }, [
-    initialCashAmountInputs,
-    initialStep,
-    isOpen,
-  ])
+  }, [initialCashAmountInputs, initialStep, isOpen])
 
   if (!isOpen) return null
 
@@ -146,7 +148,9 @@ export default function ConfirmationModal({
     id: item.id,
     title: item.title,
     quantityLabel:
-      item.kind === 'cash' ? '' : ` x${giftQuantities[item.id] ?? item.quantity}`,
+      item.kind === 'cash'
+        ? ''
+        : ` x${giftQuantities[item.id] ?? item.quantity}`,
     amount: getLineAmount(item),
   }))
 
@@ -196,7 +200,10 @@ export default function ConfirmationModal({
     return nextErrors
   }
 
-  const handleGuestDetailsChange = (field: keyof GuestDetails, value: string) => {
+  const handleGuestDetailsChange = (
+    field: keyof GuestDetails,
+    value: string
+  ) => {
     setGuestDetails((prev) => ({ ...prev, [field]: value }))
     if (guestErrors[field]) {
       setGuestErrors((prev) => ({ ...prev, [field]: undefined }))
@@ -212,7 +219,8 @@ export default function ConfirmationModal({
       .map((item) => ({
         itemId: item.id,
         quantity: giftQuantities[item.id] ?? item.quantity,
-        source: item.kind === 'store' ? ('store' as const) : ('custom' as const),
+        source:
+          item.kind === 'store' ? ('store' as const) : ('custom' as const),
       }))
 
     const cashGiftAmount = cashItems.reduce(
@@ -304,7 +312,9 @@ export default function ConfirmationModal({
       return 'Enter your full name to continue.'
     }
 
-    return rawMessage.trim() || 'Unable to initialize payment. Please try again.'
+    return (
+      rawMessage.trim() || 'Unable to initialize payment. Please try again.'
+    )
   }
 
   const isPinRelatedCheckoutError = (
@@ -353,13 +363,10 @@ export default function ConfirmationModal({
         return
       }
 
-      const successMessage =
-        responseData && 'message' in responseData && responseData.message
-          ? responseData.message
-          : response.message || 'Payment initialized successfully.'
-
       setIsPinModalOpen(false)
-      onPaymentSuccess(successMessage)
+      onPaymentSuccess(
+        `Your gift has been confirmed. Small or big, your gift makes ${ownersName} day special.`
+      )
       onClose()
     } catch (error) {
       const apiError = toApiError(error)
@@ -420,7 +427,11 @@ export default function ConfirmationModal({
         mobileTopOffsetClass='top-0'
         zIndex='z-70 lg:z-50'
         header={
-          <ConfirmationHeader step={step} onClose={onClose} onBack={handleHeaderBack} />
+          <ConfirmationHeader
+            step={step}
+            onClose={onClose}
+            onBack={handleHeaderBack}
+          />
         }
         body={
           <div className='space-y-4'>
@@ -463,21 +474,23 @@ export default function ConfirmationModal({
                 }}
               />
             ) : (
-              <>{!isMobileViewport ? (
-                <DesktopPinStepContent
-                  isActive={step === 'pin'}
-                  pinError={pinError}
-                  isSubmitting={isSubmitting}
-                  onBack={() => {
-                    setStep('payment')
-                    setPinError('')
-                  }}
-                  onConfirm={async (pin) => {
-                    await submitCheckout('wallet', pin)
-                  }}
-                  onClearError={() => setPinError('')}
-                />
-              ) : null}</>
+              <>
+                {!isMobileViewport ? (
+                  <DesktopPinStepContent
+                    isActive={step === 'pin'}
+                    pinError={pinError}
+                    isSubmitting={isSubmitting}
+                    onBack={() => {
+                      setStep('payment')
+                      setPinError('')
+                    }}
+                    onConfirm={async (pin) => {
+                      await submitCheckout('wallet', pin)
+                    }}
+                    onClearError={() => setPinError('')}
+                  />
+                ) : null}
+              </>
             )}
           </div>
         }
