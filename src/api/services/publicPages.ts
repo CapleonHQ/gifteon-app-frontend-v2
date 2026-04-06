@@ -122,6 +122,11 @@ export type PublicPageApiData = {
   contentSize?: number | string | null
   media?: PublicPageApiMedia[]
   settings?: PublicPageApiSettings | null
+  owner: {
+    firstName: string
+    lastName: string
+    gender: 'male' | 'female'
+  }
 }
 
 export const getPublicPageBySlug = async (
@@ -146,17 +151,18 @@ export const createPublicPageComment = async (
   data: CreateCommentRequestBody
 ): Promise<ApiResponse<object>> => {
   const token = getAccessToken()
-  const resp: AxiosResponse<ApiResponse<object>> = await apiService.appPublic.post(
-    `/pages/${pageId}/comments`,
-    data,
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined
-  )
+  const resp: AxiosResponse<ApiResponse<object>> =
+    await apiService.appPublic.post(
+      `/pages/${pageId}/comments`,
+      data,
+      token
+        ? {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        : undefined
+    )
   return resp.data
 }
 

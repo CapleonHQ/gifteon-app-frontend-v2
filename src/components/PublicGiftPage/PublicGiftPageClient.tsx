@@ -17,6 +17,7 @@ import {
 import CommentComposer from './engagement/CommentComposer'
 import GiftListSection from './engagement/GiftListSection'
 import SuccessModal from './engagement/SuccessModal'
+import ConfirmationModal from './engagement/ConfirmationModal'
 import {
   readString,
   resolveGiftOptions,
@@ -41,10 +42,8 @@ export default function PublicGiftPageClient({
     [pageData]
   )
   const receiverName = useMemo(() => {
-    return pageData
-      ? resolveRecipientName(pageData, normalizedPage?.title || '')
-      : ''
-  }, [normalizedPage?.title, pageData])
+    return pageData ? resolveRecipientName(pageData) : ''
+  }, [pageData])
   const currency =
     readString(pageData?.settings?.currency)?.toUpperCase() || 'NGN'
   const giftOptions = useMemo(
@@ -58,6 +57,8 @@ export default function PublicGiftPageClient({
   const isTemplate4 = resolvedTemplateLayout === 'spotlightGrid'
   const [isSuccessModalOpen, setSuccessModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [isConfirmationModalOpen, setConfirmationModalOpen] = useState(false)
+  const [confirmationGiftIds, setConfirmationGiftIds] = useState<string[]>([])
   const [giftQuantities, setGiftQuantities] = useState<Record<string, number>>(
     {}
   )
@@ -69,6 +70,11 @@ export default function PublicGiftPageClient({
     () => giftOptions.filter((item) => selectedGiftIds[item.id]),
     [giftOptions, selectedGiftIds]
   )
+  const confirmationGiftItems = useMemo(() => {
+    if (confirmationGiftIds.length === 0) return []
+    const idSet = new Set(confirmationGiftIds)
+    return giftOptions.filter((item) => idSet.has(item.id))
+  }, [confirmationGiftIds, giftOptions])
 
   if (pageQuery.isLoading) {
     return <PublicGiftPageLoadingView />
@@ -84,10 +90,33 @@ export default function PublicGiftPageClient({
     setSelectedGiftIds((prev) => ({ ...prev, [giftId]: checked }))
   }
 
+  const handleOpenConfirmation = () => {
+    if (selectedGiftItems.length === 0) return
+    setConfirmationGiftIds(selectedGiftItems.map((item) => item.id))
+    setConfirmationModalOpen(true)
+  }
+
+  const handleCloseConfirmation = () => {
+    setConfirmationModalOpen(false)
+    setConfirmationGiftIds([])
+  }
+
+  const handleBuyGiftFromSuccess = (giftIds: string[]) => {
+    setSuccessModalOpen(false)
+    if (giftIds.length === 0) return
+    setConfirmationGiftIds(giftIds)
+    setConfirmationModalOpen(true)
+  }
+
   const updateGiftQuantity = (giftId: string, direction: 'inc' | 'dec') => {
     setGiftQuantities((prev) => {
+      const currentItem = giftOptions.find((item) => item.id === giftId)
+      const maxQuantity = currentItem?.kind === 'cash' ? 1 : (currentItem?.quantity ?? 1)
       const current = prev[giftId] ?? 1
-      const next = direction === 'inc' ? current + 1 : Math.max(1, current - 1)
+      const next =
+        direction === 'inc'
+          ? Math.min(current + 1, Math.max(1, maxQuantity))
+          : Math.max(1, current - 1)
       return { ...prev, [giftId]: next }
     })
   }
@@ -160,6 +189,7 @@ export default function PublicGiftPageClient({
             onSelectGift={handleSelectGift}
             onChangeGiftQuantity={updateGiftQuantity}
             onSendCustomGift={() => setSuccessModalOpen(true)}
+            onCheckout={handleOpenConfirmation}
           />
         </div>
       </div>
@@ -167,8 +197,18 @@ export default function PublicGiftPageClient({
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setSuccessModalOpen(false)}
-        receiverName={receiverName}
+        onBuyGift={handleBuyGiftFromSuccess}
+        owner={pageData.owner}
         giftItems={giftOptions}
+        giftQuantities={giftQuantities}
+        onChangeGiftQuantity={updateGiftQuantity}
+        currency={currency}
+      />
+      <ConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={handleCloseConfirmation}
+        onMakePayment={handleCloseConfirmation}
+        selectedGiftItems={confirmationGiftItems}
         giftQuantities={giftQuantities}
         onChangeGiftQuantity={updateGiftQuantity}
         currency={currency}

@@ -17,4 +17,5 @@ export type GiftOption = {
   kind: 'wishlist' | 'store' | 'cash'
   raisedAmount?: number
   targetAmount?: number
+  minimumAmount?: number
 }

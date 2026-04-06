@@ -77,30 +77,8 @@ export const toInitials = (value: string) => {
     .toUpperCase()
 }
 
-export const formatCurrency = (amount: number, currency: string) => {
-  if (!Number.isFinite(amount)) return '--'
-  try {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: currency || 'NGN',
-      maximumFractionDigits: 0,
-    }).format(amount)
-  } catch {
-    return `${currency || 'NGN'} ${amount.toLocaleString('en-US')}`
-  }
-}
-
-export const resolveRecipientName = (page: PublicPageApiData, pageTitle: string) => {
-  const settingsName = readString(page.settings?.receiverName)
-  if (settingsName) return settingsName
-
-  const nameFromTitle = pageTitle
-    .replace(/it's\s+/i, '')
-    .replace(/my\s+/i, '')
-    .replace(/birthday!?/i, '')
-    .trim()
-
-  return nameFromTitle || 'your friend'
+export const resolveRecipientName = (page: PublicPageApiData) => {
+  return page.owner.firstName || page.owner.lastName
 }
 
 const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
@@ -119,7 +97,10 @@ const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
     pickString(nestedImageRecord || {}, ['url']) ||
     DEFAULT_GIFT_IMAGE
 
-  const quantity = Math.max(1, pickNumber(record, ['quantity', 'totalQuantity']) || 1)
+  const quantity = Math.max(
+    1,
+    pickNumber(record, ['quantity', 'totalQuantity']) || 1
+  )
   const fulfilled = Math.max(
     0,
     pickNumber(record, [
@@ -135,7 +116,8 @@ const parseGiftRecord = (value: unknown, index: number): GiftOption | null => {
     pickNumber(record, ['unitPrice', 'price', 'amount', 'cost']) || 0
   )
   const id =
-    pickString(record, ['id', 'itemId', 'uid', 'slug']) || `gift-option-${index}`
+    pickString(record, ['id', 'itemId', 'uid', 'slug']) ||
+    `gift-option-${index}`
   const sourceValue = readString(record.source)?.toLowerCase()
   const kind: GiftOption['kind'] =
     sourceValue === 'store' ? 'store' : 'wishlist'
@@ -181,22 +163,27 @@ export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
 
   const cashGiftItem: GiftOption | null = page.settings?.acceptCashGift
     ? (() => {
-    const raisedAmount = Math.max(0, readNumber(page.settings?.amount) ?? 0)
-    const targetAmount = Math.max(
-      0,
-      readNumber(page.settings?.targetAmount) ?? raisedAmount
-    )
+        const raisedAmount = Math.max(0, readNumber(page.settings?.amount) ?? 0)
+        const targetAmount = Math.max(
+          0,
+          readNumber(page.settings?.targetAmount) ?? raisedAmount
+        )
+        const minimumAmount = Math.max(
+          0,
+          readNumber(page.settings?.minimumAmount) ?? 0
+        )
       return {
         id: 'cash-gift',
         title: 'Cash Gift',
         subtitle: 'Send cash directly to the celebrant',
         imageUrl: '',
-        price: Math.max(0, amount),
-        quantity: 1,
-        fulfilled: 0,
+          price: Math.max(0, amount),
+          quantity: 1,
+          fulfilled: 0,
         kind: 'cash',
         raisedAmount,
         targetAmount,
+        minimumAmount,
       }
     })()
     : null

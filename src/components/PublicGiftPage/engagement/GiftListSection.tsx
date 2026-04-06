@@ -20,6 +20,7 @@ type GiftListSectionProps = {
   onSelectGift: (giftId: string, checked: boolean) => void
   onChangeGiftQuantity: (giftId: string, direction: 'inc' | 'dec') => void
   onSendCustomGift: () => void
+  onCheckout: () => void
 }
 
 export default function GiftListSection({
@@ -32,6 +33,7 @@ export default function GiftListSection({
   onSelectGift,
   onChangeGiftQuantity,
   onSendCustomGift,
+  onCheckout,
 }: GiftListSectionProps) {
   const cashGift = gifts.find((item) => item.kind === 'cash')
   const nonCashGifts = gifts.filter((item) => item.kind !== 'cash')
@@ -155,6 +157,7 @@ export default function GiftListSection({
             </TooltipProvider>
             <button
               type='button'
+              onClick={onCheckout}
               className='h-10 min-w-[180px] rounded-[12px] bg-linear-to-b from-primary-400 to-primary-600 px-6 text-sm font-medium text-white hover:from-primary-500 hover:to-primary-700 transition-colors duration-300'
             >
               Check Out

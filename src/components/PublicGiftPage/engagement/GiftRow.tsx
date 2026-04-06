@@ -1,8 +1,9 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import type { GiftOption } from './types'
-import { DEFAULT_GIFT_IMAGE, formatCurrency } from './utils'
+import { DEFAULT_GIFT_IMAGE } from './utils'
 import CashIcon from '@/assets/icons/CashIcon'
 import { Minus, Plus } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils/currency'
 
 type GiftRowProps = {
   item: GiftOption
@@ -62,8 +63,15 @@ export default function GiftRow({
               <div>
                 <div className='flex justify-between items-center gap-2 text-xs leading-[119%] text-grey-600 font-medium'>
                   <p>
-                    {formatCurrency(raisedAmount, currency)} raised of{' '}
-                    {formatCurrency(targetAmount, currency)}
+                    {formatCurrency(raisedAmount, {
+                      currency,
+                      maximumFractionDigits: 0,
+                    })}{' '}
+                    raised of{' '}
+                    {formatCurrency(targetAmount, {
+                      currency,
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                   <p>{progressPercent}%</p>
                 </div>
@@ -129,7 +137,10 @@ export default function GiftRow({
 
       <div className='mt-3 flex items-center justify-between pl-[96px] pr-1 md:hidden'>
         <p className='leading-[140%] font-medium text-grey-900'>
-          {formatCurrency(item.price, currency)}
+          {formatCurrency(item.price, {
+            currency,
+            maximumFractionDigits: 0,
+          })}
         </p>
         <div className='flex items-center justify-end gap-2'>
           <button
@@ -178,7 +189,10 @@ export default function GiftRow({
         </button>
       </div>
       <p className='hidden md:block mt-0 pl-0 text-center leading-[140%] font-medium text-grey-900'>
-        {formatCurrency(item.price, currency)}
+        {formatCurrency(item.price, {
+          currency,
+          maximumFractionDigits: 0,
+        })}
       </p>
     </div>
   )
