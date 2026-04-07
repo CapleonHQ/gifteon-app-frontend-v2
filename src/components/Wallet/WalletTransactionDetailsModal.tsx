@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Check, Copy } from 'lucide-react'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
@@ -155,9 +156,10 @@ const WalletTransactionDetailsModal = ({
             <button
               type='button'
               onClick={handleCopyToken}
-              className='text-xs px-2 py-1 rounded border border-grey-200 text-grey-700 hover:bg-grey-50 transition-colors'
+              className='h-7 w-7 rounded-md border border-grey-200 text-grey-700 hover:bg-grey-50 transition-colors inline-flex items-center justify-center'
+              aria-label={copied ? 'Token copied' : 'Copy token'}
             >
-              {copied ? 'Copied' : 'Copy token'}
+              {copied ? <Check size={14} /> : <Copy size={14} />}
             </button>
           </div>
           <p className='mt-2 text-grey-900 font-medium break-all'>{token}</p>
