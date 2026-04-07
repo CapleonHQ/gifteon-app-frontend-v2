@@ -28,21 +28,12 @@ export interface DashboardChartData {
 }
 
 export interface DashboardRecentGift {
-  id?: string | number
-  name?: string
-  giftName?: string
-  title?: string
-  type?: string
-  giftType?: string
-  date?: string
-  createdAt?: string
-  worth?: string
-  amount?: number | string
-  status?: string
-  image?: string
-  imageUrl?: string
-  fromName?: string
-  senderName?: string
+  id: string
+  type: string
+  giftName: string
+  sender: string
+  status: string
+  amount: number | string
 }
 
 export interface StatsOverviewData {
@@ -53,8 +44,8 @@ export interface StatsOverviewData {
 
 export interface VisitSharePoint {
   date: string
-  visits: number
-  shares: number
+  visits: number | string
+  shares: number | string
 }
 
 export interface VisitSharesChartData {

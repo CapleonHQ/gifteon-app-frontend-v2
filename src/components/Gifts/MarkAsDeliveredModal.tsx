@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
@@ -10,7 +9,6 @@ type MarkAsDeliveredModalProps = {
   onClose: () => void
   onConfirm: () => void
   itemName: string
-  itemImage: string
 }
 
 const MarkAsDeliveredModal = ({
@@ -18,7 +16,6 @@ const MarkAsDeliveredModal = ({
   onClose,
   onConfirm,
   itemName,
-  itemImage,
 }: MarkAsDeliveredModalProps) => {
   const header = (
     <div className='relative'>
@@ -51,15 +48,6 @@ const MarkAsDeliveredModal = ({
   const body = (
     <div className='flex flex-col items-center text-center gap-3'>
       <div className='inline-flex items-center gap-2 px-3 py-2.5 rounded-[8px] border border-[#F5EFE6] bg-white shadow-[0px_4px_12px_-4px_#1019281A]'>
-        <div className='w-11 h-11 rounded-[8px] overflow-hidden bg-grey-50 shrink-0'>
-          <Image
-            src={itemImage}
-            alt={itemName}
-            width={40}
-            height={40}
-            className='w-full h-full object-cover'
-          />
-        </div>
         <span className='text-xl leading-6 text-grey-900'>{itemName}</span>
       </div>
       <div className='space-y-1 w-full max-w-[380px]'>

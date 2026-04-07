@@ -51,7 +51,9 @@ const GiftActivityMobileRow = ({
           <div className='flex flex-col gap-2 text-grey-600'>
             <div className='flex items-center justify-between'>
               <span>Type:</span>
-              <span className='text-grey-900 font-medium'>{item.type}</span>
+              <span className='text-grey-900 font-medium capitalize'>
+                {item.type}
+              </span>
             </div>
             <div className='flex items-center justify-between'>
               <span>Sender:</span>

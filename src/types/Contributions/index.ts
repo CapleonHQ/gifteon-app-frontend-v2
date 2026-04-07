@@ -1,4 +1,14 @@
-export type PageContribution = Record<string, unknown>
+export type PageContribution = {
+  id: string
+  type: string
+  giftName: string
+  sender: string
+  amount: number | string
+  currency: string
+  reference: string
+  status: string
+  createdAt: string
+}
 
 export type PageContributionsQueryParams = {
   limit?: number

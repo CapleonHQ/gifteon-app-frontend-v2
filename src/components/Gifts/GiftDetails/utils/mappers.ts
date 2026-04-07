@@ -11,11 +11,13 @@ import type { PageDetails, PageDetailsGiftDistribution, PageDetailsVisitPoint } 
 import { formatCurrency } from '@/lib/utils/currency'
 
 const ACTIVITY_STATUS_MAP: Record<string, ActivityStatus> = {
+  success: 'Claimed',
   unclaimed: 'Unclaimed',
   shipped: 'Shipped',
   claimed: 'Claimed',
   pending: 'Pending',
   used: 'Used',
+  failed: 'Pending',
 }
 
 export const formatMoney = (value: number) => {
@@ -57,7 +59,7 @@ export const mapSummaryCards = (page?: PageDetails): SummaryCard[] => {
     {
       id: 'value',
       title: 'Total value (Cash & Gifts)',
-      value: formatMoney(page?.engagement.totalContibutionsValue ?? 0),
+      value: formatMoney(page?.engagement.totalContributionsValue ?? 0),
       icon: CashIcon,
       borderColor: 'border-[#E8F1FB]',
       accent: 'bg-[#E8F1FB]/30',
@@ -70,27 +72,24 @@ export const mapSummaryCards = (page?: PageDetails): SummaryCard[] => {
 export const mapContributionItems = (
   contributions: PageContribution[]
 ): GiftActivityItem[] => {
-  return contributions.map((item, index) => {
-    const record = item as Record<string, unknown>
-    const rawStatus = String(record.status ?? 'pending').toLowerCase()
-    const status = ACTIVITY_STATUS_MAP[rawStatus] ?? 'Pending'
-    const worthValue =
-      typeof record.amount === 'number'
-        ? record.amount
-        : typeof record.worth === 'number'
-          ? record.worth
-          : 0
+  return contributions.map((item) => {
+    const rawStatus = item.status.toLowerCase()
+    if (!(rawStatus in ACTIVITY_STATUS_MAP)) {
+      throw new Error(`Unsupported contribution status: ${item.status}`)
+    }
+    const status = ACTIVITY_STATUS_MAP[rawStatus]
+    const worthValue = Number(item.amount)
 
     return {
-      id: String(record.id ?? index),
-      gift: String(record.gift ?? record.title ?? record.name ?? 'Gift'),
-      type: String(record.type ?? 'Contribution'),
-      sender: String(record.sender ?? record.fullName ?? 'Unknown sender'),
+      id: item.id,
+      gift: item.giftName,
+      type: item.type,
+      sender: item.sender,
       status,
-      worth:
-        typeof record.amount === 'string' || typeof record.worth === 'string'
-          ? String(record.amount ?? record.worth)
-          : formatMoney(worthValue),
+      worth: formatCurrency(worthValue, {
+        currency: item.currency,
+        maximumFractionDigits: 0,
+      }),
     }
   })
 }
@@ -137,7 +136,7 @@ export const pageVisitsChartOptions: ChartOptions<'bar'> = {
 export const mapGiftDistributionChartData = (
   distribution?: PageDetailsGiftDistribution
 ): ChartData<'doughnut'> => ({
-  labels: ['Items', 'Cash', 'Custom Gifts'],
+  labels: ['Store Gifts', 'Cash', 'Custom Gifts'],
   datasets: [
     {
       data: [
@@ -158,6 +157,18 @@ export const giftDistributionChartOptions: ChartOptions<'doughnut'> = {
   cutout: '60%',
   plugins: {
     legend: { display: false },
-    tooltip: { enabled: true },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const rawValue = context.raw
+          const value =
+            typeof rawValue === 'number' ? rawValue : Number(rawValue ?? 0)
+          const contributionLabel =
+            value === 1 ? 'contribution' : 'contributions'
+          return `${value} ${contributionLabel}`
+        },
+      },
+    },
   },
 }

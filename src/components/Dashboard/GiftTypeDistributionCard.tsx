@@ -54,7 +54,19 @@ const GiftTypeDistributionCard = ({
     cutout: '68%',
     plugins: {
       legend: { display: false },
-      tooltip: { enabled: true },
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: (context) => {
+            const rawValue = context.raw
+            const value =
+              typeof rawValue === 'number' ? rawValue : Number(rawValue ?? 0)
+            const contributionLabel =
+              value === 1 ? 'contribution' : 'contributions'
+            return `${value} ${contributionLabel}`
+          },
+        },
+      },
     },
   }
 
