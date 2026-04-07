@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import OnboardingLogo from '../components/OnboardingLogo'
 import LoginFormStep from './components/LoginFormStep'
@@ -17,6 +17,7 @@ type LoginStep = 'login' | 'verification' | 'success'
 
 const LoginPage = () => {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { refreshUser } = useAuth()
   const [currentStep, setCurrentStep] = useState<LoginStep>('login')
   const [email, setEmail] = useState('')
@@ -31,15 +32,18 @@ const LoginPage = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const resolvePostLoginPath = () => {
-    const requestedNextPath = new URLSearchParams(window.location.search).get(
-      'next'
-    )
+    const requestedNextPath = searchParams.get('next')
     if (!requestedNextPath) return '/dashboard'
     if (!requestedNextPath.startsWith('/')) return '/dashboard'
     if (requestedNextPath.startsWith('//')) return '/dashboard'
     if (requestedNextPath.startsWith('/login')) return '/dashboard'
     return requestedNextPath
   }
+
+  const requestedNextPath = searchParams.get('next')
+  const registerHref = requestedNextPath
+    ? `/register?next=${encodeURIComponent(requestedNextPath)}`
+    : '/register'
 
   // Countdown timer for resend
   useEffect(() => {
@@ -248,6 +252,7 @@ const LoginPage = () => {
             error={error}
             isLoading={isLoading}
             isValidEmail={isValidEmail}
+            registerHref={registerHref}
             onEmailChange={handleEmailChange}
             onLogin={handleLogin}
             onDismissError={() => setError('')}

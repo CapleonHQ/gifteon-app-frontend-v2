@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import type { PageComment } from '@/types/Comments'
 import type { EngagementTab, PublicActivityItem } from './types'
-import { asRecord, mapActivities } from './utils'
+import { mapActivities } from './utils'
 import ActivitiesList from './feed/ActivitiesList'
 import CommentsList from './feed/CommentsList'
 import FeedLoadingState from './feed/FeedLoadingState'
@@ -15,7 +15,6 @@ type EngagementFeedProps = {
   pageId: string
   activeTab: EngagementTab
   sortValue: 'most-recent' | 'oldest'
-  initialActivities?: Array<Record<string, unknown>>
   onCommentsTotalChange?: (total: number) => void
 }
 
@@ -23,7 +22,6 @@ export default function EngagementFeed({
   pageId,
   activeTab,
   sortValue,
-  initialActivities,
   onCommentsTotalChange,
 }: EngagementFeedProps) {
   const commentsQuery = usePublicPageComments(pageId, sortValue)
@@ -45,29 +43,9 @@ export default function EngagementFeed({
 
   const liveActivities = useMemo(() => {
     const pages = activitiesQuery.data?.pages ?? []
-    const loadedItems = pages.flatMap((entry) => {
-      const pageData = asRecord(entry.data)
-      const list = pageData?.activities
-      if (Array.isArray(list)) {
-        return list
-          .map((item) => asRecord(item))
-          .filter((item): item is Record<string, unknown> => Boolean(item))
-      }
-      return []
-    })
-
-    if (loadedItems.length > 0) {
-      return mapActivities(loadedItems)
-    }
-
-    const fallback = Array.isArray(initialActivities)
-      ? initialActivities
-          .map((item) => asRecord(item))
-          .filter((item): item is Record<string, unknown> => Boolean(item))
-      : []
-
-    return mapActivities(fallback)
-  }, [activitiesQuery.data?.pages, initialActivities])
+    const loadedItems = pages.flatMap((entry) => entry.data?.activities ?? [])
+    return mapActivities(loadedItems)
+  }, [activitiesQuery.data?.pages])
 
   const activities: PublicActivityItem[] = liveActivities
 

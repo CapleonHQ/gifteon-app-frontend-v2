@@ -17,6 +17,7 @@ import BillsBuilderSection from './components/BillsBuilderSection'
 import BillsReviewModal from './components/BillsReviewModal'
 import BillsPinModal from './components/BillsPinModal'
 import BillsSummaryActions from './components/BillsSummaryActions'
+import ElectricityTokenSuccessModal from './components/ElectricityTokenSuccessModal'
 import { useBillsPlanCatalog } from './hooks/useBillsPlanCatalog'
 import {
   CardValidationIssue,
@@ -48,6 +49,9 @@ const BillsLandingPage = () => {
   const [pinError, setPinError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccessOpen, setIsSuccessOpen] = useState(false)
+  const [isElectricitySuccessOpen, setIsElectricitySuccessOpen] =
+    useState(false)
+  const [electricityToken, setElectricityToken] = useState('')
   const [showValidationErrors, setShowValidationErrors] = useState(false)
   const recipientRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const topFeedbackRef = useRef<HTMLDivElement | null>(null)
@@ -288,7 +292,7 @@ const BillsLandingPage = () => {
     card: RecipientCard,
     totalRecipients: number,
     pin: string
-  ) => {
+  ): Promise<string | null> => {
     const identifier = card.identifierValue.trim()
     const isTag = card.sendAsGift && identifier.startsWith('@')
     const amount = parseAmount(card.amount)
@@ -304,7 +308,7 @@ const BillsLandingPage = () => {
           amount,
           pin,
         })
-        return
+        return null
       }
 
       if (activeTab === 'data') {
@@ -315,18 +319,20 @@ const BillsLandingPage = () => {
           planCode: card.planCode,
           pin,
         })
-        return
+        return null
       }
 
       if (activeTab === 'electricity') {
-        await payElectricityMutation.mutateAsync({
+        const response = await payElectricityMutation.mutateAsync({
           provider: card.provider,
           meterNumber: identifier,
           meterType: card.meterType,
           amount,
           pin,
         })
-        return
+        return typeof response.data?.token === 'string'
+          ? response.data.token
+          : null
       }
 
       await subscribeCableMutation.mutateAsync({
@@ -336,7 +342,7 @@ const BillsLandingPage = () => {
         amount,
         pin,
       })
-      return
+      return null
     }
 
     await sendGiftSingleMutation.mutateAsync({
@@ -392,6 +398,7 @@ const BillsLandingPage = () => {
           : undefined,
       pin,
     })
+    return null
   }
 
   const handleRunPayment = async (pinValue: string) => {
@@ -426,8 +433,12 @@ const BillsLandingPage = () => {
     })
 
     try {
+      let electricityTokenFromRun: string | null = null
       for (const card of activeCards) {
-        await submitCard(card, activeCards.length, pinValue)
+        const token = await submitCard(card, activeCards.length, pinValue)
+        if (!electricityTokenFromRun && token) {
+          electricityTokenFromRun = token
+        }
       }
       analytics.trackBillsSubmitSucceeded({
         bill_type: activeTab,
@@ -450,7 +461,12 @@ const BillsLandingPage = () => {
         [activeTab]: [createRecipientCard()],
       }))
       setShowValidationErrors(false)
-      setIsSuccessOpen(true)
+      if (activeTab === 'electricity' && electricityTokenFromRun) {
+        setElectricityToken(electricityTokenFromRun)
+        setIsElectricitySuccessOpen(true)
+      } else {
+        setIsSuccessOpen(true)
+      }
     } catch (error) {
       const message = toApiError(error).message || 'Transaction failed.'
       analytics.trackBillsSubmitFailed({
@@ -596,9 +612,21 @@ const BillsLandingPage = () => {
 
       <SuccessModal
         isOpen={isSuccessOpen}
-        onClose={() => setIsSuccessOpen(false)}
+        onClose={() => {
+          setIsSuccessOpen(false)
+          setElectricityToken('')
+        }}
         title='Payment successful'
         message='Your bills transaction has been processed successfully.'
+      />
+
+      <ElectricityTokenSuccessModal
+        isOpen={isElectricitySuccessOpen}
+        token={electricityToken}
+        onClose={() => {
+          setIsElectricitySuccessOpen(false)
+          setElectricityToken('')
+        }}
       />
     </div>
   )

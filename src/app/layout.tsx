@@ -3,9 +3,11 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import degular from '@/assets/fonts/degular'
 import georgia from '@/assets/fonts/georgia'
+import CookieConsentBanner from '@/components/CookieConsent/CookieConsentBanner'
 import PostHogAuthBridge from '@/components/Providers/PostHogAuthBridge'
 import QueryProvider from '@/components/Providers/QueryProvider'
 import { AuthProvider } from '@/context/AuthContext'
+import { SuccessModalProvider } from '@/context/SuccessModalContext'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -138,8 +140,11 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <PostHogAuthBridge />
-            {children}
+            <SuccessModalProvider>
+              <PostHogAuthBridge />
+              {children}
+              <CookieConsentBanner />
+            </SuccessModalProvider>
           </AuthProvider>
         </QueryProvider>
       </body>

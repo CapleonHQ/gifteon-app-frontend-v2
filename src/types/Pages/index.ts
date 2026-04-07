@@ -1,3 +1,5 @@
+import type { PageContribution } from '@/types/Contributions'
+
 export type PageVisibility = 'Public' | 'Shareable' | 'Private'
 export type PageStatus = 'Active' | 'Deactivated' | 'Ended'
 
@@ -114,31 +116,44 @@ export type PageDetailsApiItem = {
   id: string
   title: string
   slug: string
-  coverImageUrl: string | null
+  coverImageUrl: string
   createdAt: string
   updatedAt: string
   active: boolean
-  categoryName: string | null
+  categoryName: string
   visibility: PageApiPrivacy
-  wishes?: Array<Record<string, unknown>>
-  contributions?: Array<Record<string, unknown>>
-  chartData?: {
-    giftDistribution?: {
-      cash?: number
-      store?: number
-      custom?: number
+  wishLists: Array<{
+    id: string
+    type: string | null
+    title: string
+    imageUrl: string | null
+    itemId: string | null
+    quantity: number
+    unitPrice: string
+    quantityGifted: number
+    quantityClaimed: number
+    quantityClaimable: number
+    status: string
+    source: string
+  }>
+  contributions: PageContribution[]
+  chartData: {
+    giftDistribution: {
+      cash: number
+      store: number
+      custom: number
     }
-    pageVisits?: Array<{
+    pageVisits: Array<{
       date: string
       count: string | number
     }>
   }
-  engagement?: {
-    totalViews?: number
-    totalShares?: number
-    totalContributions?: number
-    totalWishes?: number
-    totalContibutionsValue?: number
+  engagement: {
+    totalViews: number
+    totalShares: number
+    totalContributions: number
+    totalWishes: number
+    totalContributionsValue: number
   }
 }
 
@@ -162,7 +177,7 @@ export type PageDetailsEngagement = {
   totalShares: number
   totalContributions: number
   totalWishes: number
-  totalContibutionsValue: number
+  totalContributionsValue: number
 }
 
 export type PageDetailsVisitPoint = {
@@ -184,7 +199,7 @@ export type PageDetailsChartData = {
 export type PageDetails = PageSummary & {
   engagement: PageDetailsEngagement
   chartData: PageDetailsChartData
-  contributions: Array<Record<string, unknown>>
+  contributions: PageContribution[]
 }
 
 export type PagesQueryParams = {

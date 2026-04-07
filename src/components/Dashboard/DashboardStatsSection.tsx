@@ -95,10 +95,10 @@ const DashboardStatsSection = () => {
 
   const summaryItems = useMemo(() => {
     if (!overviewData) return emptySummaryCards
-    const currency = overviewData.currency || 'USD'
+    const currency = overviewData.currency
     const visibilityMeta = [
-      `${overviewData.visibilityBreakdown?.public ?? 0} public`,
-      `${overviewData.visibilityBreakdown?.private ?? 0} private`,
+      `${overviewData.visibilityBreakdown.public} public`,
+      `${overviewData.visibilityBreakdown.private} private`,
     ].join(', ')
     return [
       {
@@ -119,7 +119,7 @@ const DashboardStatsSection = () => {
       {
         id: 'active',
         title: 'Active pages',
-        value: String(overviewData.activePages ?? 0),
+        value: String(overviewData.activePages),
         meta: visibilityMeta,
         icon: (
           <span className='w-4 h-4 text-[#34C759]'>
@@ -130,7 +130,7 @@ const DashboardStatsSection = () => {
       {
         id: 'pending',
         title: 'Pending gifts',
-        value: String(overviewData.pendingContributions ?? 0),
+        value: String(overviewData.pendingContributions),
         meta: 'Updated today',
         icon: (
           <span className='w-4 h-4 text-[#00C3D0]'>
@@ -141,7 +141,7 @@ const DashboardStatsSection = () => {
       {
         id: 'views',
         title: 'Page views',
-        value: String(overviewData.pageViews ?? 0),
+        value: String(overviewData.pageViews),
         meta: 'Updated today',
         icon: (
           <span className='w-4 h-4 text-[#CB1A14]'>
@@ -153,11 +153,14 @@ const DashboardStatsSection = () => {
   }, [overviewData])
 
   const giftDistribution = useMemo(
-    () => [
-      { type: 'Cash', total: chartData?.giftDistribution?.cash ?? 0 },
-      { type: 'Store', total: chartData?.giftDistribution?.store ?? 0 },
-      { type: 'Custom', total: chartData?.giftDistribution?.custom ?? 0 },
-    ],
+    () =>
+      chartData
+        ? [
+            { type: 'Cash', total: chartData.giftDistribution.cash },
+            { type: 'Store Gifts', total: chartData.giftDistribution.store },
+            { type: 'Custom Gifts', total: chartData.giftDistribution.custom },
+          ]
+        : [],
     [chartData]
   )
 

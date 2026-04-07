@@ -7,6 +7,7 @@ import type {
   PageCommentsData,
   PageCommentsQueryParams,
 } from '@/types/Comments'
+import type { PagesQueryParams } from '@/types/Pages'
 
 export type PublicPageApiSocial = {
   id?: string
@@ -32,6 +33,22 @@ export type PublicPageApiTemplate = {
   name?: string
 }
 
+export type PublicPageApiWishListItem = {
+  id: string
+  type?: string | null
+  title: string
+  description: string
+  imageUrl: string
+  itemId?: string | null
+  quantity: number | string
+  unitPrice: number | string
+  quantityGifted?: number | string | null
+  quantityClaimed: number | string
+  quantityClaimable?: number | string | null
+  status?: string | null
+  source?: string | null
+}
+
 export type PublicPageApiSettings = {
   id?: string
   whoIsFor?: string | null
@@ -52,8 +69,23 @@ export type PublicPageApiSettings = {
   hasStoreItems?: boolean
   deletedAt?: string | null
   socials?: PublicPageApiSocial[]
-  customGifts?: Array<Record<string, unknown>>
-  storeItems?: Array<Record<string, unknown>>
+  wishListItems?: PublicPageApiWishListItem[]
+  storeItems?: PublicPageApiWishListItem[]
+}
+
+export type PublicPageApiActivity = {
+  id: string
+  message: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type PublicPageActivitiesData = {
+  activities: PublicPageApiActivity[]
+  total?: number
+  limit?: number
+  offset?: number
+  hasMore?: boolean
 }
 
 export type PublicPageApiData = {
@@ -85,16 +117,56 @@ export type PublicPageApiData = {
   contentColor?: string | null
   contentSize?: number | string | null
   media?: PublicPageApiMedia[]
-  comments?: Array<Record<string, unknown>>
-  activities?: Array<Record<string, unknown>>
   settings?: PublicPageApiSettings | null
+  owner: {
+    firstName: string
+    lastName: string
+    gender: 'male' | 'female'
+  }
 }
+
+export type PublicPageListApiItem = {
+  id: string
+  title: string
+  content: string
+  slug: string
+  coverImageUrl: string
+  status: string
+  createdAt: string
+  updatedAt: string
+  categoryName: string | null
+  templateName: string | null
+  totalGifts: number
+  totalWishes: number
+  totalViews: number
+}
+
+export type PublicPagesListApiData = {
+  pages: PublicPageListApiItem[]
+  total: number
+  limit: number
+  offset: number
+  hasMore: boolean
+}
+
+export type PublicPagesQueryParams = Pick<
+  PagesQueryParams,
+  'limit' | 'offset' | 'startdate' | 'enddate' | 'visibility' | 'status' | 'category' | 's'
+>
 
 export const getPublicPageBySlug = async (
   slug: string
 ): Promise<ApiResponse<PublicPageApiData>> => {
   const resp: AxiosResponse<ApiResponse<PublicPageApiData>> =
     await apiService.appPublic.get(`/pages/${slug}`)
+  return resp.data
+}
+
+export const getPublicPages = async (
+  params?: PublicPagesQueryParams
+): Promise<ApiResponse<PublicPagesListApiData>> => {
+  const resp: AxiosResponse<ApiResponse<PublicPagesListApiData>> =
+    await apiService.appPublic.get('/pages/public', { params })
   return resp.data
 }
 
@@ -112,17 +184,18 @@ export const createPublicPageComment = async (
   data: CreateCommentRequestBody
 ): Promise<ApiResponse<object>> => {
   const token = getAccessToken()
-  const resp: AxiosResponse<ApiResponse<object>> = await apiService.appPublic.post(
-    `/pages/${pageId}/comments`,
-    data,
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined
-  )
+  const resp: AxiosResponse<ApiResponse<object>> =
+    await apiService.appPublic.post(
+      `/pages/${pageId}/comments`,
+      data,
+      token
+        ? {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        : undefined
+    )
   return resp.data
 }
 
@@ -131,10 +204,8 @@ export type { CreateCommentRequestBody }
 export const getPublicPageActivities = async (
   pageId: string,
   params?: { limit?: number; offset?: number }
-): Promise<ApiResponse<unknown>> => {
-  const resp: AxiosResponse<ApiResponse<unknown>> = await apiService.appPublic.get(
-    `/pages/${pageId}/activities`,
-    { params }
-  )
+): Promise<ApiResponse<PublicPageActivitiesData>> => {
+  const resp: AxiosResponse<ApiResponse<PublicPageActivitiesData>> =
+    await apiService.appPublic.get(`/pages/${pageId}/activities`, { params })
   return resp.data
 }

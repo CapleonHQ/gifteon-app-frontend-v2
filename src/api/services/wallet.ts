@@ -57,7 +57,9 @@ export const cancelWalletWithdrawal = async (
   withdrawalId: string
 ): Promise<ApiResponse<WalletWithdrawalData>> => {
   const resp: AxiosResponse<ApiResponse<WalletWithdrawalData>> =
-    await apiService.appPrivate.post(`/wallet/withdrawals/${withdrawalId}/cancel`)
+    await apiService.appPrivate.post(
+      `/wallet/withdrawals/${withdrawalId}/cancel`
+    )
   return resp.data
 }
 
@@ -65,7 +67,7 @@ export const topupWalletLocals = async (
   data: TopupRequestBody
 ): Promise<WalletTopupLocalsResponse> => {
   const resp: AxiosResponse<WalletTopupLocalsResponse> =
-    await apiService.appPrivate.post('/wallet/topup/locals', data)
+    await apiService.appPrivate.post('/wallet/topup', data)
   return resp.data
 }
 

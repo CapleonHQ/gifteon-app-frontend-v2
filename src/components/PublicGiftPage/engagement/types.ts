@@ -11,7 +11,11 @@ export type GiftOption = {
   title: string
   subtitle: string
   imageUrl: string
-  price: number
   quantity: number
-  fulfilled: number
+  claimed: number
+  price: number
+  kind: 'wishlist' | 'store' | 'cash'
+  coveredAmount?: number
+  targetAmount?: number
+  minimumAmount?: number
 }

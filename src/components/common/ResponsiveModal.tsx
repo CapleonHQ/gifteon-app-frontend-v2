@@ -14,6 +14,7 @@ type ResponsiveModalProps = {
   desktopPanelClassName?: string
   mobilePanelClassName?: string
   contentClassName?: string
+  zIndex?: string
 }
 
 const ResponsiveModal = ({
@@ -27,6 +28,7 @@ const ResponsiveModal = ({
   desktopPanelClassName = '',
   mobilePanelClassName = '',
   contentClassName = '',
+  zIndex = '',
 }: ResponsiveModalProps) => {
   useEffect(() => {
     if (!isOpen) return
@@ -55,7 +57,7 @@ const ResponsiveModal = ({
   if (!isOpen) return null
 
   return (
-    <div className='fixed inset-0 z-30 lg:z-50'>
+    <div className={`fixed inset-0 ${zIndex || 'z-30 lg:z-50'}`}>
       <div
         className='absolute inset-0 bg-black/40 backdrop-blur-sm hidden lg:block'
         onClick={onClose}
@@ -73,21 +75,15 @@ const ResponsiveModal = ({
           >
             {body}
           </div>
-          {footer ? (
-            <div className='px-6 sm:px-10 pb-8'>{footer}</div>
-          ) : null}
+          {footer ? <div className='px-6 sm:px-10 pb-8'>{footer}</div> : null}
         </div>
       </div>
 
       <div
         className={`lg:hidden fixed inset-x-0 bottom-0 ${mobileTopOffsetClass} bg-white flex flex-col ${mobilePanelClassName}`}
       >
-        {header ? (
-          <div className='px-4 pt-8 pb-4'>{header}</div>
-        ) : null}
-        <div className='flex-1 overflow-y-auto px-4 pb-4'>
-          {body}
-        </div>
+        {header ? <div className='px-4 pt-8 pb-4'>{header}</div> : null}
+        <div className='flex-1 overflow-y-auto px-4 pb-4'>{body}</div>
         {footer ? (
           <div className='px-4 py-3 shadow-[0px_-10px_18px_5px_#4040401A] bg-white'>
             {footer}

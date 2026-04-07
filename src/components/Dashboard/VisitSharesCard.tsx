@@ -42,7 +42,7 @@ type VisitSharesCardProps = {
     label: string
     rangeLabel: string
   }>
-  points: Array<{ date: string; visits: number; shares: number }>
+  points: Array<{ date: string; visits: number | string; shares: number | string }>
 }
 
 const formatPointLabel = (
@@ -81,8 +81,8 @@ const VisitSharesCard = ({
       points.map((point) => {
         return formatPointLabel(point.date, range)
       }) ?? []
-    const visits = points.map((point) => point.visits ?? 0)
-    const shares = points.map((point) => point.shares ?? 0)
+    const visits = points.map((point) => Number(point.visits))
+    const shares = points.map((point) => Number(point.shares))
 
     return {
       labels,

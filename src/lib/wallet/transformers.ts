@@ -6,6 +6,7 @@ import type {
   WalletWithdrawalsApiData,
   WalletWithdrawalsData,
 } from '@/types/Wallet'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const toNumber = (value: string | number | undefined): number => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0
@@ -35,7 +36,19 @@ const toUiTransaction = (
     description: item.description || 'Wallet transaction',
     type: item.type.trim().toLowerCase(),
     amount: toNumber(item.amount),
+    displayAmount: formatCurrency(toNumber(item.amount), {
+      currency: item.currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
+    currency: item.currency,
     status: item.status.trim().toLowerCase(),
+    reference: item.reference,
+    userId: item.userId,
+    source: item.source,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    metadata: item.metadata ?? null,
   }
 }
 

@@ -43,7 +43,7 @@ const GiftTypeDistributionCard = ({
             <div className='mt-4 flex items-center gap-4 text-xs text-grey-600'>
               <div className='flex items-center gap-2'>
                 <span className='w-2.5 h-2.5 rounded-full bg-information-400' />
-                Items
+                Store Gifts
               </div>
               <div className='flex items-center gap-2'>
                 <span className='w-2.5 h-2.5 rounded-full bg-warning-400' />

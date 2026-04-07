@@ -7,7 +7,7 @@ type WalletTransactionsMobileListProps = {
   items: WalletTransaction[]
   openId: string | null
   onToggle: (id: string) => void
-  formatAmount: (value: number) => string
+  onView: (transaction: WalletTransaction) => void
   onReport: () => void
 }
 
@@ -15,7 +15,7 @@ const WalletTransactionsMobileList = ({
   items,
   openId,
   onToggle,
-  formatAmount,
+  onView,
   onReport,
 }: WalletTransactionsMobileListProps) => {
   return (
@@ -26,7 +26,7 @@ const WalletTransactionsMobileList = ({
           transaction={transaction}
           isOpen={openId === transaction.id}
           onToggle={() => onToggle(transaction.id)}
-          formatAmount={formatAmount}
+          onView={onView}
           onReport={onReport}
         />
       ))}

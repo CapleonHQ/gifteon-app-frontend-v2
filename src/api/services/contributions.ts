@@ -2,6 +2,7 @@ import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
 import {
+  PageContribution,
   PageContributionsApiData,
   PageContributionsQueryParams,
 } from '@/types/Contributions'
@@ -14,6 +15,14 @@ export const getPageContributions = async (
     await apiService.appPrivate.get(`/pages/${pageId}/contributions`, {
       params,
     })
+  return resp.data
+}
+
+export const getContributions = async (): Promise<
+  ApiResponse<PageContribution[]>
+> => {
+  const resp: AxiosResponse<ApiResponse<PageContribution[]>> =
+    await apiService.appPrivate.get('/contributions')
   return resp.data
 }
 

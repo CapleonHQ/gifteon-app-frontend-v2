@@ -72,7 +72,7 @@ const SERVICE_PATHS: Array<[ServiceKey, RegExp]> = [
   ['templates', /^\/templates\//],
   ['comments', /^\/pages\/[^/]+\/comments|^\/pages\/comments\//],
   ['activities', /^\/pages\/[^/]+\/activities/],
-  ['contributions', /^\/pages\/[^/]+\/contributions/],
+  ['contributions', /^\/pages\/[^/]+\/contributions|^\/contributions/],
   ['notifications', /^\/notifications\//],
   ['banks', /^\/connected-banks/],
   ['cart', /^\/store\/cart/],

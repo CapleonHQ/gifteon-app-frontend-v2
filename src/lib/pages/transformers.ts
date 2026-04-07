@@ -62,14 +62,14 @@ const toSummaryNewDetailsItem = (item: PageDetailsApiItem): PageSummary => {
   const summary: PageSummary = {
     id: item.id,
     title: item.title,
-    category: item.categoryName ?? 'Uncategorized',
+    category: item.categoryName,
     visibility: toVisibilityLabel(item.visibility),
     createdOn: formatCreatedOn(item.createdAt),
     totalGifts: 0,
-    totalWishes: item.engagement?.totalWishes ?? item.wishes?.length ?? 0,
-    views: item.engagement?.totalViews ?? 0,
+    totalWishes: item.engagement.totalWishes,
+    views: item.engagement.totalViews,
     status: toDetailsStatusLabel(item.active),
-    image: item.coverImageUrl || '/assets/images/place-holder-image.jpg',
+    image: item.coverImageUrl,
     isActive: item.active,
     publicUrl: toPublicUrl(item.slug),
   }
@@ -105,23 +105,23 @@ export const mapPageDetails = (
   const summary = toSummaryNewDetailsItem(data)
   return {
     ...summary,
-    contributions: data.contributions ?? [],
+    contributions: data.contributions,
     engagement: {
-      totalViews: data.engagement?.totalViews ?? 0,
-      totalShares: data.engagement?.totalShares ?? 0,
-      totalContributions: data.engagement?.totalContributions ?? 0,
-      totalWishes: data.engagement?.totalWishes ?? data.wishes?.length ?? 0,
-      totalContibutionsValue: data.engagement?.totalContibutionsValue ?? 0,
+      totalViews: data.engagement.totalViews,
+      totalShares: data.engagement.totalShares,
+      totalContributions: data.engagement.totalContributions,
+      totalWishes: data.engagement.totalWishes,
+      totalContributionsValue: data.engagement.totalContributionsValue,
     },
     chartData: {
       giftDistribution: {
-        cash: data.chartData?.giftDistribution?.cash ?? 0,
-        store: data.chartData?.giftDistribution?.store ?? 0,
-        custom: data.chartData?.giftDistribution?.custom ?? 0,
+        cash: data.chartData.giftDistribution.cash,
+        store: data.chartData.giftDistribution.store,
+        custom: data.chartData.giftDistribution.custom,
       },
-      pageVisits: (data.chartData?.pageVisits ?? []).map((point) => ({
+      pageVisits: data.chartData.pageVisits.map((point) => ({
         date: point.date,
-        count: Number(point.count) || 0,
+        count: Number(point.count),
       })),
     },
   }

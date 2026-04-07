@@ -5,172 +5,20 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useQuery } from '@tanstack/react-query'
-import { verifyTransactionByReference } from '@/api/services/payment'
 import { consumePaymentReturnPath } from '@/lib/payments/paystackReturn'
-
-type UiStatus =
-  | 'verifying'
-  | 'success'
-  | 'failed'
-  | 'canceled'
-  | 'pending'
-  | 'invalid'
-  | 'error'
-
-type VerifyResult = {
-  uiStatus: Exclude<UiStatus, 'verifying'>
-  message?: string
-}
-
-type RedirectHint = 'success' | 'cancel' | 'unknown'
-
-const POLL_INTERVAL_MS = 2500
-
-const isSafeInternalPath = (value: string | null) => {
-  if (!value) return false
-  return value.startsWith('/') && !value.startsWith('//')
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === 'object' && value !== null
-}
-
-const getByPath = (source: unknown, path: string[]): unknown => {
-  let current: unknown = source
-  for (const key of path) {
-    if (!isRecord(current) || !(key in current)) return undefined
-    current = (current as Record<string, unknown>)[key]
-  }
-  return current
-}
-
-const pickString = (source: unknown, paths: string[][]): string | undefined => {
-  for (const path of paths) {
-    const value = getByPath(source, path)
-    if (typeof value === 'string' && value.trim()) return value.trim()
-  }
-  return undefined
-}
-
-const pickBoolean = (
-  source: unknown,
-  paths: string[][]
-): boolean | undefined => {
-  for (const path of paths) {
-    const value = getByPath(source, path)
-    if (typeof value === 'boolean') return value
-  }
-  return undefined
-}
-
-const normalizeFromPayload = (
-  payload: unknown,
-  redirectHint: RedirectHint
-): VerifyResult => {
-  const statusValue =
-    pickString(payload, [
-      ['data', 'status'],
-      ['status'],
-      ['data', 'transactionStatus'],
-      ['data', 'paymentStatus'],
-      ['data', 'gateway_response'],
-    ])?.toLowerCase() ?? ''
-
-  const apiMessage = pickString(payload, [
-    ['message'],
-    ['data', 'message'],
-    ['data', 'gateway_response'],
-  ])
-
-  const paid = pickBoolean(payload, [
-    ['data', 'paid'],
-    ['data', 'data', 'paid'],
-    ['paid'],
-    ['success'],
-    ['data', 'success'],
-  ])
-
-  if (
-    paid === true ||
-    /success|successful|completed|complete|paid/i.test(statusValue)
-  ) {
-    return { uiStatus: 'success', message: apiMessage }
-  }
-
-  if (/fail|failed|error|declined|rejected/i.test(statusValue)) {
-    return { uiStatus: 'failed', message: apiMessage }
-  }
-
-  if (/cancel|cancelled|abandon/i.test(statusValue)) {
-    return { uiStatus: 'canceled', message: apiMessage }
-  }
-
-  if (/pending|processing|initiated|queued|verifying/i.test(statusValue)) {
-    return { uiStatus: 'pending', message: apiMessage }
-  }
-
-  return {
-    uiStatus: redirectHint === 'cancel' ? 'canceled' : 'invalid',
-    message: apiMessage,
-  }
-}
-
-type VerifyErrorShape = {
-  status?: number
-  response?: { status?: number }
-}
-
-const getStatusCode = (err: unknown): number | undefined => {
-  if (!isRecord(err)) return undefined
-  const e = err as VerifyErrorShape
-  return e.status ?? e.response?.status
-}
-
-const verifyWithFallback = async (
-  reference: string,
-  redirectHint: RedirectHint
-): Promise<VerifyResult> => {
-  try {
-    const verifyResp = await verifyTransactionByReference(reference)
-    return normalizeFromPayload(verifyResp, redirectHint)
-  } catch (err) {
-    const code = getStatusCode(err)
-
-    if (code === 404) {
-      return {
-        uiStatus: 'invalid',
-        message: 'This payment reference is invalid or does not exist.',
-      }
-    }
-
-    if (code === 400) {
-      return {
-        uiStatus: 'invalid',
-        message: 'This payment reference is invalid.',
-      }
-    }
-
-    return {
-      uiStatus: 'error',
-      message:
-        'We couldn’t verify your payment at the moment. Please try again shortly.',
-    }
-  }
-}
-
-const getRedirectHint = (searchParams: URLSearchParams): RedirectHint => {
-  const value =
-    (
-      searchParams.get('status') ||
-      searchParams.get('payment_status') ||
-      searchParams.get('result')
-    )?.toLowerCase() ?? ''
-
-  if (!value) return 'unknown'
-  if (/cancel|cancelled|abandon/.test(value)) return 'cancel'
-  if (/success|successful|completed|paid/.test(value)) return 'success'
-  return 'unknown'
-}
+import {
+  DESCRIPTION_BY_STATUS,
+  LOTTIE_BY_STATUS,
+  POLL_INTERVAL_MS,
+  TITLE_BY_STATUS,
+} from './paystackRedirect/constants'
+import {
+  getRedirectHint,
+  isSafeInternalPath,
+  resolveStatusFromHint,
+  verifyTransaction,
+} from './paystackRedirect/helpers'
+import type { UiStatus } from './paystackRedirect/types'
 
 const PaystackRedirectResult = () => {
   const searchParams = useSearchParams()
@@ -189,15 +37,11 @@ const PaystackRedirectResult = () => {
   }, [reference, searchParams])
 
   const missingReferenceStatus: Exclude<UiStatus, 'verifying'> =
-    redirectHint === 'cancel'
-      ? 'canceled'
-      : redirectHint === 'success'
-      ? 'pending'
-      : 'invalid'
+    resolveStatusFromHint(redirectHint)
 
   const verifyQuery = useQuery({
     queryKey: ['paystack-payment-verify', reference, redirectHint],
-    queryFn: () => verifyWithFallback(reference as string, redirectHint),
+    queryFn: () => verifyTransaction(reference as string, redirectHint),
     enabled: Boolean(reference),
     retry: false,
     refetchInterval: (query) => {
@@ -213,41 +57,6 @@ const PaystackRedirectResult = () => {
       : verifyQuery.data?.uiStatus ?? 'invalid'
     : missingReferenceStatus
 
-  const titleByStatus: Record<UiStatus, string> = {
-    verifying: 'Verifying Payment',
-    success: 'Payment Successful',
-    failed: 'Payment Failed',
-    canceled: 'Payment Canceled',
-    pending: 'Payment Pending',
-    invalid: 'Invalid Payment Reference',
-    error: 'Unable to Verify Payment',
-  }
-
-  const descriptionByStatus: Record<UiStatus, string> = {
-    verifying:
-      'Please wait while we confirm your transaction status with our payment provider.',
-    success:
-      'Your payment has been confirmed. You can continue to complete your flow.',
-    failed: 'We could not confirm a successful payment for this transaction.',
-    canceled: 'No charge was completed. You can retry whenever you are ready.',
-    pending:
-      'Your transaction is still processing. We are checking again automatically.',
-    invalid:
-      'This payment reference is missing, invalid, or does not exist for this payment attempt.',
-    error:
-      'We couldn’t verify your payment at the moment. Please try again shortly.',
-  }
-
-  const lottieByStatus: Record<UiStatus, string> = {
-    verifying: '/assets/lottie/activate-lottie.lottie',
-    success: '/assets/lottie/success_with_very_early_fireworks.lottie',
-    failed: '/assets/lottie/cancelled-lottie.lottie',
-    canceled: '/assets/lottie/cancelled-lottie.lottie',
-    pending: '/assets/lottie/pending-lottie.lottie',
-    invalid: '/assets/lottie/cancelled-lottie.lottie',
-    error: '/assets/lottie/cancelled-lottie.lottie',
-  }
-
   const primaryLabel =
     queryUiStatus === 'success'
       ? 'Continue'
@@ -256,7 +65,7 @@ const PaystackRedirectResult = () => {
       : 'Return'
 
   const description =
-    verifyQuery.data?.message?.trim() || descriptionByStatus[queryUiStatus]
+    verifyQuery.data?.message?.trim() || DESCRIPTION_BY_STATUS[queryUiStatus]
 
   return (
     <main className='bg-base-bg px-4 py-10 sm:px-6 lg:px-10'>
@@ -268,7 +77,7 @@ const PaystackRedirectResult = () => {
             </div>
           ) : (
             <DotLottieReact
-              src={lottieByStatus[queryUiStatus]}
+              src={LOTTIE_BY_STATUS[queryUiStatus]}
               autoplay
               loop={queryUiStatus === 'success'}
             />
@@ -276,7 +85,7 @@ const PaystackRedirectResult = () => {
         </div>
 
         <h1 className='mt-2 text-[34px] font-bold leading-10 text-blackish sm:text-[46px] sm:leading-[54px]'>
-          {titleByStatus[queryUiStatus]}
+          {TITLE_BY_STATUS[queryUiStatus]}
         </h1>
 
         <p className='mt-3 max-w-[52ch] text-base leading-7 text-grey-700 sm:text-lg'>

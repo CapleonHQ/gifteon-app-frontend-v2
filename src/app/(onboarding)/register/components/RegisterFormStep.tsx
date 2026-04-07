@@ -25,6 +25,7 @@ type RegisterFormStepProps = {
   error: string
   isLoading: boolean
   isFormValid: boolean
+  loginHref?: string
   onFirstNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onLastNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void
@@ -47,6 +48,7 @@ const RegisterFormStep = ({
   error,
   isLoading,
   isFormValid,
+  loginHref = '/login',
   onFirstNameChange,
   onLastNameChange,
   onEmailChange,
@@ -323,7 +325,7 @@ const RegisterFormStep = ({
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Already have an account?{' '}
           <Link
-            href='/login'
+            href={loginHref}
             className='text-primary-400 font-semibold hover:text-primary-600 transition-colors duration-200 underline'
           >
             Log In

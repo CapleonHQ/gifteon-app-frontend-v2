@@ -11,13 +11,13 @@ import WalletTransactionsTableActions from './WalletTransactionsTableActions'
 
 type WalletTransactionsTableRowProps = {
   transaction: WalletTransaction
-  formatAmount: (value: number) => string
+  onView: (transaction: WalletTransaction) => void
   onReport: () => void
 }
 
 const WalletTransactionsTableRow = ({
   transaction,
-  formatAmount,
+  onView,
   onReport,
 }: WalletTransactionsTableRowProps) => {
   return (
@@ -33,7 +33,7 @@ const WalletTransactionsTableRow = ({
           {getTransactionTypeLabel(transaction.type)}
         </span>
       </div>
-      <span>{formatAmount(transaction.amount)}</span>
+      <span>{transaction.displayAmount}</span>
       <div>
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-sm leading-[133%] tracking-[-2%] font-medium ${
@@ -43,7 +43,10 @@ const WalletTransactionsTableRow = ({
           {getTransactionStatusLabel(transaction.status)}
         </span>
       </div>
-      <WalletTransactionsTableActions onReport={onReport} />
+      <WalletTransactionsTableActions
+        onView={() => onView(transaction)}
+        onReport={onReport}
+      />
     </div>
   )
 }

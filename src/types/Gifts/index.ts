@@ -7,7 +7,6 @@ export type GiftItem = {
   status: 'Delivered' | 'Fulfilled' | 'Shipped' | 'Not fulfilled'
   actionType?: 'claim_cash' | 'claim_gift' | 'deliver'
   actionLabel?: string
-  image: string
   fromName?: string
 }
 

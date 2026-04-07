@@ -14,7 +14,7 @@ type WalletTransactionsMobileCardProps = {
   transaction: WalletTransaction
   isOpen: boolean
   onToggle: () => void
-  formatAmount: (value: number) => string
+  onView: (transaction: WalletTransaction) => void
   onReport: () => void
 }
 
@@ -22,7 +22,7 @@ const WalletTransactionsMobileCard = ({
   transaction,
   isOpen,
   onToggle,
-  formatAmount,
+  onView,
   onReport,
 }: WalletTransactionsMobileCardProps) => {
   return (
@@ -71,19 +71,28 @@ const WalletTransactionsMobileCard = ({
           <div className='flex items-center justify-between'>
             <span>Amount:</span>
             <span className='text-grey-900 font-medium'>
-              {formatAmount(transaction.amount)}
+              {transaction.displayAmount}
             </span>
           </div>
-          <button
-            type='button'
-            className='w-full mt-3 py-3 flex items-center justify-center gap-2 rounded-[8px] bg-primary-400 text-white text-sm font-medium hover:bg-primary-500 transition-colors'
-            onClick={onReport}
-          >
-            <span className='w-3.5 h-3.5'>
-              <FlagIcon />
-            </span>
-            Report Transaction Issue
-          </button>
+          <div className='mt-3 grid grid-cols-2 gap-2'>
+            <button
+              type='button'
+              className='py-3 rounded-[8px] border border-grey-200 text-grey-800 text-sm font-medium hover:bg-grey-50 transition-colors'
+              onClick={() => onView(transaction)}
+            >
+              View details
+            </button>
+            <button
+              type='button'
+              className='py-3 flex items-center justify-center gap-2 rounded-[8px] bg-primary-400 text-white text-sm font-medium hover:bg-primary-500 transition-colors'
+              onClick={onReport}
+            >
+              <span className='w-3.5 h-3.5'>
+                <FlagIcon />
+              </span>
+              Report issue
+            </button>
+          </div>
         </div>
       )}
     </div>

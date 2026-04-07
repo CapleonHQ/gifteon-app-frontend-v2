@@ -9,8 +9,8 @@ import WalletTransactionsMobileList from './WalletTransactionsMobileList'
 import WalletTransactionsEmptyState from './WalletTransactionsEmptyState'
 import WalletTransactionsNoResults from './WalletTransactionsNoResults'
 import WalletTransactionsSkeleton from './WalletTransactionsSkeleton'
+import WalletTransactionDetailsModal from './WalletTransactionDetailsModal'
 import { useWalletTransactions } from '@/hooks/tanstack/wallet'
-import { formatCurrency } from '@/lib/utils/currency'
 import { useWalletTransactionFilters } from './hooks/useWalletTransactionFilters'
 import { type WalletTransaction } from './types'
 
@@ -18,15 +18,13 @@ const PAGE_SIZE = 10
 const EMPTY_TRANSACTIONS: WalletTransaction[] = []
 
 type WalletTransactionsSectionProps = {
-  currency: string
   onReport: () => void
 }
 
-const WalletTransactionsSection = ({
-  currency,
-  onReport,
-}: WalletTransactionsSectionProps) => {
+const WalletTransactionsSection = ({ onReport }: WalletTransactionsSectionProps) => {
   const [openMobileId, setOpenMobileId] = useState<string | null>(null)
+  const [viewingTransaction, setViewingTransaction] =
+    useState<WalletTransaction | null>(null)
   const {
     searchQuery,
     typeFilter,
@@ -108,13 +106,7 @@ const WalletTransactionsSection = ({
           <>
             <WalletTransactionsTable
               items={transactions}
-              formatAmount={(value) =>
-                formatCurrency(value, {
-                  currency,
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })
-              }
+              onView={(transaction) => setViewingTransaction(transaction)}
               onReport={onReport}
             />
             <WalletTransactionsMobileList
@@ -123,13 +115,7 @@ const WalletTransactionsSection = ({
               onToggle={(id) =>
                 setOpenMobileId((prev) => (prev === id ? null : id))
               }
-              formatAmount={(value) =>
-                formatCurrency(value, {
-                  currency,
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })
-              }
+              onView={(transaction) => setViewingTransaction(transaction)}
               onReport={onReport}
             />
           </>
@@ -177,6 +163,16 @@ const WalletTransactionsSection = ({
           </div>
         </div>
       ) : null}
+
+      <WalletTransactionDetailsModal
+        isOpen={Boolean(viewingTransaction)}
+        onClose={() => setViewingTransaction(null)}
+        transaction={viewingTransaction}
+        onReport={() => {
+          setViewingTransaction(null)
+          onReport()
+        }}
+      />
     </div>
   )
 }

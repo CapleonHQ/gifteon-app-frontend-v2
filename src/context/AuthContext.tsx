@@ -173,12 +173,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       const apiError = toApiError(error)
-      const connectivityFailure =
-        isConnectivityError(apiError.code) ||
-        (typeof window !== 'undefined' && !window.navigator.onLine)
+      const browserOffline =
+        typeof window !== 'undefined' && !window.navigator.onLine
 
-      if (connectivityFailure) {
+      if (browserOffline) {
         markOffline()
+        if (userRef.current) {
+          setStatus('authenticated')
+          return
+        }
+        return
+      }
+
+      if (isConnectivityError(apiError.code)) {
         if (userRef.current) {
           setStatus('authenticated')
           return

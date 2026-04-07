@@ -2,16 +2,14 @@
 
 import Link from 'next/link'
 import type { GiftItem } from '@/types/Gifts/index'
-import RecentGiftsTable from './RecentGiftsTable'
-import RecentGiftsMobileList from './RecentGiftsMobileList'
 import DashboardEmptyState from './DashboardEmptyState'
 import EmptyBox from '@/assets/icons/EmptyBox'
 import RecentGiftsSkeleton from './Skeletons/RecentGiftsSkeleton'
 import { analytics } from '@/lib/analytics/events'
+import GiftsListWithActions from '@/components/Gifts/GiftsListWithActions'
 
 type RecentGiftsSectionProps = {
   items: GiftItem[]
-  onAction: (item: GiftItem) => void
   isLoading?: boolean
   hasError?: boolean
   isRetrying?: boolean
@@ -20,7 +18,6 @@ type RecentGiftsSectionProps = {
 
 const RecentGiftsSection = ({
   items,
-  onAction,
   isLoading = false,
   hasError = false,
   isRetrying = false,
@@ -37,11 +34,11 @@ const RecentGiftsSection = ({
       <div className='px-4 py-3 flex items-center justify-between'>
         <h2 className='text-lg font-medium text-blackish'>Recent Gifts</h2>
         <Link
-          href='/gifts'
+          href='/contributions'
           onClick={() => analytics.trackDashboardSeeAllGiftPagesClicked()}
           className='text-xs text-primary-600 font-medium hover:text-primary-700 transition-colors duration-300 underline'
         >
-          See all Gift Pages
+          See all gifts
         </Link>
       </div>
       {hasError ? (
@@ -72,10 +69,7 @@ const RecentGiftsSection = ({
           />
         </div>
       ) : (
-        <>
-          <RecentGiftsTable items={items} onAction={onAction} />
-          <RecentGiftsMobileList items={items} onAction={onAction} />
-        </>
+        <GiftsListWithActions items={items} source='dashboard' />
       )}
     </div>
   )

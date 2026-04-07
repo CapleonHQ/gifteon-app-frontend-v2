@@ -90,7 +90,7 @@ const SettingsCustomGifts = ({
                 className='text-error-400 hover:text-error-600 transition-colors'
                 aria-label='Remove image'
               >
-                <span className='w-5 h-5'>
+                <span className='w-5 h-5 block'>
                   <DeleteIcon />
                 </span>
               </button>
@@ -132,7 +132,9 @@ const SettingsCustomGifts = ({
             saveCustomGift()
             onClearError?.('customGifts')
           }}
-          disabled={!customGiftForm.title.trim() || !customGiftForm.price.trim()}
+          disabled={
+            !customGiftForm.title.trim() || !customGiftForm.price.trim()
+          }
           className='flex items-center gap-2 py-2.5 px-5 border border-success-400 rounded-[12px] text-sm font-medium text-success-600 bg-success-50/40 hover:bg-success-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed'
         >
           <Plus className='w-3.5 h-3.5' />

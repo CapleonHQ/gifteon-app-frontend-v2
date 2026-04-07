@@ -22,6 +22,7 @@ export const PAGE_TITLE_ROUTES: Array<{
   { pattern: /^\/gifts\/create-new$/, title: 'Create a Gift Page' },
   { pattern: /^\/gifts\/[^/]+$/, title: 'Gift Page Details' }, // /gifts/:id
   { pattern: /^\/gifts$/, title: 'Gift Pages & Donations' },
+  { pattern: /^\/contributions$/, title: 'All Gifts' },
 
   { pattern: /^\/dashboard$/, title: 'Dashboard' },
   { pattern: /^\/wallet$/, title: 'Wallet' },

@@ -1,11 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { format, isValid, parseISO } from 'date-fns'
+import { useMemo } from 'react'
 import RecentGiftsSection from './RecentGiftsSection'
-import ClaimGiftModal from '@/components/Gifts/ClaimGiftModal'
-import MarkAsDeliveredModal from '@/components/Gifts/MarkAsDeliveredModal'
-import { useSuccessModal } from '@/context/SuccessModalContext'
 import DashboardStatsSection from './DashboardStatsSection'
 import type { GiftItem } from '@/types/Gifts/index'
 import { useStatsOverview } from '@/hooks/tanstack/stats'
@@ -14,19 +10,11 @@ import { formatCurrency } from '@/lib/utils/currency'
 import Image from 'next/image'
 import { analytics } from '@/lib/analytics/events'
 
-const FALLBACK_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
-
-const formatGiftDate = (value?: string) => {
-  if (!value) return '-'
-  const parsed = parseISO(value)
-  if (!isValid(parsed)) return value
-  return format(parsed, 'dd MMM, yyyy')
-}
-
 const normalizeGiftStatus = (
   value?: string
 ): 'Delivered' | 'Fulfilled' | 'Shipped' | 'Not fulfilled' => {
   const normalized = (value || '').toLowerCase()
+  if (normalized === 'success') return 'Fulfilled'
   if (normalized === 'delivered') return 'Delivered'
   if (normalized === 'fulfilled') return 'Fulfilled'
   if (normalized === 'shipped') return 'Shipped'
@@ -35,26 +23,22 @@ const normalizeGiftStatus = (
 
 const mapRecentGiftItem = (
   item: DashboardRecentGift,
-  index: number,
   currency: string
 ): GiftItem => {
-  const type = item.type || item.giftType || 'Gift'
-  const amount =
-    typeof item.amount === 'number'
-      ? formatCurrency(item.amount, { currency, maximumFractionDigits: 0 })
-      : item.amount || item.worth || '₦0'
+  const amountValue = Number(item.amount)
+  const type = item.type
+  const name = type.toLowerCase() === 'cash' ? 'Cash Gift' : item.giftName
   const status = normalizeGiftStatus(item.status)
   const safeType = type.toLowerCase()
 
   return {
-    id: String(item.id ?? index),
-    name: item.name || item.giftName || item.title || 'Gift',
+    id: item.id,
+    name,
     type,
-    date: formatGiftDate(item.date || item.createdAt),
-    worth: amount,
+    date: '-',
+    worth: formatCurrency(amountValue, { currency, maximumFractionDigits: 0 }),
     status,
-    image: item.image || item.imageUrl || FALLBACK_GIFT_IMAGE,
-    fromName: item.fromName || item.senderName || 'Someone',
+    fromName: item.sender,
     actionType:
       status === 'Shipped'
         ? 'deliver'
@@ -73,59 +57,21 @@ const mapRecentGiftItem = (
 }
 
 const DashboardPageClient = () => {
-  const { openSuccess } = useSuccessModal()
   const statsOverview = useStatsOverview()
-  const [claimItem, setClaimItem] = useState<GiftItem | null>(null)
-  const [deliverItem, setDeliverItem] = useState<GiftItem | null>(null)
   const overviewData = statsOverview.data?.data
-  const currency = overviewData?.overview?.currency || 'NGN'
+  const currency = overviewData?.overview.currency
   const recentGifts = useMemo(
     () =>
-      (overviewData?.recentGifts ?? []).map((item, index) =>
-        mapRecentGiftItem(item, index, currency)
-      ),
-    [currency, overviewData?.recentGifts]
+      overviewData && currency
+        ? overviewData.recentGifts.map((item) => mapRecentGiftItem(item, currency))
+        : [],
+    [currency, overviewData]
   )
   const isLoadingRecentGifts =
     statsOverview.isLoading && recentGifts.length === 0
   const hasRecentGiftsError =
     (statsOverview.isError || statsOverview.isRefetchError) &&
     recentGifts.length === 0
-
-  const isCashClaim =
-    (claimItem?.actionType || '') === 'claim_cash' ||
-    (claimItem?.type || '').toLowerCase().includes('cash') ||
-    (claimItem?.name || '').toLowerCase().includes('cash')
-
-  const claimModalSteps = useMemo(() => {
-    if (!claimItem) return []
-    if (isCashClaim) {
-      return [
-        'Gift will be marked as Claimed',
-        'Funds will be added to your wallet',
-        'A thank you message will be sent to Suleiman',
-      ]
-    }
-    return [
-      'Gift will be marked as Claimed',
-      'Attached gift will be downloaded to your device',
-      'A thank you message will be sent to Suleiman',
-    ]
-  }, [claimItem, isCashClaim])
-
-  const handleGiftAction = (item: GiftItem) => {
-    analytics.trackDashboardRecentGiftActionOpened({
-      action_type: item.actionType || 'none',
-      gift_id: item.id,
-    })
-    if (item.actionType === 'deliver') {
-      setDeliverItem(item)
-      return
-    }
-    if (item.actionType === 'claim_cash' || item.actionType === 'claim_gift') {
-      setClaimItem(item)
-    }
-  }
 
   return (
     <>
@@ -139,51 +85,12 @@ const DashboardPageClient = () => {
 
         <RecentGiftsSection
           items={recentGifts}
-          onAction={handleGiftAction}
           isLoading={isLoadingRecentGifts}
           hasError={hasRecentGiftsError}
           isRetrying={hasRecentGiftsError && statsOverview.isFetching}
           onRetry={() => statsOverview.refetch()}
         />
       </div>
-
-      <ClaimGiftModal
-        isOpen={Boolean(claimItem)}
-        onClose={() => setClaimItem(null)}
-        onConfirm={() => {
-          openSuccess({
-            title: 'Success!',
-            message: isCashClaim
-              ? `This cash has been deposited into your wallet, you have a total of ${
-                  claimItem?.worth || '₦0'
-                } in your wallet.`
-              : 'This gift has been downloaded into your device.',
-          })
-          setClaimItem(null)
-        }}
-        giftName={claimItem?.name || 'Gift'}
-        fromName={claimItem?.fromName || 'Suleiman Agunde'}
-        typeLabel={claimItem?.type || 'Gift'}
-        amountLabel={isCashClaim ? 'Amount' : 'Worth'}
-        amountValue={claimItem?.worth || '₦0'}
-        nextSteps={claimModalSteps}
-      />
-
-      <MarkAsDeliveredModal
-        isOpen={Boolean(deliverItem)}
-        onClose={() => setDeliverItem(null)}
-        onConfirm={() => {
-          openSuccess({
-            title: 'Success!',
-            message: 'This Item has been marked as Delivered.',
-          })
-          setDeliverItem(null)
-        }}
-        itemName={deliverItem?.name || 'Item'}
-        itemImage={
-          deliverItem?.image || '/assets/images/place-holder-image.jpg'
-        }
-      />
 
       <button
         type='button'

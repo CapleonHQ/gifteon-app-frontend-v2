@@ -8,6 +8,7 @@ import IdentityNotice from './comment-composer/IdentityNotice'
 import PreferenceSwitchRow from './comment-composer/PreferenceSwitchRow'
 import { MAX_COMMENT_LENGTH } from './comment-composer/types'
 import { useCreatePublicPageComment } from '@/hooks/tanstack/publicPage'
+import { analytics } from '@/lib/analytics/events'
 
 type CommentComposerProps = {
   receiverName: string
@@ -84,6 +85,13 @@ export default function CommentComposer({
       payload,
       {
         onSuccess: () => {
+          analytics.trackPublicPageCommentSubmitted({
+            page_id: pageId,
+            is_authenticated: isAuthenticated,
+            hide_identity: hideName,
+            owner_only: ownerOnly,
+            source: 'public_page',
+          })
           setComment('')
           setFullName('')
           setUseDifferentDisplayName(false)

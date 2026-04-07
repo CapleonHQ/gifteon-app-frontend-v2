@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import OnboardingLogo from '../components/OnboardingLogo'
 import RegisterFormStep from './components/RegisterFormStep'
@@ -19,6 +19,7 @@ type Gender = 'male' | 'female' | ''
 
 const RegisterPage = () => {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { refreshUser } = useAuth()
   const [currentStep, setCurrentStep] = useState<RegisterStep>('register')
   const [firstName, setFirstName] = useState('')
@@ -36,6 +37,15 @@ const RegisterPage = () => {
   const [isResending, setIsResending] = useState(false)
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+
+  const resolvePostRegisterPath = () => {
+    const requestedNextPath = searchParams.get('next')
+    if (!requestedNextPath) return '/dashboard'
+    if (!requestedNextPath.startsWith('/')) return '/dashboard'
+    if (requestedNextPath.startsWith('//')) return '/dashboard'
+    if (requestedNextPath.startsWith('/register')) return '/dashboard'
+    return requestedNextPath
+  }
 
   // Countdown timer for resend
   useEffect(() => {
@@ -230,8 +240,13 @@ const RegisterPage = () => {
   }
 
   const handleProceedToDashboard = () => {
-    router.push('/dashboard')
+    router.push(resolvePostRegisterPath())
   }
+
+  const requestedNextPath = searchParams.get('next')
+  const loginHref = requestedNextPath
+    ? `/login?next=${encodeURIComponent(requestedNextPath)}`
+    : '/login'
 
   const isValidEmail = Boolean(email) && validateEmail(email)
   const isFormValid =
@@ -253,6 +268,7 @@ const RegisterPage = () => {
             error={error}
             isLoading={isLoading}
             isFormValid={isFormValid}
+            loginHref={loginHref}
             onFirstNameChange={(event) => setFirstName(event.target.value)}
             onLastNameChange={(event) => setLastName(event.target.value)}
             onEmailChange={handleEmailChange}

@@ -1,7 +1,6 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
-import Image from 'next/image'
 
 import { giftStatusStyles } from './types'
 import type { GiftItem } from '@/types/Gifts/index'
@@ -23,16 +22,7 @@ const RecentGiftsMobileRow = ({
     <div className='p-3'>
       <div className='flex items-center justify-between gap-3'>
         <div className='flex justify-between items-center flex-1 gap-2 min-w-0'>
-          <div className='flex items-center gap-3 min-w-0'>
-            <div className='w-10 h-10 rounded-[8px] overflow-hidden bg-grey-50'>
-              <Image
-                src={item.image}
-                alt={item.name}
-                width={40}
-                height={40}
-                className='w-full h-full object-cover'
-              />
-            </div>
+          <div className='min-w-0'>
             <p className='text-sm font-medium text-grey-900 truncate'>
               {item.name}
             </p>
@@ -66,7 +56,9 @@ const RecentGiftsMobileRow = ({
           <div className='flex flex-col gap-2 text-grey-600 text-sm'>
             <div className='flex items-center justify-between'>
               <span>Gift Type:</span>
-              <span className='text-grey-900 font-medium'>{item.type}</span>
+              <span className='text-grey-900 font-medium capitalize'>
+                {item.type}
+              </span>
             </div>
             <div className='flex items-center justify-between'>
               <span>Date:</span>
