@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import degular from '@/assets/fonts/degular'
 import georgia from '@/assets/fonts/georgia'
+import CookieConsentBanner from '@/components/CookieConsent/CookieConsentBanner'
 import PostHogAuthBridge from '@/components/Providers/PostHogAuthBridge'
 import QueryProvider from '@/components/Providers/QueryProvider'
 import { AuthProvider } from '@/context/AuthContext'
@@ -142,6 +143,7 @@ export default function RootLayout({
             <SuccessModalProvider>
               <PostHogAuthBridge />
               {children}
+              <CookieConsentBanner />
             </SuccessModalProvider>
           </AuthProvider>
         </QueryProvider>

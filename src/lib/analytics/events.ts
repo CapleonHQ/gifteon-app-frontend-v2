@@ -2,6 +2,7 @@
 
 import posthog from 'posthog-js'
 import type { UserProfile } from '@/types/Account'
+import { hasAcceptedCookieConsent } from '@/lib/consent/cookieConsent'
 
 type AnalyticsProperties = Record<
   string,
@@ -9,7 +10,9 @@ type AnalyticsProperties = Record<
 >
 
 const hasPostHog = () =>
-  typeof window !== 'undefined' && Boolean(process.env.NEXT_PUBLIC_POSTHOG_TOKEN)
+  typeof window !== 'undefined' &&
+  Boolean(process.env.NEXT_PUBLIC_POSTHOG_TOKEN) &&
+  hasAcceptedCookieConsent()
 
 const sanitizeProperties = (properties?: AnalyticsProperties) => {
   if (!properties) return undefined
