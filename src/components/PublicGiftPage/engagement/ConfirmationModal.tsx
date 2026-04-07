@@ -19,6 +19,7 @@ import {
   getItemAmount,
   resolveCashAmount,
 } from './confirmation/helpers'
+import { analytics } from '@/lib/analytics/events'
 
 type ConfirmationModalProps = {
   isOpen: boolean
@@ -366,6 +367,12 @@ export default function ConfirmationModal({
       }
 
       setIsPinModalOpen(false)
+      analytics.trackPublicPageCheckoutSucceeded({
+        page_id: pageId,
+        payment_method: paymentMethod,
+        is_authenticated: isAuthenticated,
+        source: 'public_page',
+      })
       onPaymentSuccess(
         `Your gift has been confirmed. Small or big, your gift makes ${ownersName} day special.`
       )
@@ -382,6 +389,13 @@ export default function ConfirmationModal({
         paymentMethod,
         apiError.fieldErrors
       )
+      analytics.trackPublicPageCheckoutFailed({
+        page_id: pageId,
+        payment_method: paymentMethod,
+        is_authenticated: isAuthenticated,
+        error_message: message,
+        source: 'public_page',
+      })
 
       if (paymentMethod === 'wallet') {
         if (isPinError) {

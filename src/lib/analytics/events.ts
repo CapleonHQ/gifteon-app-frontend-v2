@@ -228,6 +228,42 @@ export const analytics = {
     category: string
     source: 'explore_page'
   }) => capture('explore_pagination_changed', properties),
+  trackPublicPageViewed: (properties: {
+    page_id: string
+    page_slug: string
+    source: 'public_page'
+  }) => capture('public_page_viewed', properties),
+  trackPublicPageShareOpened: (properties: {
+    page_id: string
+    page_slug: string
+    source: 'public_page'
+  }) => capture('public_page_share_opened', properties),
+  trackPublicPageCommentSubmitted: (properties: {
+    page_id: string
+    is_authenticated: boolean
+    hide_identity: boolean
+    owner_only: boolean
+    source: 'public_page'
+  }) => capture('public_page_comment_submitted', properties),
+  trackPublicPageCheckoutStarted: (properties: {
+    page_id: string
+    selected_items_count: number
+    has_cash_gift: boolean
+    source: 'public_page'
+  }) => capture('public_page_checkout_started', properties),
+  trackPublicPageCheckoutSucceeded: (properties: {
+    page_id: string
+    payment_method: 'external' | 'wallet'
+    is_authenticated: boolean
+    source: 'public_page'
+  }) => capture('public_page_checkout_succeeded', properties),
+  trackPublicPageCheckoutFailed: (properties: {
+    page_id: string
+    payment_method: 'external' | 'wallet'
+    is_authenticated: boolean
+    error_message: string
+    source: 'public_page'
+  }) => capture('public_page_checkout_failed', properties),
   trackBillsVerifySucceeded: (properties: {
     bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
     verify_type: 'meter' | 'iuc'

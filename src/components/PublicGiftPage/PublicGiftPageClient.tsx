@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Share2 } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
@@ -28,6 +28,7 @@ import PublicGiftPageEngagementSection from './PublicGiftPageEngagementSection'
 import PublicPageAttributionBadge from './PublicPageAttributionBadge'
 import { useAuth } from '@/context/AuthContext'
 import { useSuccessModal } from '@/context/SuccessModalContext'
+import { analytics } from '@/lib/analytics/events'
 
 type PublicGiftPageClientProps = {
   slug: string
@@ -88,6 +89,7 @@ export default function PublicGiftPageClient({
     useState<Record<string, string>>({})
   const isAuthenticated = status === 'authenticated' && Boolean(user)
   const checkoutResumeStateKey = `giftseon:public-checkout:${slug}`
+  const hasTrackedPageViewRef = useRef(false)
 
   const selectedGiftItems = useMemo(
     () => giftOptions.filter((item) => selectedGiftIds[item.id]),
@@ -98,6 +100,16 @@ export default function PublicGiftPageClient({
     const idSet = new Set(confirmationGiftIds)
     return giftOptions.filter((item) => idSet.has(item.id))
   }, [confirmationGiftIds, giftOptions])
+
+  useEffect(() => {
+    if (!pageData || hasTrackedPageViewRef.current) return
+    analytics.trackPublicPageViewed({
+      page_id: pageData.id,
+      page_slug: pageData.slug,
+      source: 'public_page',
+    })
+    hasTrackedPageViewRef.current = true
+  }, [pageData])
 
   useEffect(() => {
     if (!pageData) return
@@ -162,6 +174,12 @@ export default function PublicGiftPageClient({
 
   const handleOpenConfirmation = () => {
     if (selectedGiftItems.length === 0) return
+    analytics.trackPublicPageCheckoutStarted({
+      page_id: pageData.id,
+      selected_items_count: selectedGiftItems.length,
+      has_cash_gift: selectedGiftItems.some((item) => item.kind === 'cash'),
+      source: 'public_page',
+    })
     setConfirmationGiftIds(selectedGiftItems.map((item) => item.id))
     setConfirmationInitialStep('review')
     setConfirmationCashAmountInputs({})
@@ -248,7 +266,14 @@ export default function PublicGiftPageClient({
       <div className='flex items-center justify-end gap-2'>
         <button
           type='button'
-          onClick={() => setIsShareModalOpen(true)}
+          onClick={() => {
+            analytics.trackPublicPageShareOpened({
+              page_id: pageData.id,
+              page_slug: pageData.slug,
+              source: 'public_page',
+            })
+            setIsShareModalOpen(true)
+          }}
           className='inline-flex items-center justify-center gap-2 rounded-[10px] border border-grey-200 bg-white px-3 py-2 text-sm font-medium text-grey-700 transition-colors hover:bg-grey-50'
         >
           <Share2 className='h-4 w-4' />
