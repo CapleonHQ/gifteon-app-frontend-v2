@@ -2,9 +2,12 @@
 
 import Image from 'next/image'
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import type { PublicPagesListApiData } from '@/api/services/publicPages'
 import { usePublicPages } from '@/hooks/tanstack/publicPage'
 import type { ExploreCategory } from '@/types/Explore'
+import type { ApiResponse } from '@/types/Common'
+import { analytics } from '@/lib/analytics/events'
 import { PAGE_SIZE, CATEGORY_TABS } from './constants'
 import { normalizeCategoryQuery, toExploreCard } from './utils'
 import CategoryTabs from './components/CategoryTabs'
@@ -14,11 +17,22 @@ import ErrorStateCard from './components/ErrorStateCard'
 import EmptyStateCard from './components/EmptyStateCard'
 import ExplorePagination from './components/ExplorePagination'
 
-const ExplorePage = () => {
+type ExplorePageProps = {
+  initialCategory?: ExploreCategory
+  initialPagesData?: ApiResponse<PublicPagesListApiData> | null
+}
+
+const ExplorePage = ({
+  initialCategory = 'all',
+  initialPagesData = null,
+}: ExplorePageProps) => {
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
-  const initialCategory = normalizeCategoryQuery(searchParams.get('category'))
-  const [activeCategory, setActiveCategory] =
-    useState<ExploreCategory>(initialCategory)
+  const rawCategoryParam = searchParams.get('category')
+  const activeCategory = rawCategoryParam
+    ? normalizeCategoryQuery(rawCategoryParam)
+    : initialCategory
   const [currentPage, setCurrentPage] = useState(1)
 
   const activeTab = useMemo(() => {
@@ -33,6 +47,8 @@ const ExplorePage = () => {
     limit: PAGE_SIZE,
     offset,
     ...(activeTab.apiCategory ? { category: activeTab.apiCategory } : {}),
+  }, {
+    initialData: currentPage === 1 ? (initialPagesData ?? undefined) : undefined,
   })
 
   const pageData = publicPagesQuery.data?.data
@@ -53,21 +69,66 @@ const ExplorePage = () => {
     !isGridLoading && !publicPagesQuery.isError && totalItems > 0
 
   const handleCategoryChange = (category: ExploreCategory) => {
-    setActiveCategory(category)
     setCurrentPage(1)
+
+    const nextParams = new URLSearchParams(searchParams.toString())
+    if (category === 'all') {
+      nextParams.delete('category')
+    } else {
+      nextParams.set('category', category)
+    }
+    const nextUrl = nextParams.toString()
+      ? `${pathname}?${nextParams.toString()}`
+      : pathname
+    router.replace(nextUrl, { scroll: false })
+
+    analytics.trackExploreCategorySelected({
+      category,
+      source: 'explore_page',
+    })
   }
 
   const handleViewAll = () => {
-    setActiveCategory('all')
-    setCurrentPage(1)
+    handleCategoryChange('all')
   }
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1))
+    setCurrentPage((prev) => {
+      const toPage = Math.max(1, prev - 1)
+      analytics.trackExplorePaginationChanged({
+        direction: 'prev',
+        from_page: prev,
+        to_page: toPage,
+        category: activeCategory,
+        source: 'explore_page',
+      })
+      return toPage
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+    setCurrentPage((prev) => {
+      const toPage = Math.min(totalPages, prev + 1)
+      analytics.trackExplorePaginationChanged({
+        direction: 'next',
+        from_page: prev,
+        to_page: toPage,
+        category: activeCategory,
+        source: 'explore_page',
+      })
+      return toPage
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleCardOpen = (card: { id: string; slug: string }) => {
+    analytics.trackExploreCardOpened({
+      page_id: card.id,
+      page_slug: card.slug,
+      category: activeCategory,
+      source: 'explore_page',
+    })
   }
 
   return (
@@ -113,7 +174,7 @@ const ExplorePage = () => {
           {isGridLoading ? (
             <ExploreSkeletonGrid />
           ) : (
-            <ExploreCardsGrid cards={cards} />
+            <ExploreCardsGrid cards={cards} onCardOpen={handleCardOpen} />
           )}
 
           {isEmptyState ? (

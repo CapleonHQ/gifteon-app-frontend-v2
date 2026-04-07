@@ -34,15 +34,16 @@ export type PublicPageApiTemplate = {
 }
 
 export type PublicPageApiWishListItem = {
-  id?: string | null
+  id: string
   type?: string | null
-  title?: string | null
-  imageUrl?: string | null
+  title: string
+  description: string
+  imageUrl: string
   itemId?: string | null
-  quantity?: number | string | null
-  unitPrice?: number | string | null
+  quantity: number | string
+  unitPrice: number | string
   quantityGifted?: number | string | null
-  quantityClaimed?: number | string | null
+  quantityClaimed: number | string
   quantityClaimable?: number | string | null
   status?: string | null
   source?: string | null
@@ -69,7 +70,7 @@ export type PublicPageApiSettings = {
   deletedAt?: string | null
   socials?: PublicPageApiSocial[]
   wishListItems?: PublicPageApiWishListItem[]
-  storeItems?: Array<Record<string, unknown>>
+  storeItems?: PublicPageApiWishListItem[]
 }
 
 export type PublicPageApiActivity = {

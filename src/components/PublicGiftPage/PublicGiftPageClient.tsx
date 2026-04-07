@@ -20,10 +20,10 @@ import GiftListSection from './engagement/GiftListSection'
 import SuccessModal from './engagement/SuccessModal'
 import ConfirmationModal from './engagement/ConfirmationModal'
 import {
-  readString,
   resolveGiftOptions,
   resolveRecipientName,
 } from './engagement/utils'
+import { readString } from '@/lib/utils/parsers'
 import PublicGiftPageEngagementSection from './PublicGiftPageEngagementSection'
 import PublicPageAttributionBadge from './PublicPageAttributionBadge'
 import { useAuth } from '@/context/AuthContext'

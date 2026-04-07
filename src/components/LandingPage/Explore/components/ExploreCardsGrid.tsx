@@ -4,9 +4,10 @@ import type { ExploreCard } from '@/types/Explore'
 
 type ExploreCardsGridProps = {
   cards: ExploreCard[]
+  onCardOpen: (card: ExploreCard) => void
 }
 
-const ExploreCardsGrid = ({ cards }: ExploreCardsGridProps) => {
+const ExploreCardsGrid = ({ cards, onCardOpen }: ExploreCardsGridProps) => {
   return (
     <div className='mt-6 grid grid-cols-1 gap-x-7 gap-y-8 md:grid-cols-2 xl:grid-cols-3'>
       {cards.map((card) => (
@@ -32,6 +33,7 @@ const ExploreCardsGrid = ({ cards }: ExploreCardsGridProps) => {
             </p>
             <Link
               href={`/u/${card.slug}`}
+              onClick={() => onCardOpen(card)}
               className='inline-flex py-3.5 w-full items-center justify-center rounded-[12px] border border-primary-100 bg-primary-50/60 text-base leading-5 font-medium text-primary-500 transition-colors hover:bg-primary-50'
             >
               See Details

@@ -12,6 +12,7 @@ import {
 } from '@/api/services/publicPages'
 import type { ApiResponse } from '@/types/Common'
 import type { PageCommentsData } from '@/types/Comments'
+import type { UseQueryOptions } from '@tanstack/react-query'
 
 const DEFAULT_PUBLIC_COMMENTS_LIMIT = 4
 const DEFAULT_PUBLIC_ACTIVITIES_LIMIT = 8
@@ -27,10 +28,19 @@ export const usePublicPageBySlug = (slug: string) => {
   })
 }
 
-export const usePublicPages = (params?: PublicPagesQueryParams) => {
+type UsePublicPagesOptions = Pick<
+  UseQueryOptions<ApiResponse<PublicPagesListApiData>>,
+  'initialData' | 'initialDataUpdatedAt'
+>
+
+export const usePublicPages = (
+  params?: PublicPagesQueryParams,
+  options?: UsePublicPagesOptions
+) => {
   return useQuery<ApiResponse<PublicPagesListApiData>>({
     queryKey: ['public-pages', params],
     queryFn: () => getPublicPages(params),
+    ...options,
   })
 }
 

@@ -9,6 +9,7 @@ import {
 } from '@/types/Payment'
 
 type GenericPaymentData = Record<string, unknown>
+export type VerifyTransactionResponseData = Record<string, never>
 
 export const initializePayment = async (
   data: InitializePaymentRequestBody
@@ -44,10 +45,9 @@ export const getTransactionByReference = async (
 
 export const verifyTransactionByReference = async (
   reference: string
-): Promise<ApiResponse<null>> => {
-  const resp: AxiosResponse<ApiResponse<null>> = await apiService.appPublic.get(
-    `/payment/verify/${reference}`
-  )
+): Promise<ApiResponse<VerifyTransactionResponseData | null>> => {
+  const resp: AxiosResponse<ApiResponse<VerifyTransactionResponseData | null>> =
+    await apiService.appPublic.get(`/payment/verify/${reference}`)
   return resp.data
 }
 

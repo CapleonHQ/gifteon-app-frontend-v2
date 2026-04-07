@@ -211,6 +211,23 @@ export const analytics = {
     category: string
     source: 'stores_hub'
   }) => capture('store_category_coming_soon_clicked', properties),
+  trackExploreCategorySelected: (properties: {
+    category: string
+    source: 'explore_page'
+  }) => capture('explore_category_selected', properties),
+  trackExploreCardOpened: (properties: {
+    page_id: string
+    page_slug: string
+    category: string
+    source: 'explore_page'
+  }) => capture('explore_card_opened', properties),
+  trackExplorePaginationChanged: (properties: {
+    direction: 'next' | 'prev'
+    from_page: number
+    to_page: number
+    category: string
+    source: 'explore_page'
+  }) => capture('explore_pagination_changed', properties),
   trackBillsVerifySucceeded: (properties: {
     bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
     verify_type: 'meter' | 'iuc'
