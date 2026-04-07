@@ -60,7 +60,7 @@ const ElectricityTokenSuccessModal = ({
               <p className='text-sm text-grey-600'>
                 Your electricity token is ready.
               </p>
-              <div className='mt-4 rounded-[12px] border border-warning-100 bg-warning-50/40 px-3 py-3 text-left'>
+              <div className='mt-4 rounded-[12px] border border-success-100 bg-success-50/40 px-3 py-3 text-left'>
                 <div className='flex items-center justify-between gap-2'>
                   <span className='text-sm text-grey-700'>Token</span>
                   <button
