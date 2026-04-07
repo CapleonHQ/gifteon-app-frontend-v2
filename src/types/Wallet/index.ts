@@ -106,7 +106,7 @@ export interface WalletTransactionApiItem {
   source: string
   status: string
   reference: string
-  description: string
+  description: string | null
   metadata: Record<string, unknown> | null
   balanceBefore: string
   balanceAfter: string
@@ -135,7 +135,15 @@ export type WalletTransaction = {
   description: string
   type: WalletTransactionType
   amount: number
+  displayAmount: string
+  currency: string
   status: WalletTransactionStatus
+  reference: string
+  userId: string
+  source: string
+  createdAt: string
+  updatedAt: string
+  metadata: Record<string, unknown> | null
 }
 
 export type WalletTransactionsData = {

@@ -6,13 +6,13 @@ import WalletTransactionsTableRow from './WalletTransactionsTableRow'
 
 type WalletTransactionsTableProps = {
   items: WalletTransaction[]
-  formatAmount: (value: number) => string
+  onView: (transaction: WalletTransaction) => void
   onReport: () => void
 }
 
 const WalletTransactionsTable = ({
   items,
-  formatAmount,
+  onView,
   onReport,
 }: WalletTransactionsTableProps) => {
   return (
@@ -24,7 +24,7 @@ const WalletTransactionsTable = ({
             <WalletTransactionsTableRow
               key={transaction.id}
               transaction={transaction}
-              formatAmount={formatAmount}
+              onView={onView}
               onReport={onReport}
             />
           ))}

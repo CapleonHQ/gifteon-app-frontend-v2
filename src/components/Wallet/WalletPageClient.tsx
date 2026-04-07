@@ -100,10 +100,7 @@ const WalletPageClient = () => {
         ) : null}
       </div>
 
-      <WalletTransactionsSection
-        currency={currency}
-        onReport={() => setIsDisputeOpen(true)}
-      />
+      <WalletTransactionsSection onReport={() => setIsDisputeOpen(true)} />
 
       <WalletTopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} />
 
