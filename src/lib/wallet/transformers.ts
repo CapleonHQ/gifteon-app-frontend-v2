@@ -1,5 +1,6 @@
 import type { WalletTransactionsApiData } from '@/types/Wallet'
 import type {
+  WalletTransactionApiItem,
   WalletTransaction,
   WalletTransactionsData,
   WalletWithdrawal,
@@ -27,13 +28,31 @@ const toDisplayDate = (isoDate: string): string => {
   }).format(parsed)
 }
 
+const BILL_TRANSACTION_TYPE_LABELS: Record<string, string> = {
+  airtime: 'Airtime payment',
+  data: 'Data payment',
+  electricity: 'Electricity bill payment',
+  cable_tv: 'Cable TV subscription payment',
+}
+
+const toTransactionDescription = (item: WalletTransactionApiItem): string => {
+  const description = item.description?.trim()
+  if (description) return description
+
+  if (item.source.trim().toLowerCase() === 'bill' && item.metadata?.type) {
+    return BILL_TRANSACTION_TYPE_LABELS[item.metadata.type] ?? 'Bill payment'
+  }
+
+  return 'Wallet transaction'
+}
+
 const toUiTransaction = (
   item: WalletTransactionsApiData['transactions'][number]
 ): WalletTransaction => {
   return {
     id: item.id,
     date: toDisplayDate(item.createdAt),
-    description: item.description || 'Wallet transaction',
+    description: toTransactionDescription(item),
     type: item.type.trim().toLowerCase(),
     amount: toNumber(item.amount),
     displayAmount: formatCurrency(toNumber(item.amount), {
