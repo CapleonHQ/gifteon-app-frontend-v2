@@ -53,7 +53,7 @@ const ContributionsPageClient = () => {
   const contributionsQuery = useContributions()
 
   const items = useMemo<GiftItem[]>(() => {
-    return (contributionsQuery.data?.data ?? []).map((item) => {
+    return (contributionsQuery.data?.data.contributions ?? []).map((item) => {
       const status = normalizeGiftStatus(item.status)
       const actionType = toActionType(status, item.type)
       return {
@@ -61,6 +61,8 @@ const ContributionsPageClient = () => {
         name: item.type.toLowerCase() === 'cash' ? 'Cash Gift' : item.giftName,
         type: item.type,
         date: formatGiftDate(item.createdAt),
+        image:
+          item.imageUrl && item.imageUrl !== 'none' ? item.imageUrl : undefined,
         worth: formatCurrency(Number(item.amount), {
           currency: item.currency,
           maximumFractionDigits: 0,

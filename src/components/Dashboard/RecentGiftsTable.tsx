@@ -63,9 +63,16 @@ const RecentGiftsTable = ({ items, onAction }: RecentGiftsTableProps) => {
               >
                 <div className='flex items-center gap-3 min-w-0'>
                   {renderGiftAvatar(item)}
-                  <span className='text-grey-900 font-medium truncate'>
-                    {item.name}
-                  </span>
+                  <div className='min-w-0'>
+                    <p className='text-grey-900 font-medium truncate'>
+                      {item.name}
+                    </p>
+                    {item.fromName ? (
+                      <p className='text-xs text-grey-500 truncate'>
+                        From {item.fromName}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <span className='text-grey-600 capitalize'>{item.type}</span>
                 <span className='text-grey-600'>{item.date}</span>

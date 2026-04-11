@@ -50,9 +50,16 @@ const RecentGiftsMobileRow = ({
                 ) : null}
               </div>
             )}
-            <p className='text-sm font-medium text-grey-900 truncate'>
-              {item.name}
-            </p>
+            <div className='min-w-0'>
+              <p className='text-sm font-medium text-grey-900 truncate'>
+                {item.name}
+              </p>
+              {item.fromName ? (
+                <p className='text-xs text-grey-500 truncate'>
+                  From {item.fromName}
+                </p>
+              ) : null}
+            </div>
           </div>
           <div className='w-[90px] flex justify-end'>
             <span
