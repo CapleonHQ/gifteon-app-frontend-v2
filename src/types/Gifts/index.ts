@@ -3,6 +3,7 @@ export type GiftItem = {
   name: string
   type: string
   date: string
+  image?: string
   worth: string
   status: 'Delivered' | 'Fulfilled' | 'Shipped' | 'Not fulfilled'
   actionType?: 'claim_cash' | 'claim_gift' | 'deliver'

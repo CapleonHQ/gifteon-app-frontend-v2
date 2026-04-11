@@ -156,9 +156,15 @@ const DashboardStatsSection = () => {
     () =>
       chartData
         ? [
-            { type: 'Cash', total: chartData.giftDistribution.cash },
-            { type: 'Store Gifts', total: chartData.giftDistribution.store },
-            { type: 'Custom Gifts', total: chartData.giftDistribution.custom },
+            { type: 'Cash Gifts', total: chartData.giftDistribution.cash },
+            {
+              type: 'Store and Custom Gifts',
+              total: chartData.giftDistribution.store,
+            },
+            {
+              type: 'Open Gifts',
+              total: chartData.giftDistribution.custom,
+            },
           ]
         : [],
     [chartData]

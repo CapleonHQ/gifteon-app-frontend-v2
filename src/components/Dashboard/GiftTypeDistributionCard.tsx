@@ -29,9 +29,9 @@ const GiftTypeDistributionCard = ({
   const resolvedData = distribution.length
     ? distribution
     : [
-        { type: 'Items', total: 0 },
-        { type: 'Cash', total: 0 },
-        { type: 'Custom Gifts', total: 0 },
+        { type: 'Store and Custom Gifts', total: 0 },
+        { type: 'Cash Gifts', total: 0 },
+        { type: 'Open Gifts', total: 0 },
       ]
 
   const data: ChartData<'doughnut'> = {

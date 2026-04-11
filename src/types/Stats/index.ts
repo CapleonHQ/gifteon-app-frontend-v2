@@ -27,13 +27,22 @@ export interface DashboardChartData {
   }
 }
 
+export type DashboardRecentGiftStatus =
+  | 'success'
+  | 'delivered'
+  | 'fulfilled'
+  | 'shipped'
+
 export interface DashboardRecentGift {
   id: string
   type: string
   giftName: string
+  imageUrl: string
   sender: string
-  status: string
+  status: DashboardRecentGiftStatus
   amount: number | string
+  quantityGifted: number
+  createdAt: string
 }
 
 export interface StatsOverviewData {
