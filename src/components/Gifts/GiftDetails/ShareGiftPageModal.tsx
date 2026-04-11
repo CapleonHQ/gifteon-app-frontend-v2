@@ -11,6 +11,7 @@ import WhatsappIcon from '@/assets/icons/brand/WhatsappIcon'
 import XIcon from '@/assets/icons/brand/XIcon'
 import LinkedinIcon from '@/assets/icons/brand/LinkedinIcon'
 import { recordPageShare } from '@/api/services/pages'
+import type { PageShareProvider } from '@/types/Pages'
 
 type ShareGiftPageModalProps = {
   isOpen: boolean
@@ -30,7 +31,7 @@ const ShareGiftPageModal = ({
   const [tab, setTab] = useState<'link' | 'qr' | 'social'>('link')
   const [qrData, setQrData] = useState('')
   const [isCopied, setIsCopied] = useState(false)
-  const recordedProvidersRef = useRef<Set<string>>(new Set())
+  const recordedProvidersRef = useRef<Set<PageShareProvider>>(new Set())
   const resolvedPageUrl = useMemo(() => {
     if (!pageUrl) return ''
     if (/^https?:\/\//i.test(pageUrl)) return pageUrl
@@ -88,13 +89,13 @@ const ShareGiftPageModal = ({
       await navigator.clipboard.writeText(resolvedPageUrl)
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 1500)
-      void trackShare('copy')
+      void trackShare('copy_link')
     } catch {
       setIsCopied(false)
     }
   }
 
-  const trackShare = async (provider: string) => {
+  const trackShare = async (provider: PageShareProvider) => {
     if (!resolvedShareSlug) return
     if (recordedProvidersRef.current.has(provider)) return
     try {
@@ -117,7 +118,7 @@ const ShareGiftPageModal = ({
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    void trackShare('qr')
+    void trackShare('qr_code')
   }
 
   const handleInstagramShare = async () => {
@@ -129,7 +130,7 @@ const ShareGiftPageModal = ({
           text: `I just created a gift page for "${pageTitle}".`,
           url: resolvedPageUrl,
         })
-        void trackShare('instagram')
+        void trackShare('other')
         return
       }
       await navigator.clipboard.writeText(shareText)
@@ -142,7 +143,7 @@ const ShareGiftPageModal = ({
       'noopener,noreferrer'
     )
     if (opened) {
-      void trackShare('instagram')
+      void trackShare('other')
     }
   }
 

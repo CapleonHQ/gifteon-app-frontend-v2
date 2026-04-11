@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Copy, Check } from 'lucide-react'
 
@@ -12,6 +12,8 @@ import {
   XTwitterIcon,
 } from '../../../assets/icons'
 import Image from 'next/image'
+import { recordPageShare } from '@/api/services/pages'
+import type { PageShareProvider } from '@/types/Pages'
 
 interface SuccessModalProps {
   isOpen: boolean
@@ -22,6 +24,37 @@ interface SuccessModalProps {
 const SuccessModal = ({ isOpen, onClose, giftPageLink }: SuccessModalProps) => {
   const [copied, setCopied] = useState(false)
   const [qrCode, setQrCode] = useState('')
+  const recordedProvidersRef = useRef<Set<PageShareProvider>>(new Set())
+  const resolvedShareSlug = useMemo(() => {
+    if (!giftPageLink) return ''
+    const value = giftPageLink.trim()
+    if (!value) return ''
+    const path = /^https?:\/\//i.test(value)
+      ? (() => {
+          try {
+            return new URL(value).pathname
+          } catch {
+            return value
+          }
+        })()
+      : value
+    const normalized = path.replace(/\/+$/, '')
+    const segments = normalized.split('/').filter(Boolean)
+    const uIndex = segments.findIndex((segment) => segment === 'u')
+    if (uIndex >= 0 && segments[uIndex + 1]) return segments[uIndex + 1]
+    return segments[segments.length - 1] || ''
+  }, [giftPageLink])
+
+  const trackShare = async (provider: PageShareProvider) => {
+    if (!resolvedShareSlug) return
+    if (recordedProvidersRef.current.has(provider)) return
+    try {
+      await recordPageShare(resolvedShareSlug, provider)
+      recordedProvidersRef.current.add(provider)
+    } catch {
+      // best-effort analytics; share UI should remain unaffected
+    }
+  }
 
   useEffect(() => {
     if (isOpen && giftPageLink) {
@@ -36,17 +69,23 @@ const SuccessModal = ({ isOpen, onClose, giftPageLink }: SuccessModalProps) => {
     }
   }, [isOpen, giftPageLink])
 
+  useEffect(() => {
+    if (!isOpen) return
+    recordedProvidersRef.current.clear()
+  }, [isOpen])
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(giftPageLink)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+      void trackShare('copy_link')
     } catch (err) {
       console.error('Failed to copy:', err)
     }
   }
 
-  const handleShare = (platform: string) => {
+  const handleShare = (platform: 'instagram' | 'whatsapp' | 'twitter' | 'linkedin') => {
     const text = 'Check out my gift page!'
     const url = encodeURIComponent(giftPageLink)
 
@@ -62,7 +101,17 @@ const SuccessModal = ({ isOpen, onClose, giftPageLink }: SuccessModalProps) => {
     }
 
     if (shareUrls[platform]) {
-      window.open(shareUrls[platform], '_blank', 'width=600,height=400')
+      const opened = window.open(
+        shareUrls[platform],
+        '_blank',
+        'width=600,height=400'
+      )
+      if (!opened) return
+      if (platform === 'instagram') {
+        void trackShare('other')
+        return
+      }
+      void trackShare(platform)
     }
   }
 

@@ -4,6 +4,7 @@ import { ApiResponse } from '@/types/Common'
 import {
   CreatePageData,
   PageDetailsApiData,
+  PageShareProvider,
   PagesListApiData,
   PagesQueryParams,
 } from '@/types/Pages'
@@ -76,7 +77,7 @@ export const unarchivePage = async (
 
 export const recordPageShare = async (
   slug: string,
-  provider: string
+  provider: PageShareProvider
 ): Promise<ApiResponse<object>> => {
   const resp: AxiosResponse<ApiResponse<object>> =
     await apiService.appPrivate.post(`/pages/${slug}/share`, { provider })
