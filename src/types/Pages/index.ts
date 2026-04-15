@@ -4,6 +4,21 @@ export type PageVisibility = 'Public' | 'Shareable' | 'Private'
 export type PageStatus = 'Active' | 'Deactivated' | 'Ended'
 
 export type PageApiPrivacy = 'public' | 'private' | 'shareable'
+export type PageShareProvider =
+  | 'twitter'
+  | 'linkedin'
+  | 'whatsapp'
+  | 'copy_link'
+  | 'qr_code'
+  | 'other'
+
+export type ClaimGiftRequestItem = {
+  contributionId: string
+}
+
+export type ClaimGiftsRequestBody = {
+  items: ClaimGiftRequestItem[]
+}
 export type PageListApiStatus =
   | 'published'
   | 'draft'

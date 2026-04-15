@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   archivePage,
+  claimCashGifts,
+  claimGifts,
   getPageById,
   getPages,
   unarchivePage,
 } from '@/api/services/pages'
 import { ApiResponse } from '@/types/Common'
 import {
+  ClaimGiftsRequestBody,
   PageDetails,
   PageDetailsApiData,
   PagesListApiData,
@@ -70,6 +73,42 @@ export const useUnarchivePage = () => {
         queryClient.invalidateQueries({ queryKey: ['pages'] }),
         queryClient.invalidateQueries({ queryKey: ['stats', 'overview'] }),
       ])
+    },
+  })
+}
+
+const invalidateClaimRelatedQueries = async (
+  queryClient: ReturnType<typeof useQueryClient>
+) => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['stats', 'overview'] }),
+    queryClient.invalidateQueries({ queryKey: ['contributions'] }),
+    queryClient.invalidateQueries({ queryKey: ['wallet', 'details'] }),
+    queryClient.invalidateQueries({ queryKey: ['wallet', 'transactions'] }),
+  ])
+}
+
+export const useClaimCashGifts = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => claimCashGifts(),
+    onSuccess: async () => {
+      await invalidateClaimRelatedQueries(queryClient)
+    },
+  })
+}
+
+export const useClaimGiftContribution = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ contributionId }: { contributionId: string }) =>
+      claimGifts({
+        items: [{ contributionId }],
+      } satisfies ClaimGiftsRequestBody),
+    onSuccess: async () => {
+      await invalidateClaimRelatedQueries(queryClient)
     },
   })
 }

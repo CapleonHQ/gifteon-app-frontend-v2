@@ -8,6 +8,7 @@ import { usePublicPages } from '@/hooks/tanstack/publicPage'
 import type { ExploreCategory } from '@/types/Explore'
 import type { ApiResponse } from '@/types/Common'
 import { analytics } from '@/lib/analytics/events'
+import { useAuth } from '@/context/AuthContext'
 import { PAGE_SIZE, CATEGORY_TABS } from './constants'
 import { normalizeCategoryQuery, toExploreCard } from './utils'
 import CategoryTabs from './components/CategoryTabs'
@@ -26,6 +27,8 @@ const ExplorePage = ({
   initialCategory = 'all',
   initialPagesData = null,
 }: ExplorePageProps) => {
+  const { status } = useAuth()
+  const isAuthenticatedView = status === 'authenticated'
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -131,6 +134,63 @@ const ExplorePage = ({
     })
   }
 
+  const exploreContent = (
+    <>
+      <CategoryTabs
+        activeCategory={activeCategory}
+        onChange={handleCategoryChange}
+        variant={isAuthenticatedView ? 'application' : 'landing'}
+      />
+
+      {isErrorState ? (
+        <ErrorStateCard
+          onRetry={() => publicPagesQuery.refetch()}
+          showViewAll={activeCategory !== 'all'}
+          onViewAll={handleViewAll}
+        />
+      ) : null}
+
+      {isGridLoading ? (
+        <ExploreSkeletonGrid />
+      ) : (
+        <ExploreCardsGrid cards={cards} onCardOpen={handleCardOpen} />
+      )}
+
+      {isEmptyState ? (
+        <EmptyStateCard
+          showViewAll={activeCategory !== 'all'}
+          onViewAll={handleViewAll}
+        />
+      ) : null}
+
+      {shouldShowPagination ? (
+        <ExplorePagination
+          visibleCount={visibleCount}
+          totalItems={totalItems}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          isFetching={publicPagesQuery.isFetching}
+          onPrev={handlePrevPage}
+          onNext={handleNextPage}
+        />
+      ) : null}
+    </>
+  )
+
+  if (isAuthenticatedView) {
+    return (
+      <div className='w-full bg-white lg:rounded-[20px] flex-1 h-full'>
+        <div className='flex flex-col gap-4 lg:gap-5 h-full px-4 lg:px-6 py-4 lg:py-6'>
+          <p className='text-sm lg:text-base text-grey-600'>
+            Discover public pages, read their stories, and support moments
+            shared with the world.
+          </p>
+          {exploreContent}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <section className='px-4 py-10 md:px-8 lg:px-20 lg:py-15'>
       <div className='mx-auto w-full max-w-[1600px]'>
@@ -157,44 +217,7 @@ const ExplorePage = ({
             contribute to the gift, or surprise the creator with something
             thoughtful.
           </p>
-
-          <CategoryTabs
-            activeCategory={activeCategory}
-            onChange={handleCategoryChange}
-          />
-
-          {isErrorState ? (
-            <ErrorStateCard
-              onRetry={() => publicPagesQuery.refetch()}
-              showViewAll={activeCategory !== 'all'}
-              onViewAll={handleViewAll}
-            />
-          ) : null}
-
-          {isGridLoading ? (
-            <ExploreSkeletonGrid />
-          ) : (
-            <ExploreCardsGrid cards={cards} onCardOpen={handleCardOpen} />
-          )}
-
-          {isEmptyState ? (
-            <EmptyStateCard
-              showViewAll={activeCategory !== 'all'}
-              onViewAll={handleViewAll}
-            />
-          ) : null}
-
-          {shouldShowPagination ? (
-            <ExplorePagination
-              visibleCount={visibleCount}
-              totalItems={totalItems}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              isFetching={publicPagesQuery.isFetching}
-              onPrev={handlePrevPage}
-              onNext={handleNextPage}
-            />
-          ) : null}
+          {exploreContent}
         </div>
       </div>
     </section>

@@ -48,6 +48,11 @@ export const useGiftsFilters = () => {
       appliedFilterParams.startdate ||
       appliedFilterParams.enddate
   )
+  const activeFilterCount =
+    (appliedFilterParams.status ? 1 : 0) +
+    (appliedFilterParams.category ? 1 : 0) +
+    (appliedFilterParams.visibility ? 1 : 0) +
+    (appliedFilterParams.startdate || appliedFilterParams.enddate ? 1 : 0)
 
   const resetFilterForm = () => {
     setFilterFromDate(undefined)
@@ -95,6 +100,7 @@ export const useGiftsFilters = () => {
     offset,
     setOffset,
     hasActiveFilters,
+    activeFilterCount,
     isFilterOpen,
     setIsFilterOpen,
     filterValues,

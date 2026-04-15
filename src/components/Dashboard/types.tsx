@@ -7,6 +7,7 @@ import type { SummaryCardItem } from '@/types/Stats'
 export const giftStatusStyles = {
   Delivered: 'bg-success-50 text-success-500',
   Fulfilled: 'bg-success-50 text-success-500',
+  Claimed: 'bg-secondary-50 text-secondary-700',
   Shipped: 'bg-information-50 text-information-500',
   'Not fulfilled': 'bg-error-50 text-error-500',
 }

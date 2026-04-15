@@ -7,23 +7,17 @@ import BackLeftIcon from '@/assets/icons/BackLeftIcon'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
 import type { WalletTransaction } from './types'
 import {
+  getBillsStatusStyle,
   getTransactionStatusLabel,
   getTransactionTypeLabel,
 } from './types'
+import { getBillMetadataDetails } from './transactionDetails'
 
 type WalletTransactionDetailsModalProps = {
   isOpen: boolean
   onClose: () => void
   transaction: WalletTransaction | null
   onReport: () => void
-}
-
-const getBillsStatusStyle = (status: string) => {
-  const normalized = status.toLowerCase()
-  if (normalized === 'success') return 'bg-success-50 text-success-700'
-  if (normalized === 'pending') return 'bg-warning-50 text-warning-700'
-  if (normalized === 'failed') return 'bg-error-50 text-error-700'
-  return 'bg-grey-50 text-grey-700'
 }
 
 const WalletTransactionDetailsModal = ({
@@ -34,26 +28,11 @@ const WalletTransactionDetailsModal = ({
 }: WalletTransactionDetailsModalProps) => {
   const [copied, setCopied] = useState(false)
 
-  const metadata = (transaction?.metadata ?? null) as {
-    provider?: string
-    meterNumber?: string
-    meterType?: string
-    token?: string
-  } | null
-  const token = metadata?.token ?? null
-  const extraDetails = [
-    metadata?.provider
-      ? { label: 'Provider', value: metadata.provider }
-      : null,
-    metadata?.meterNumber
-      ? { label: 'Meter Number', value: metadata.meterNumber }
-      : null,
-    metadata?.meterType
-      ? { label: 'Meter Type', value: metadata.meterType }
-      : null,
-  ].filter((entry): entry is { label: string; value: string } => Boolean(entry))
-
   const handleCopyToken = async () => {
+    const token =
+      transaction?.metadata?.type === 'electricity'
+        ? transaction.metadata.token
+        : null
     if (!token || !navigator?.clipboard) return
     try {
       await navigator.clipboard.writeText(token)
@@ -99,6 +78,9 @@ const WalletTransactionDetailsModal = ({
   )
 
   if (!transaction) return null
+  const metadata = transaction.metadata
+  const token = metadata?.type === 'electricity' ? metadata.token : null
+  const extraDetails = getBillMetadataDetails(metadata)
 
   const body = (
     <div className='space-y-3 text-sm text-grey-600'>

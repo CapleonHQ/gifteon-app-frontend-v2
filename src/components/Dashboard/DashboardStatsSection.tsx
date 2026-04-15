@@ -9,11 +9,12 @@ import ViewIcon from '@/assets/icons/ViewIcon'
 import SummaryCards from './SummaryCards'
 import VisitSharesCard from './VisitSharesCard'
 import GiftTypeDistributionCard from './GiftTypeDistributionCard'
+import ClaimableBalanceModal from './ClaimableBalanceModal'
 import SummaryCardsSkeleton from './Skeletons/SummaryCardsSkeleton'
 import VisitSharesSkeleton from './Skeletons/VisitSharesSkeleton'
 import GiftTypeDistributionSkeleton from './Skeletons/GiftTypeDistributionSkeleton'
 import {
-  useStatsOverview,
+  useStatsOverview as useStatsOverviewQuery,
   useVisitSharesChart,
 } from '@/hooks/tanstack/stats'
 import { emptySummaryCards } from './types'
@@ -23,6 +24,7 @@ const DashboardStatsSection = () => {
   const [visitRange, setVisitRange] = useState<
     'week' | 'month' | 'bi-annual' | 'annual'
   >('week')
+  const [isClaimableModalOpen, setIsClaimableModalOpen] = useState(false)
 
   const getRangeMeta = (
     range: 'week' | 'month' | 'bi-annual' | 'annual'
@@ -86,7 +88,7 @@ const DashboardStatsSection = () => {
       rangeLabel: string
     }>
   }, [])
-  const overview = useStatsOverview()
+  const overview = useStatsOverviewQuery()
   const visitShares = useVisitSharesChart({
     filter: visitRange,
   })
@@ -115,6 +117,8 @@ const DashboardStatsSection = () => {
           </span>
         ),
         actionLabel: 'Claim',
+        onAction: () => setIsClaimableModalOpen(true),
+        actionDisabled: overviewData.claimableBalance <= 0,
       },
       {
         id: 'active',
@@ -156,9 +160,15 @@ const DashboardStatsSection = () => {
     () =>
       chartData
         ? [
-            { type: 'Cash', total: chartData.giftDistribution.cash },
-            { type: 'Store Gifts', total: chartData.giftDistribution.store },
-            { type: 'Custom Gifts', total: chartData.giftDistribution.custom },
+            { type: 'Cash Gifts', total: chartData.giftDistribution.cash },
+            {
+              type: 'Store and Custom Gifts',
+              total: chartData.giftDistribution.wishlist,
+            },
+            {
+              type: 'Open Gifts',
+              total: chartData.giftDistribution.custom,
+            },
           ]
         : [],
     [chartData]
@@ -202,6 +212,13 @@ const DashboardStatsSection = () => {
           />
         )}
       </div>
+
+      <ClaimableBalanceModal
+        isOpen={isClaimableModalOpen}
+        onClose={() => setIsClaimableModalOpen(false)}
+        claimableBalance={overviewData?.claimableBalance ?? 0}
+        currency={overviewData?.currency ?? 'NGN'}
+      />
     </>
   )
 }

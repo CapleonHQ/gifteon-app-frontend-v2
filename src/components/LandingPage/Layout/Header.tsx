@@ -10,6 +10,7 @@ import {
   motion,
   type Variants,
 } from 'framer-motion'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 
 const navLinks = [
@@ -91,6 +92,7 @@ const mobileSubmenuVariants: Variants = {
 
 const Header = () => {
   const { status } = useAuth()
+  const pathname = usePathname()
   const [isDesktopDropdownOpen, setIsDesktopDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileCelebrationOpen, setIsMobileCelebrationOpen] = useState(false)
@@ -145,6 +147,9 @@ const Header = () => {
     setIsMobileCelebrationOpen(false)
   }
 
+  const isHomeActive = pathname === '/'
+  const isExploreActive = pathname === '/explore'
+
   return (
     <MotionConfig reducedMotion='user'>
       <motion.header
@@ -175,7 +180,11 @@ const Header = () => {
             <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }}>
               <Link
                 href={navLinks[0].href}
-                className='text-base leading-6 text-primary-500 underline underline-offset-4 font-semibold'
+                className={`text-base leading-6 transition-colors ${
+                  isHomeActive
+                    ? 'text-primary-500 underline underline-offset-4 font-semibold'
+                    : 'text-grey-700 hover:text-grey-900'
+                }`}
               >
                 {navLinks[0].label}
               </Link>
@@ -244,7 +253,11 @@ const Header = () => {
             <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }}>
               <Link
                 href={navLinks[2].href}
-                className='text-base leading-6 text-grey-700 transition-colors hover:text-grey-900'
+                className={`text-base leading-6 transition-colors ${
+                  isExploreActive
+                    ? 'text-primary-500 underline underline-offset-4 font-semibold'
+                    : 'text-grey-700 hover:text-grey-900'
+                }`}
               >
                 {navLinks[2].label}
               </Link>
@@ -346,7 +359,11 @@ const Header = () => {
                       <Link
                         href={navLinks[0].href}
                         onClick={closeMobileMenu}
-                        className='text-base font-medium leading-6 text-primary-500 underline underline-offset-4'
+                        className={`text-base leading-6 ${
+                          isHomeActive
+                            ? 'font-medium text-primary-500 underline underline-offset-4'
+                            : 'text-grey-700'
+                        }`}
                       >
                         {navLinks[0].label}
                       </Link>
@@ -419,7 +436,11 @@ const Header = () => {
                       <Link
                         href={navLinks[2].href}
                         onClick={closeMobileMenu}
-                        className='text-base leading-6 text-grey-700'
+                        className={`text-base leading-6 ${
+                          isExploreActive
+                            ? 'font-medium text-primary-500 underline underline-offset-4'
+                            : 'text-grey-700'
+                        }`}
                       >
                         {navLinks[2].label}
                       </Link>

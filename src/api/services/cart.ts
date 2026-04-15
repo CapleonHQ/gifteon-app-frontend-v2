@@ -1,6 +1,7 @@
 import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
+import { generateIdempotencyKey } from '@/lib/utils/idempotency'
 import {
   AddToCartRequestBody,
   CheckoutRequestBody,
@@ -20,9 +21,13 @@ export const addToCart = async (
 export const checkoutCart = async (
   data: CheckoutRequestBody
 ): Promise<ApiResponse<any>> => {
+  const idempotencyKey = generateIdempotencyKey()
   const resp: AxiosResponse<ApiResponse<any>> = await apiService.appPublic.post(
     '/store/cart/checkout',
-    data
+    data,
+    {
+      headers: { 'idempotency-key': idempotencyKey },
+    }
   )
   return resp.data
 }

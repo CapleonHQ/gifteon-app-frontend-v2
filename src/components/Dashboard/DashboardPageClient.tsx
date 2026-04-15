@@ -3,58 +3,10 @@
 import { useMemo } from 'react'
 import RecentGiftsSection from './RecentGiftsSection'
 import DashboardStatsSection from './DashboardStatsSection'
-import type { GiftItem } from '@/types/Gifts/index'
 import { useStatsOverview } from '@/hooks/tanstack/stats'
-import type { DashboardRecentGift } from '@/types/Stats'
-import { formatCurrency } from '@/lib/utils/currency'
 import Image from 'next/image'
 import { analytics } from '@/lib/analytics/events'
-
-const normalizeGiftStatus = (
-  value?: string
-): 'Delivered' | 'Fulfilled' | 'Shipped' | 'Not fulfilled' => {
-  const normalized = (value || '').toLowerCase()
-  if (normalized === 'success') return 'Fulfilled'
-  if (normalized === 'delivered') return 'Delivered'
-  if (normalized === 'fulfilled') return 'Fulfilled'
-  if (normalized === 'shipped') return 'Shipped'
-  return 'Not fulfilled'
-}
-
-const mapRecentGiftItem = (
-  item: DashboardRecentGift,
-  currency: string
-): GiftItem => {
-  const amountValue = Number(item.amount)
-  const type = item.type
-  const name = type.toLowerCase() === 'cash' ? 'Cash Gift' : item.giftName
-  const status = normalizeGiftStatus(item.status)
-  const safeType = type.toLowerCase()
-
-  return {
-    id: item.id,
-    name,
-    type,
-    date: '-',
-    worth: formatCurrency(amountValue, { currency, maximumFractionDigits: 0 }),
-    status,
-    fromName: item.sender,
-    actionType:
-      status === 'Shipped'
-        ? 'deliver'
-        : status === 'Fulfilled'
-        ? safeType.includes('cash')
-          ? 'claim_cash'
-          : 'claim_gift'
-        : undefined,
-    actionLabel:
-      status === 'Shipped'
-        ? 'Mark as delivered'
-        : status === 'Fulfilled'
-        ? 'Claim gift'
-        : undefined,
-  }
-}
+import { mapDashboardRecentGiftItem } from './utils/recentGifts'
 
 const DashboardPageClient = () => {
   const statsOverview = useStatsOverview()
@@ -63,7 +15,9 @@ const DashboardPageClient = () => {
   const recentGifts = useMemo(
     () =>
       overviewData && currency
-        ? overviewData.recentGifts.map((item) => mapRecentGiftItem(item, currency))
+        ? overviewData.recentGifts.map((item) =>
+            mapDashboardRecentGiftItem(item, currency)
+          )
         : [],
     [currency, overviewData]
   )

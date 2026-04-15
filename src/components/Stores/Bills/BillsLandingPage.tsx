@@ -6,11 +6,7 @@ import { analytics } from '@/lib/analytics/events'
 import SuccessModal from '@/components/common/SuccessModal'
 import { useProfile } from '@/hooks/tanstack/account'
 import {
-  useBuyAirtime,
-  useBuyData,
-  usePayElectricityBill,
   useSendGiftBillSingle,
-  useSubscribeCableTv,
 } from '@/hooks/tanstack/bills'
 import { BILLS_TABS, BillsTabKey } from './constants'
 import BillsBuilderSection from './components/BillsBuilderSection'
@@ -61,10 +57,6 @@ const BillsLandingPage = () => {
     .replace(/^@+/, '')
     .toLowerCase()
 
-  const buyAirtimeMutation = useBuyAirtime()
-  const buyDataMutation = useBuyData()
-  const payElectricityMutation = usePayElectricityBill()
-  const subscribeCableMutation = useSubscribeCableTv()
   const sendGiftSingleMutation = useSendGiftBillSingle()
   const plansCatalog = useBillsPlanCatalog()
 
@@ -280,72 +272,17 @@ const BillsLandingPage = () => {
     (sum, card) => sum + parseAmount(card.amount),
     0
   )
-  const isActionBusy =
-    buyAirtimeMutation.isPending ||
-    buyDataMutation.isPending ||
-    payElectricityMutation.isPending ||
-    subscribeCableMutation.isPending ||
-    sendGiftSingleMutation.isPending ||
-    isSubmitting
+  const isActionBusy = sendGiftSingleMutation.isPending || isSubmitting
 
   const submitCard = async (
     card: RecipientCard,
-    totalRecipients: number,
     pin: string
   ): Promise<string | null> => {
     const identifier = card.identifierValue.trim()
     const isTag = card.sendAsGift && identifier.startsWith('@')
     const amount = parseAmount(card.amount)
 
-    const shouldUseGiftEndpoint =
-      card.sendAsGift || card.timingMode !== 'instant' || totalRecipients > 1
-
-    if (!shouldUseGiftEndpoint) {
-      if (activeTab === 'airtime') {
-        await buyAirtimeMutation.mutateAsync({
-          network: card.network,
-          phoneNumber: identifier,
-          amount,
-          pin,
-        })
-        return null
-      }
-
-      if (activeTab === 'data') {
-        await buyDataMutation.mutateAsync({
-          network: card.network,
-          phoneNumber: identifier,
-          amount,
-          planCode: card.planCode,
-          pin,
-        })
-        return null
-      }
-
-      if (activeTab === 'electricity') {
-        const response = await payElectricityMutation.mutateAsync({
-          provider: card.provider,
-          meterNumber: identifier,
-          meterType: card.meterType,
-          amount,
-          pin,
-        })
-        return typeof response.data?.token === 'string'
-          ? response.data.token
-          : null
-      }
-
-      await subscribeCableMutation.mutateAsync({
-        provider: card.provider,
-        iucNumber: identifier,
-        packageCode: card.planCode,
-        amount,
-        pin,
-      })
-      return null
-    }
-
-    await sendGiftSingleMutation.mutateAsync({
+    const response = await sendGiftSingleMutation.mutateAsync({
       recipientTag: isTag ? identifier.replace(/^@+/, '') : undefined,
       recipientPhone:
         activeTab === 'airtime' || activeTab === 'data'
@@ -398,7 +335,8 @@ const BillsLandingPage = () => {
           : undefined,
       pin,
     })
-    return null
+    const token = response.data?.token
+    return typeof token === 'string' ? token : null
   }
 
   const handleRunPayment = async (pinValue: string) => {
@@ -435,7 +373,7 @@ const BillsLandingPage = () => {
     try {
       let electricityTokenFromRun: string | null = null
       for (const card of activeCards) {
-        const token = await submitCard(card, activeCards.length, pinValue)
+        const token = await submitCard(card, pinValue)
         if (!electricityTokenFromRun && token) {
           electricityTokenFromRun = token
         }

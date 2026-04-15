@@ -26,7 +26,9 @@ const SummaryCard = ({ item }: SummaryCardProps) => {
         {item.actionLabel ? (
           <button
             type='button'
-            className='px-5 py-1 rounded-[8px] bg-primary-400 text-white text-sm leading-[18px] font-medium hover:bg-primary-500 transition-colors duration-300'
+            onClick={item.onAction}
+            disabled={item.actionDisabled}
+            className='px-5 py-1 rounded-[8px] bg-primary-400 text-white text-sm leading-[18px] font-medium hover:bg-primary-500 transition-colors duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-primary-400'
           >
             {item.actionLabel}
           </button>

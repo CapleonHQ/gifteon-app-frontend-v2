@@ -1,7 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  buyAirtime,
-  buyData,
   cancelSentGiftBill,
   claimGiftBill,
   createGiftBillPaymentLink,
@@ -17,27 +15,21 @@ import {
   getSentGiftBills,
   listGiftBillBeneficiaries,
   listGiftBillPaymentLinks,
-  payElectricityBill,
   payGiftBillPaymentLink,
   revokeGiftBillPaymentLink,
   sendGiftBillSingle,
   sendGiftBillToMultipleRecipients,
-  subscribeCableTv,
   updateGiftBillBeneficiaryNickname,
   verifyCableIuc,
   verifyElectricityMeter,
 } from '@/api/services/bills'
 import type {
-  AirtimePurchaseRequestBody,
   ClaimGiftBillRequestBody,
   CreateGiftBillPaymentLinkRequestBody,
-  DataPurchaseRequestBody,
   GiftBillPaginationParams,
   GiftBillPaymentLinksParams,
-  PayElectricityBillRequestBody,
   SendGiftBillSingleRequestBody,
   SendGiftBillToMultipleRecipientsRequestBody,
-  SubscribeCableTvRequestBody,
   UpdateGiftBillBeneficiaryNicknameRequestBody,
   VerifyCableIucRequestBody,
   VerifyElectricityMeterRequestBody,
@@ -246,18 +238,6 @@ export const useElectricityDiscos = () => {
   })
 }
 
-export const useBuyAirtime = () => {
-  return useMutation({
-    mutationFn: (data: AirtimePurchaseRequestBody) => buyAirtime(data),
-  })
-}
-
-export const useBuyData = () => {
-  return useMutation({
-    mutationFn: (data: DataPurchaseRequestBody) => buyData(data),
-  })
-}
-
 export const useVerifyCableIuc = () => {
   return useMutation({
     mutationFn: (data: VerifyCableIucRequestBody) => verifyCableIuc(data),
@@ -268,17 +248,5 @@ export const useVerifyElectricityMeter = () => {
   return useMutation({
     mutationFn: (data: VerifyElectricityMeterRequestBody) =>
       verifyElectricityMeter(data),
-  })
-}
-
-export const useSubscribeCableTv = () => {
-  return useMutation({
-    mutationFn: (data: SubscribeCableTvRequestBody) => subscribeCableTv(data),
-  })
-}
-
-export const usePayElectricityBill = () => {
-  return useMutation({
-    mutationFn: (data: PayElectricityBillRequestBody) => payElectricityBill(data),
   })
 }

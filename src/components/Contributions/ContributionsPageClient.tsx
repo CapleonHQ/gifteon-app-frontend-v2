@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
 import { useContributions } from '@/hooks/tanstack/contributions'
 import DashboardEmptyState from '@/components/Dashboard/DashboardEmptyState'
@@ -10,8 +10,9 @@ import GiftsListWithActions from '@/components/Gifts/GiftsListWithActions'
 import type { GiftItem } from '@/types/Gifts/'
 import { formatCurrency } from '@/lib/utils/currency'
 import RecentGiftsSkeleton from '@/components/Dashboard/Skeletons/RecentGiftsSkeleton'
-
-const PAGE_SIZE = 20
+import ContributionsHeader from './ContributionsHeader'
+import ContributionsFilterModal from './ContributionsFilterModal'
+import { useContributionsFilters } from './hooks/useContributionsFilters'
 
 const formatGiftDate = (value: string) => {
   const parsed = parseISO(value)
@@ -21,8 +22,9 @@ const formatGiftDate = (value: string) => {
 
 const normalizeGiftStatus = (
   value: string
-): 'Delivered' | 'Fulfilled' | 'Shipped' | 'Not fulfilled' => {
+): 'Delivered' | 'Fulfilled' | 'Claimed' | 'Shipped' | 'Not fulfilled' => {
   const normalized = value.toLowerCase()
+  if (normalized === 'claimed') return 'Claimed'
   if (normalized === 'success' || normalized === 'fulfilled') return 'Fulfilled'
   if (normalized === 'delivered') return 'Delivered'
   if (normalized === 'shipped') return 'Shipped'
@@ -30,11 +32,12 @@ const normalizeGiftStatus = (
 }
 
 const toActionType = (
-  status: GiftItem['status'],
+  rawStatus: string,
   type: string
 ): GiftItem['actionType'] => {
-  if (status === 'Shipped') return 'deliver'
-  if (status !== 'Fulfilled') return undefined
+  const normalized = rawStatus.toLowerCase()
+  if (normalized === 'shipped') return 'deliver'
+  if (normalized !== 'success') return undefined
   return type.toLowerCase().includes('cash') ? 'claim_cash' : 'claim_gift'
 }
 
@@ -49,19 +52,39 @@ const toActionLabel = (
 }
 
 const ContributionsPageClient = () => {
-  const [offset, setOffset] = useState(0)
-  const contributionsQuery = useContributions()
+  const {
+    currentPage,
+    setCurrentPage,
+    queryParams,
+    hasActiveFilters,
+    activeFilterCount,
+    isFilterOpen,
+    setIsFilterOpen,
+    filterValues,
+    handleFilterChange,
+    applyFilters,
+    resetAppliedFilters,
+  } = useContributionsFilters()
+
+  const contributionsQuery = useContributions(queryParams)
+  const contributionsData = contributionsQuery.data?.data
 
   const items = useMemo<GiftItem[]>(() => {
-    return (contributionsQuery.data?.data ?? []).map((item) => {
+    return (contributionsData?.contributions ?? []).map((item) => {
       const status = normalizeGiftStatus(item.status)
-      const actionType = toActionType(status, item.type)
+      const actionType = toActionType(item.status, item.type)
+      const isClaimed = item.status.toLowerCase() === 'claimed'
+      const amountValue = isClaimed
+        ? Number(item.claimedAmount ?? 0)
+        : Number(item.amount)
       return {
         id: item.id,
         name: item.type.toLowerCase() === 'cash' ? 'Cash Gift' : item.giftName,
         type: item.type,
         date: formatGiftDate(item.createdAt),
-        worth: formatCurrency(Number(item.amount), {
+        image:
+          item.imageUrl && item.imageUrl !== 'none' ? item.imageUrl : undefined,
+        worth: formatCurrency(amountValue, {
           currency: item.currency,
           maximumFractionDigits: 0,
         }),
@@ -71,23 +94,28 @@ const ContributionsPageClient = () => {
         actionLabel: toActionLabel(actionType),
       }
     })
-  }, [contributionsQuery.data?.data])
-  const total = items.length
-  const maxOffset = Math.max(total - PAGE_SIZE, 0)
-  const safeOffset = Math.min(offset, maxOffset)
-  const pagedItems = useMemo(
-    () => items.slice(safeOffset, safeOffset + PAGE_SIZE),
-    [items, safeOffset]
-  )
+  }, [contributionsData?.contributions])
 
-  const isLoading = contributionsQuery.isLoading && items.length === 0
+  const total = contributionsData?.total ?? 0
+  const page = contributionsData?.page ?? currentPage
+  const limit = contributionsData?.limit ?? 20
+  const offset = (page - 1) * limit
+  const hasMore = contributionsData?.hasMore ?? false
+
+  const isLoading = contributionsQuery.isLoading
   const hasError =
     (contributionsQuery.isError || contributionsQuery.isRefetchError) &&
     items.length === 0
 
   return (
     <div className='w-full bg-white lg:rounded-[20px] mt-4 lg:mt-0 flex-1 h-full'>
-      <div className='flex flex-col h-full'>
+      <div className='flex flex-col gap-2 lg:gap-0 md:gap-1 h-full'>
+        <ContributionsHeader
+          onFilterClick={() => setIsFilterOpen(true)}
+          totalCount={total}
+          activeFilterCount={activeFilterCount}
+        />
+
         <div className='overflow-x-auto flex-1 min-h-0'>
           {isLoading ? (
             <RecentGiftsSkeleton />
@@ -110,25 +138,29 @@ const ContributionsPageClient = () => {
           ) : items.length === 0 ? (
             <div className='p-6'>
               <DashboardEmptyState
-                message='You have no gifts yet!'
+                message={
+                  hasActiveFilters
+                    ? 'No gifts match these filters.'
+                    : 'You have no gifts yet!'
+                }
                 icon={<EmptyBox />}
               />
             </div>
           ) : (
             <>
-              <GiftsListWithActions items={pagedItems} source='contributions' />
+              <GiftsListWithActions items={items} source='contributions' />
 
-              {total > PAGE_SIZE ? (
+              {total > limit ? (
                 <div className='border-t border-grey-50'>
                   <GiftsPagination
                     total={total}
-                    limit={PAGE_SIZE}
-                    offset={safeOffset}
+                    limit={limit}
+                    offset={offset}
                     onPrevious={() =>
-                      setOffset((prev) => Math.max(0, prev - PAGE_SIZE))
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
                     }
                     onNext={() =>
-                      setOffset((prev) => Math.min(prev + PAGE_SIZE, maxOffset))
+                      setCurrentPage((prev) => (hasMore ? prev + 1 : prev))
                     }
                   />
                 </div>
@@ -137,6 +169,15 @@ const ContributionsPageClient = () => {
           )}
         </div>
       </div>
+
+      <ContributionsFilterModal
+        isOpen={isFilterOpen}
+        values={filterValues}
+        onChange={handleFilterChange}
+        onClose={() => setIsFilterOpen(false)}
+        onReset={resetAppliedFilters}
+        onApply={applyFilters}
+      />
     </div>
   )
 }

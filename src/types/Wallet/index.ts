@@ -107,7 +107,7 @@ export interface WalletTransactionApiItem {
   status: string
   reference: string
   description: string | null
-  metadata: Record<string, unknown> | null
+  metadata: WalletTransactionMetadata | null
   balanceBefore: string
   balanceAfter: string
   createdAt: string
@@ -143,7 +143,7 @@ export type WalletTransaction = {
   source: string
   createdAt: string
   updatedAt: string
-  metadata: Record<string, unknown> | null
+  metadata: WalletTransactionMetadata | null
 }
 
 export type WalletTransactionsData = {
@@ -155,6 +155,48 @@ export type WalletTransactionsData = {
     totalPages: number
   }
 }
+
+type WalletBillTransactionMetadataBase = {
+  billTransactionId: string
+}
+
+export type WalletAirtimeTransactionMetadata =
+  WalletBillTransactionMetadataBase & {
+    type: 'airtime'
+    network: string
+    phoneNumber: string
+  }
+
+export type WalletDataTransactionMetadata = WalletBillTransactionMetadataBase & {
+  type: 'data'
+  network: string
+  phoneNumber: string
+  planCode: string
+}
+
+export type WalletElectricityTransactionMetadata =
+  WalletBillTransactionMetadataBase & {
+    type: 'electricity'
+    provider: string
+    meterNumber: string
+    meterType: string
+    token: string
+    units: string
+  }
+
+export type WalletCableTvTransactionMetadata =
+  WalletBillTransactionMetadataBase & {
+    type: 'cable_tv'
+    provider: string
+    iucNumber: string
+    packageCode: string
+  }
+
+export type WalletTransactionMetadata =
+  | WalletAirtimeTransactionMetadata
+  | WalletDataTransactionMetadata
+  | WalletElectricityTransactionMetadata
+  | WalletCableTvTransactionMetadata
 
 export type WalletWithdrawalStatus = string
 

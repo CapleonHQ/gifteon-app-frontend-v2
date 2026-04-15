@@ -10,6 +10,7 @@ type GiftsHeaderProps = {
   totalCount: number
   searchValue: string
   onSearchChange: (value: string) => void
+  activeFilterCount: number
 }
 
 const GiftsHeader = ({
@@ -17,6 +18,7 @@ const GiftsHeader = ({
   totalCount,
   searchValue,
   onSearchChange,
+  activeFilterCount,
 }: GiftsHeaderProps) => {
   const pageLabel = `${totalCount} ${totalCount === 1 ? 'Page' : 'Pages'}`
 
@@ -52,8 +54,13 @@ const GiftsHeader = ({
           <button
             type='button'
             onClick={onFilterClick}
-            className='flex items-center gap-2 px-4 py-[9px] bg-grey-50/30 border border-grey-50 rounded-[12px] text-sm leading-[18px] text-grey-700 hover:bg-grey-50 transition-colors'
+            className='relative flex items-center gap-2 px-4 py-[9px] bg-grey-50/30 border border-grey-50 rounded-[12px] text-sm leading-[18px] text-grey-700 hover:bg-grey-50 transition-colors'
           >
+            {activeFilterCount > 0 ? (
+              <span className='absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-primary-500 text-white text-[11px] leading-5 text-center font-medium border border-white'>
+                {activeFilterCount}
+              </span>
+            ) : null}
             <span className='text-grey-800 w-4 h-4'>
               <FilterIcon />
             </span>

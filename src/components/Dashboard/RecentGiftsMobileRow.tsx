@@ -1,9 +1,11 @@
 'use client'
 
 import { ChevronDown } from 'lucide-react'
+import Image from 'next/image'
 
 import { giftStatusStyles } from './types'
 import type { GiftItem } from '@/types/Gifts/index'
+import CashIcon from '@/assets/icons/CashIcon'
 
 type RecentGiftsMobileRowProps = {
   item: GiftItem
@@ -18,14 +20,46 @@ const RecentGiftsMobileRow = ({
   onToggle,
   onAction,
 }: RecentGiftsMobileRowProps) => {
+  const isCashGift = item.type.toLowerCase() === 'cash'
+  const imageSrc =
+    typeof item.image === 'string' && item.image.trim() !== ''
+      ? item.image
+      : null
+
   return (
     <div className='p-3'>
       <div className='flex items-center justify-between gap-3'>
         <div className='flex justify-between items-center flex-1 gap-2 min-w-0'>
-          <div className='min-w-0'>
-            <p className='text-sm font-medium text-grey-900 truncate'>
-              {item.name}
-            </p>
+          <div className='min-w-0 flex items-center gap-2'>
+            {isCashGift ? (
+              <div className='w-8 h-8 rounded-[6px] overflow-hidden bg-primary-50 text-primary-700 flex items-center justify-center shrink-0'>
+                <span className='w-4 h-4'>
+                  <CashIcon />
+                </span>
+              </div>
+            ) : (
+              <div className='w-8 h-8 rounded-[6px] overflow-hidden bg-grey-50'>
+                {imageSrc ? (
+                  <Image
+                    src={imageSrc}
+                    alt={item.name}
+                    width={32}
+                    height={32}
+                    className='w-full h-full object-cover'
+                  />
+                ) : null}
+              </div>
+            )}
+            <div className='min-w-0'>
+              <p className='text-sm font-medium text-grey-900 truncate'>
+                {item.name}
+              </p>
+              {item.fromName ? (
+                <p className='text-xs text-grey-500 truncate'>
+                  From {item.fromName}
+                </p>
+              ) : null}
+            </div>
           </div>
           <div className='w-[90px] flex justify-end'>
             <span

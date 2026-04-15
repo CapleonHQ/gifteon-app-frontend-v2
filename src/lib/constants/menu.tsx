@@ -4,14 +4,16 @@ import {
   WalletIcon,
   ProfileIcon,
   StoresIcon,
+  SearchIcon,
 } from '@/assets/icons'
 
 export const MENU_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
+  { href: '/explore', label: 'Explore', icon: SearchIcon },
+  { href: '/stores', label: 'Stores', icon: StoresIcon },
   { href: '/gifts', label: 'Gift Pages & Donations', icon: GiftIcon },
   { href: '/wallet', label: 'Wallet', icon: WalletIcon },
   { href: '/profile', label: 'Profile', icon: ProfileIcon },
-  { href: '/stores', label: 'Stores', icon: StoresIcon },
 ]
 
 export const PAGE_TITLE_ROUTES: Array<{
@@ -25,6 +27,7 @@ export const PAGE_TITLE_ROUTES: Array<{
   { pattern: /^\/contributions$/, title: 'All Gifts' },
 
   { pattern: /^\/dashboard$/, title: 'Dashboard' },
+  { pattern: /^\/explore$/, title: 'Explore' },
   { pattern: /^\/wallet$/, title: 'Wallet' },
   { pattern: /^\/profile$/, title: 'Profile' },
   { pattern: /^\/stores\/bills$/, title: 'Bills & Utilities' },
