@@ -11,6 +11,14 @@ export type PageShareProvider =
   | 'copy_link'
   | 'qr_code'
   | 'other'
+
+export type ClaimGiftRequestItem = {
+  contributionId: string
+}
+
+export type ClaimGiftsRequestBody = {
+  items: ClaimGiftRequestItem[]
+}
 export type PageListApiStatus =
   | 'published'
   | 'draft'

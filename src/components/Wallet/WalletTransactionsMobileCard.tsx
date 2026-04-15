@@ -30,13 +30,18 @@ const WalletTransactionsMobileCard = ({
       <div
         role='button'
         onClick={onToggle}
-        className='w-full flex items-center justify-between gap-5 p-3 text-left'
+        className='w-full flex items-center justify-between gap-3 p-3 text-left'
       >
-        <div className='flex justify-between items-center flex-1 gap-2'>
-          <span className='text-grey-900 font-medium'>{transaction.date}</span>
-          <div className='w-[90px]'>
+        <div className='min-w-0 flex-1 grid grid-cols-[minmax(0,1fr)_auto] gap-3 items-center'>
+          <div className='min-w-0'>
+            <p className='text-grey-900 font-medium truncate'>
+              {transaction.description}
+            </p>
+            <p className='text-sm text-grey-700 mt-0.5'>{transaction.displayAmount}</p>
+          </div>
+          <div className='w-[92px] flex justify-end'>
             <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-sm leading-[133%] tracking-[-2%] font-medium ${
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs leading-[133%] tracking-[-2%] font-medium ${
                 getTransactionStatusStyle(transaction.status)
               }`}
             >
@@ -52,6 +57,10 @@ const WalletTransactionsMobileCard = ({
       </div>
       {isOpen && (
         <div className='mt-3 px-3 pb-3 space-y-2 text-sm text-grey-600'>
+          <div className='flex items-center justify-between'>
+            <span>Date:</span>
+            <span className='text-grey-900 font-medium'>{transaction.date}</span>
+          </div>
           <div className='flex items-center justify-between'>
             <span>Description:</span>
             <span className='text-grey-900 font-medium text-right max-w-[200px] leading-[150%] tracking-[-2%]'>

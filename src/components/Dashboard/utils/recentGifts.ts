@@ -6,7 +6,12 @@ const RECENT_GIFT_STATUS_LABELS: Record<
   DashboardRecentGift['status'],
   GiftItem['status']
 > = {
+  pending: 'Not fulfilled',
   success: 'Fulfilled',
+  claimed: 'Claimed',
+  failed: 'Not fulfilled',
+  refunded: 'Not fulfilled',
+  surplus: 'Not fulfilled',
   delivered: 'Delivered',
   fulfilled: 'Fulfilled',
   shipped: 'Shipped',
@@ -40,17 +45,17 @@ export const mapDashboardRecentGiftItem = (
     status,
     fromName: item.sender,
     actionType:
-      status === 'Shipped'
+      item.status === 'shipped'
         ? 'deliver'
-        : status === 'Fulfilled'
+        : item.status === 'success'
         ? isCashGift
           ? 'claim_cash'
           : 'claim_gift'
         : undefined,
     actionLabel:
-      status === 'Shipped'
+      item.status === 'shipped'
         ? 'Mark as delivered'
-        : status === 'Fulfilled'
+        : item.status === 'success'
         ? 'Claim gift'
         : undefined,
   }

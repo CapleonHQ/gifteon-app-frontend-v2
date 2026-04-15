@@ -2,6 +2,7 @@ import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
 import {
+  ContributionsQueryParams,
   ContributionsListData,
   PageContributionsApiData,
   PageContributionsQueryParams,
@@ -18,11 +19,11 @@ export const getPageContributions = async (
   return resp.data
 }
 
-export const getContributions = async (): Promise<
-  ApiResponse<ContributionsListData>
-> => {
+export const getContributions = async (
+  params?: ContributionsQueryParams
+): Promise<ApiResponse<ContributionsListData>> => {
   const resp: AxiosResponse<ApiResponse<ContributionsListData>> =
-    await apiService.appPrivate.get('/contributions')
+    await apiService.appPrivate.get('/contributions', { params })
   return resp.data
 }
 

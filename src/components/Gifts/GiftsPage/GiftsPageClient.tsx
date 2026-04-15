@@ -42,6 +42,7 @@ const GiftsPageClient = () => {
     offset,
     setOffset,
     hasActiveFilters,
+    activeFilterCount,
     isFilterOpen,
     setIsFilterOpen,
     filterValues,
@@ -178,6 +179,7 @@ const GiftsPageClient = () => {
             totalCount={totalCount}
             searchValue={searchValue}
             onSearchChange={setSearchAndReset}
+            activeFilterCount={activeFilterCount}
           />
 
           <div className='overflow-x-auto flex-1 min-h-0'>

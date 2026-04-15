@@ -22,13 +22,18 @@ export interface DashboardChartData {
   visitTOsharesLineChart: VisitSharePoint[]
   giftDistribution: {
     cash: number
-    store: number
+    wishlist: number
     custom: number
   }
 }
 
 export type DashboardRecentGiftStatus =
+  | 'pending'
   | 'success'
+  | 'claimed'
+  | 'failed'
+  | 'refunded'
+  | 'surplus'
   | 'delivered'
   | 'fulfilled'
   | 'shipped'
@@ -74,4 +79,6 @@ export type SummaryCardItem = {
   meta: string
   icon: ReactNode
   actionLabel?: string
+  onAction?: () => void
+  actionDisabled?: boolean
 }

@@ -2,12 +2,14 @@ import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
 import {
+  ClaimGiftsRequestBody,
   CreatePageData,
   PageDetailsApiData,
   PageShareProvider,
   PagesListApiData,
   PagesQueryParams,
 } from '@/types/Pages'
+import { generateIdempotencyKey } from '@/lib/utils/idempotency'
 
 export const createPageCategory = async (
   data: FormData
@@ -38,14 +40,6 @@ export const getPageById = async (
 ): Promise<ApiResponse<PageDetailsApiData>> => {
   const resp: AxiosResponse<ApiResponse<PageDetailsApiData>> =
     await apiService.appPrivate.get(`/pages/uid/${id}`)
-  return resp.data
-}
-
-export const getPageBySlug = async (
-  slug: string
-): Promise<ApiResponse<object>> => {
-  const resp: AxiosResponse<ApiResponse<object>> =
-    await apiService.appPrivate.get(`/pages/${slug}`)
   return resp.data
 }
 
@@ -81,5 +75,26 @@ export const recordPageShare = async (
 ): Promise<ApiResponse<object>> => {
   const resp: AxiosResponse<ApiResponse<object>> =
     await apiService.appPrivate.post(`/pages/${slug}/share`, { provider })
+  return resp.data
+}
+
+export const claimCashGifts = async (
+  idempotencyKey = generateIdempotencyKey()
+): Promise<ApiResponse<object>> => {
+  const resp: AxiosResponse<ApiResponse<object>> =
+    await apiService.appPrivate.post('/pages/claim/cash-gifts', undefined, {
+      headers: { 'idempotency-key': idempotencyKey },
+    })
+  return resp.data
+}
+
+export const claimGifts = async (
+  data: ClaimGiftsRequestBody,
+  idempotencyKey = generateIdempotencyKey()
+): Promise<ApiResponse<object>> => {
+  const resp: AxiosResponse<ApiResponse<object>> =
+    await apiService.appPrivate.post('/pages/claim', data, {
+      headers: { 'idempotency-key': idempotencyKey },
+    })
   return resp.data
 }
