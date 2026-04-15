@@ -1,6 +1,7 @@
 import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
+import { generateIdempotencyKey } from '@/lib/utils/idempotency'
 import {
   CheckoutPaymentRequestBody,
   CheckoutPaymentResponseData,
@@ -56,7 +57,10 @@ export const checkoutPayment = async (
   authenticated: boolean
 ): Promise<ApiResponse<CheckoutPaymentResponseData>> => {
   const client = authenticated ? apiService.appPrivate : apiService.appPublic
+  const idempotencyKey = generateIdempotencyKey()
   const resp: AxiosResponse<ApiResponse<CheckoutPaymentResponseData>> =
-    await client.post('/payment/checkout', data)
+    await client.post('/payment/checkout', data, {
+      headers: { 'idempotency-key': idempotencyKey },
+    })
   return resp.data
 }

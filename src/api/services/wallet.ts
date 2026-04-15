@@ -1,6 +1,7 @@
 import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
+import { generateIdempotencyKey } from '@/lib/utils/idempotency'
 import {
   TopupRequestBody,
   WalletDetails,
@@ -48,8 +49,11 @@ export const getWalletOverview = async (): Promise<
 export const withdrawFromWallet = async (
   data: WithdrawRequestBody
 ): Promise<ApiResponse<WalletWithdrawalData>> => {
+  const idempotencyKey = generateIdempotencyKey()
   const resp: AxiosResponse<ApiResponse<WalletWithdrawalData>> =
-    await apiService.appPrivate.post('/wallet/withdraw', data)
+    await apiService.appPrivate.post('/wallet/withdraw', data, {
+      headers: { 'idempotency-key': idempotencyKey },
+    })
   return resp.data
 }
 
@@ -66,16 +70,22 @@ export const cancelWalletWithdrawal = async (
 export const topupWalletLocals = async (
   data: TopupRequestBody
 ): Promise<WalletTopupLocalsResponse> => {
+  const idempotencyKey = generateIdempotencyKey()
   const resp: AxiosResponse<WalletTopupLocalsResponse> =
-    await apiService.appPrivate.post('/wallet/topup', data)
+    await apiService.appPrivate.post('/wallet/topup', data, {
+      headers: { 'idempotency-key': idempotencyKey },
+    })
   return resp.data
 }
 
 export const topupWalletInternational = async (
   data: TopupRequestBody
 ): Promise<ApiResponse<Record<string, unknown>>> => {
+  const idempotencyKey = generateIdempotencyKey()
   const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/wallet/topup/international', data)
+    await apiService.appPrivate.post('/wallet/topup/international', data, {
+      headers: { 'idempotency-key': idempotencyKey },
+    })
   return resp.data
 }
 

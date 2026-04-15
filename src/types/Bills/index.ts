@@ -112,21 +112,6 @@ export interface GiftBillBeneficiariesData {
   }
 }
 
-export interface AirtimePurchaseRequestBody {
-  network: string
-  phoneNumber: string
-  amount: number
-  pin?: string
-}
-
-export interface DataPurchaseRequestBody {
-  network: string
-  phoneNumber: string
-  amount: number
-  planCode: string
-  pin?: string
-}
-
 export interface VerifyCableIucRequestBody {
   provider: string
   iucNumber: string
@@ -136,22 +121,6 @@ export interface VerifyElectricityMeterRequestBody {
   meterNumber: string
   meterType: GiftBillMeterType
   plan: string
-}
-
-export interface SubscribeCableTvRequestBody {
-  provider: string
-  iucNumber: string
-  packageCode: string
-  amount: number
-  pin?: string
-}
-
-export interface PayElectricityBillRequestBody {
-  provider?: string
-  meterNumber: string
-  meterType: GiftBillMeterType
-  amount: number
-  pin?: string
 }
 
 export interface AirtimeNetworkItem {

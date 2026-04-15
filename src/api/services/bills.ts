@@ -1,34 +1,39 @@
 import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
+import { generateIdempotencyKey } from '@/lib/utils/idempotency'
 import {
-  AirtimePurchaseRequestBody,
   AirtimeNetworksData,
   CableProviderPackagesData,
   CableProvidersData,
   ClaimGiftBillRequestBody,
   CreateGiftBillPaymentLinkRequestBody,
-  DataPurchaseRequestBody,
   DataNetworkPlansData,
   DataNetworksData,
   ElectricityDiscosData,
   GiftBillBeneficiariesData,
   GiftBillPaginationParams,
   GiftBillPaymentLinksParams,
-  PayElectricityBillRequestBody,
   SendGiftBillSingleRequestBody,
   SendGiftBillToMultipleRecipientsRequestBody,
-  SubscribeCableTvRequestBody,
   UpdateGiftBillBeneficiaryNicknameRequestBody,
   VerifyCableIucRequestBody,
   VerifyElectricityMeterRequestBody,
 } from '@/types/Bills'
 
+const createIdempotencyHeaders = () => ({
+  headers: { 'idempotency-key': generateIdempotencyKey() },
+})
+
 export const createGiftBillPaymentLink = async (
   data: CreateGiftBillPaymentLinkRequestBody
 ): Promise<ApiResponse<Record<string, unknown>>> => {
   const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/gift-bills/payment-links', data)
+    await apiService.appPrivate.post(
+      '/gift-bills/payment-links',
+      data,
+      createIdempotencyHeaders()
+    )
   return resp.data
 }
 
@@ -52,7 +57,11 @@ export const payGiftBillPaymentLink = async (
   paymentLinkToken: string
 ): Promise<ApiResponse<Record<string, unknown>>> => {
   const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPublic.post(`/gift-bills/payment-links/${paymentLinkToken}/pay`)
+    await apiService.appPublic.post(
+      `/gift-bills/payment-links/${paymentLinkToken}/pay`,
+      undefined,
+      createIdempotencyHeaders()
+    )
   return resp.data
 }
 
@@ -79,7 +88,11 @@ export const claimGiftBill = async (
   data: ClaimGiftBillRequestBody
 ): Promise<ApiResponse<Record<string, unknown>>> => {
   const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post(`/gift-bills/${giftBillId}/claim`, data)
+    await apiService.appPrivate.post(
+      `/gift-bills/${giftBillId}/claim`,
+      data,
+      createIdempotencyHeaders()
+    )
   return resp.data
 }
 
@@ -87,7 +100,11 @@ export const sendGiftBillSingle = async (
   data: SendGiftBillSingleRequestBody
 ): Promise<ApiResponse<Record<string, unknown>>> => {
   const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/gift-bills/send/single', data)
+    await apiService.appPrivate.post(
+      '/gift-bills/send/single',
+      data,
+      createIdempotencyHeaders()
+    )
   return resp.data
 }
 
@@ -95,7 +112,11 @@ export const sendGiftBillToMultipleRecipients = async (
   data: SendGiftBillToMultipleRecipientsRequestBody
 ): Promise<ApiResponse<Record<string, unknown>>> => {
   const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/gift-bills/send/multiple-recipients', data)
+    await apiService.appPrivate.post(
+      '/gift-bills/send/multiple-recipients',
+      data,
+      createIdempotencyHeaders()
+    )
   return resp.data
 }
 
@@ -191,22 +212,6 @@ export const getElectricityDiscos = async (): Promise<
   return resp.data
 }
 
-export const buyAirtime = async (
-  data: AirtimePurchaseRequestBody
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/bills/airtime/purchase', data)
-  return resp.data
-}
-
-export const buyData = async (
-  data: DataPurchaseRequestBody
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/bills/data/purchase', data)
-  return resp.data
-}
-
 export const verifyCableIuc = async (
   data: VerifyCableIucRequestBody
 ): Promise<ApiResponse<Record<string, unknown>>> => {
@@ -220,21 +225,5 @@ export const verifyElectricityMeter = async (
 ): Promise<ApiResponse<Record<string, unknown>>> => {
   const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
     await apiService.appPrivate.post('/bills/electricity/verify-meter', data)
-  return resp.data
-}
-
-export const subscribeCableTv = async (
-  data: SubscribeCableTvRequestBody
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/bills/cable/subscribe', data)
-  return resp.data
-}
-
-export const payElectricityBill = async (
-  data: PayElectricityBillRequestBody
-): Promise<ApiResponse<Record<string, unknown>>> => {
-  const resp: AxiosResponse<ApiResponse<Record<string, unknown>>> =
-    await apiService.appPrivate.post('/bills/electricity/pay', data)
   return resp.data
 }
