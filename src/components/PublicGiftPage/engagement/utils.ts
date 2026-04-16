@@ -5,10 +5,7 @@ import type {
 } from '@/types/PublicPages'
 import { formatRelativeTimeOrDate } from '@/lib/utils/dateTime'
 import { formatCurrency } from '@/lib/utils/currency'
-import {
-  readNumber,
-  readString,
-} from '@/lib/utils/parsers'
+import { readNumber, readString } from '@/lib/utils/parsers'
 import type { PublicActivityItem, GiftOption } from './types'
 
 export const DEFAULT_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
@@ -56,7 +53,7 @@ const mapGiftItem = (
     imageUrl: item.imageUrl,
     price: Math.max(0, Number(item.unitPrice)),
     quantity: Math.max(1, Number(item.quantity)),
-    claimed: Math.max(0, Number(item.quantityClaimed)),
+    claimed: Math.max(0, Number(item.quantityGifted)),
     kind,
   }
 }
@@ -74,26 +71,32 @@ export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
 
   const cashGiftItem: GiftOption | null = page.settings?.acceptCashGift
     ? (() => {
-        const coveredAmount = Math.max(0, readNumber(page.settings?.amount) ?? 0)
-        const targetAmount = Math.max(0, readNumber(page.settings?.targetAmount) ?? 0)
+        const coveredAmount = Math.max(
+          0,
+          readNumber(page.settings?.amount) ?? 0
+        )
+        const targetAmount = Math.max(
+          0,
+          readNumber(page.settings?.targetAmount) ?? 0
+        )
         const minimumAmount = Math.max(
           0,
           readNumber(page.settings?.minimumAmount) ?? 0
         )
-      return {
-        id: 'cash-gift',
-        title: 'Cash Gift',
-        subtitle: 'Send cash directly to the celebrant',
-        imageUrl: '',
+        return {
+          id: 'cash-gift',
+          title: 'Cash Gift',
+          subtitle: 'Send cash directly to the celebrant',
+          imageUrl: '',
           price: Math.max(0, amount),
           quantity: 1,
           claimed: 0,
-        kind: 'cash',
-        coveredAmount,
-        targetAmount,
-        minimumAmount,
-      }
-    })()
+          kind: 'cash',
+          coveredAmount,
+          targetAmount,
+          minimumAmount,
+        }
+      })()
     : null
 
   if (cashGiftItem) {
@@ -107,10 +110,7 @@ export const mapActivities = (
   items: PublicPageApiActivity[]
 ): PublicActivityItem[] => {
   const formatActivityMessage = (message: string) => {
-    const sanitized = message
-      .replace(/[{}]+/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
+    const sanitized = message.replace(/[{}]+/g, '').replace(/\s+/g, ' ').trim()
 
     return sanitized.replace(
       /\b([A-Z]{3})\s*([0-9][0-9,]*(?:\.[0-9]+)?)\b/g,
