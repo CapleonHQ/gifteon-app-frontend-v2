@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import PublicGiftPageClient from '@/components/PublicGiftPage/PublicGiftPageClient'
-import type { PublicPageApiData } from '@/api/services/publicPages'
+import type { PublicPageApiData } from '@/types/PublicPages'
 
 type PublicGiftPageProps = {
   params: Promise<{ slug: string }>

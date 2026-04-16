@@ -1,5 +1,5 @@
 import type { RenderTemplateData } from '@/lib/config/templates/types'
-import type { PublicPageApiData } from '@/api/services/publicPages'
+import type { PublicPageApiData } from '@/types/PublicPages'
 
 const DEFAULT_IMAGE = '/assets/images/place-holder-image.jpg'
 const FALLBACK_TITLE = "It's my birthday!"

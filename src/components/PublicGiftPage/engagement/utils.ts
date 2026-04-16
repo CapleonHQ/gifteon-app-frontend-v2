@@ -2,7 +2,7 @@ import type {
   PublicPageApiActivity,
   PublicPageApiData,
   PublicPageApiWishListItem,
-} from '@/api/services/publicPages'
+} from '@/types/PublicPages'
 import { formatRelativeTimeOrDate } from '@/lib/utils/dateTime'
 import { formatCurrency } from '@/lib/utils/currency'
 import {

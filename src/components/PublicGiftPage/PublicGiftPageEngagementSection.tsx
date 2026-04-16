@@ -1,9 +1,9 @@
 'use client'
 
-import { type PublicPageApiData } from '@/api/services/publicPages'
 import { useState } from 'react'
 import { ChevronDownIcon } from '@/assets/icons'
 import SortIcon from '@/assets/icons/SortIcon'
+import { type PublicPageApiData } from '@/types/PublicPages'
 import {
   Select,
   SelectContent,
