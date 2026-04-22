@@ -24,7 +24,6 @@ type BillsBeneficiariesModalProps = {
   onClose: () => void
   onPickBeneficiary: (beneficiary: GiftBillBeneficiary) => void
   activeTab: BillsTabKey
-  sendAsGift: boolean
 }
 
 const BillsBeneficiariesModal = ({
@@ -32,7 +31,6 @@ const BillsBeneficiariesModal = ({
   onClose,
   onPickBeneficiary,
   activeTab,
-  sendAsGift,
 }: BillsBeneficiariesModalProps) => {
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState('')
@@ -55,10 +53,7 @@ const BillsBeneficiariesModal = ({
     const term = search.trim().toLowerCase()
 
     const matchesContext = (beneficiary: GiftBillBeneficiary) => {
-      return (
-        getBeneficiaryIdentifiersForContext(activeTab, sendAsGift, beneficiary)
-          .length > 0
-      )
+      return getBeneficiaryIdentifiersForContext(activeTab, beneficiary).length > 0
     }
 
     const searchable = source.filter(matchesContext)
@@ -67,30 +62,21 @@ const BillsBeneficiariesModal = ({
     return searchable.filter((beneficiary) => {
       const identifiers = getBeneficiaryIdentifiersForContext(
         activeTab,
-        sendAsGift,
         beneficiary
       )
       const searchableValues: string[] = []
       searchableValues.push(...identifiers)
-      searchableValues.push(
-        beneficiary.nickname || '',
-        beneficiary.recipientName || ''
-      )
+      searchableValues.push(beneficiary.nickname || '', beneficiary.recipient || '')
       return searchableValues.join(' ').toLowerCase().includes(term)
     })
-  }, [
-    beneficiariesQuery.data?.data?.beneficiaries,
-    search,
-    activeTab,
-    sendAsGift,
-  ])
+  }, [beneficiariesQuery.data?.data?.beneficiaries, search, activeTab])
 
   const isBusy =
     updateNicknameMutation.isPending || deleteBeneficiaryMutation.isPending
 
   const handleEdit = (beneficiary: GiftBillBeneficiary) => {
     setEditingId(beneficiary.id)
-    setEditingNickname(beneficiary.nickname || beneficiary.recipientName || '')
+    setEditingNickname(beneficiary.nickname || beneficiary.recipient || '')
     setFeedback(null)
   }
 
@@ -186,14 +172,13 @@ const BillsBeneficiariesModal = ({
             beneficiaries.map((beneficiary) => {
               const identifiers = getBeneficiaryIdentifiersForContext(
                 activeTab,
-                sendAsGift,
                 beneficiary
               )
               const primaryIdentifier = identifiers[0] || ''
               const secondaryIdentifier = identifiers[1] || ''
               const displayName =
                 beneficiary.nickname ||
-                beneficiary.recipientName ||
+                beneficiary.recipient ||
                 primaryIdentifier ||
                 secondaryIdentifier ||
                 'Beneficiary'

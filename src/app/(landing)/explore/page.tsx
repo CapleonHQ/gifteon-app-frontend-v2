@@ -3,11 +3,11 @@ import type { Metadata } from 'next'
 import ExplorePage from '@/components/LandingPage/Explore/ExplorePage'
 import { CATEGORY_TABS, PAGE_SIZE } from '@/components/LandingPage/Explore/constants'
 import { normalizeCategoryQuery } from '@/components/LandingPage/Explore/utils'
+import type { ApiResponse } from '@/types/Common'
 import type {
   PublicPagesListApiData,
   PublicPagesQueryParams,
-} from '@/api/services/publicPages'
-import type { ApiResponse } from '@/types/Common'
+} from '@/types/PublicPages'
 
 export const metadata: Metadata = {
   title: 'Explore Gift Pages',

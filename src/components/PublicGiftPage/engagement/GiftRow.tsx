@@ -1,4 +1,3 @@
-import { Checkbox } from '@/components/ui/checkbox'
 import type { GiftOption } from './types'
 import { DEFAULT_GIFT_IMAGE } from './utils'
 import CashIcon from '@/assets/icons/CashIcon'
@@ -10,7 +9,8 @@ type GiftRowProps = {
   isSelected: boolean
   quantity: number
   currency: string
-  onSelect: (checked: boolean) => void
+  onAdd: () => void
+  onRemove: () => void
   onDecrease: () => void
   onIncrease: () => void
 }
@@ -20,7 +20,8 @@ export default function GiftRow({
   isSelected,
   quantity,
   currency,
-  onSelect,
+  onAdd,
+  onRemove,
   onDecrease,
   onIncrease,
 }: GiftRowProps) {
@@ -37,14 +38,8 @@ export default function GiftRow({
   if (isCashGift) {
     return (
       <div className='border-b border-grey-50 px-3 py-2 last:border-b-0 md:pl-4 md:pr-5 md:pt-2 md:pb-3.5'>
-        <div className='min-w-0'>
+        <div className='min-w-0 md:grid md:grid-cols-[minmax(0,1fr)_140px_140px] md:items-center md:gap-4'>
           <div className='flex items-center gap-2 md:gap-3'>
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onSelect}
-              className='size-4 md:size-5 rounded-sm'
-            />
-
             <div className='h-15 md:h-[72px] w-15 md:w-[72px] shrink-0 rounded-[8px] border border-primary-100 bg-primary-50 text-primary-700 flex items-center justify-center'>
               <span className='h-8 w-8 md:h-10 md:w-10'>
                 <CashIcon />
@@ -84,6 +79,51 @@ export default function GiftRow({
               </div>
             </div>
           </div>
+
+          <div className='mt-3 hidden md:flex md:items-center md:justify-center md:gap-2 md:p-3 md:pr-0'>
+            {isSelected ? (
+              <button
+                type='button'
+                onClick={onRemove}
+                className='h-8 rounded-[8px] border border-error-200 bg-error-50 px-3 text-xs font-medium text-error-700 hover:bg-error-100 transition-colors duration-300'
+              >
+                Remove
+              </button>
+            ) : (
+              <button
+                type='button'
+                onClick={onAdd}
+                className='h-8 rounded-[8px] border border-primary-200 bg-primary-50 px-3 text-xs font-medium text-primary-700 hover:bg-primary-100 transition-colors duration-300'
+              >
+                Add cash gift
+              </button>
+            )}
+          </div>
+
+          <div className='mt-3 flex items-center justify-between pl-[70px] pr-1 md:hidden'>
+            {isSelected ? (
+              <button
+                type='button'
+                onClick={onRemove}
+                className='h-8 rounded-[8px] border border-error-200 bg-error-50 px-3 text-xs font-medium text-error-700 hover:bg-error-100 transition-colors duration-300'
+              >
+                Remove
+              </button>
+            ) : (
+              <button
+                type='button'
+                onClick={onAdd}
+                className='h-8 rounded-[8px] border border-primary-200 bg-primary-50 px-3 text-xs font-medium text-primary-700 hover:bg-primary-100 transition-colors duration-300'
+              >
+                Add cash gift
+              </button>
+            )}
+            {isSelected ? (
+              <span className='rounded-full bg-success-50 px-2.5 py-1 text-xs font-medium text-success-700'>
+                Added
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
     )
@@ -93,12 +133,6 @@ export default function GiftRow({
     <div className='border-b border-grey-50 px-3 py-2 last:border-b-0 md:grid md:grid-cols-[minmax(0,1fr)_140px_140px] md:items-center md:gap-4 md:pl-4 md:pr-5 md:pt-2 md:pb-3.5'>
       <div className='min-w-0'>
         <div className='flex items-center gap-2 md:gap-3'>
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={onSelect}
-            className='size-4 md:size-5 rounded-sm'
-          />
-
           <div className='h-15 md:h-[72px] w-15 md:w-[72px] shrink-0'>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -142,51 +176,87 @@ export default function GiftRow({
             maximumFractionDigits: 0,
           })}
         </p>
-        <div className='flex items-center justify-end gap-2'>
+        {isSelected ? (
+          <div className='flex items-center justify-end gap-2'>
+            <button
+              type='button'
+              onClick={onDecrease}
+              className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
+              disabled={quantity <= 1}
+              aria-label={`Decrease ${item.title} quantity`}
+            >
+              <Minus className='size-4' />
+            </button>
+            <span className='w-6 text-center leading-5 text-grey-700'>
+              {quantity}
+            </span>
+            <button
+              type='button'
+              onClick={onIncrease}
+              className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
+              aria-label={`Increase ${item.title} quantity`}
+            >
+              <Plus className='size-4' />
+            </button>
+            <button
+              type='button'
+              onClick={onRemove}
+              className='h-8 rounded-[8px] border border-error-200 bg-error-50 px-2.5 text-xs font-medium text-error-700 hover:bg-error-100 transition-colors duration-300'
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
           <button
             type='button'
-            onClick={onDecrease}
-            className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
-            disabled={quantity <= 1}
-            aria-label={`Decrease ${item.title} quantity`}
+            onClick={onAdd}
+            className='h-8 rounded-[8px] border border-primary-200 bg-primary-50 px-3 text-xs font-medium text-primary-700 hover:bg-primary-100 transition-colors duration-300'
           >
-            <Minus className='size-4' />
+            Add
           </button>
-          <span className='w-6 text-center leading-5 text-grey-700'>
-            {quantity}
-          </span>
-          <button
-            type='button'
-            onClick={onIncrease}
-            className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
-            aria-label={`Increase ${item.title} quantity`}
-          >
-            <Plus className='size-4' />
-          </button>
-        </div>
+        )}
       </div>
 
       <div className='hidden md:flex md:mt-0 md:items-center md:justify-center md:gap-2 md:p-3 md:pr-0'>
-        <button
-          type='button'
-          onClick={onDecrease}
-          className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
-          disabled={quantity <= 1}
-          aria-label={`Decrease ${item.title} quantity`}
-        >
-          <Minus className='size-4' />
-        </button>
-        <span className='w-6 text-center leading-5 text-grey-700'>
-          {quantity}
-        </span>
-        <button
-          type='button'
-          onClick={onIncrease}
-          className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
-          aria-label={`Increase ${item.title} quantity`}
-        >
-          <Plus className='size-4' />
-        </button>
+        {isSelected ? (
+          <>
+            <button
+              type='button'
+              onClick={onDecrease}
+              className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
+              disabled={quantity <= 1}
+              aria-label={`Decrease ${item.title} quantity`}
+            >
+              <Minus className='size-4' />
+            </button>
+            <span className='w-6 text-center leading-5 text-grey-700'>
+              {quantity}
+            </span>
+            <button
+              type='button'
+              onClick={onIncrease}
+              className='h-8 w-8 flex items-center justify-center rounded-[6px] bg-primary-50/60 border border-primary-100 text-primary-500 enabled:hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-300'
+              aria-label={`Increase ${item.title} quantity`}
+            >
+              <Plus className='size-4' />
+            </button>
+            <button
+              type='button'
+              onClick={onRemove}
+              className='h-8 rounded-[8px] border border-error-200 bg-error-50 px-2.5 text-xs font-medium text-error-700 hover:bg-error-100 transition-colors duration-300'
+            >
+              Remove
+            </button>
+          </>
+        ) : (
+          <button
+            type='button'
+            onClick={onAdd}
+            className='h-8 rounded-[8px] border border-primary-200 bg-primary-50 px-3 text-xs font-medium text-primary-700 hover:bg-primary-100 transition-colors duration-300'
+          >
+            Add
+          </button>
+        )}
       </div>
       <p className='hidden md:block mt-0 pl-0 text-center leading-[140%] font-medium text-grey-900'>
         {formatCurrency(item.price, {

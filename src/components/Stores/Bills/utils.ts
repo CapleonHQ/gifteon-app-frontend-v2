@@ -88,37 +88,6 @@ export const mapCablePackageOptions = (
   )
 }
 
-export const extractRecentBeneficiaries = (payload: unknown): string[] => {
-  const root =
-    payload && typeof payload === 'object'
-      ? (payload as Record<string, unknown>)
-      : {}
-  const data =
-    root.data && typeof root.data === 'object'
-      ? (root.data as Record<string, unknown>)
-      : root
-  const rawList = [data.beneficiaries, data.items, data.results, data.data].find(
-    (value) => Array.isArray(value)
-  ) as unknown[] | undefined
-  if (!rawList || rawList.length === 0) return []
-
-  const names = rawList
-    .map((item) => {
-      if (!item || typeof item !== 'object') return ''
-      const record = item as Record<string, unknown>
-      return String(
-        record.nickname ||
-          record.name ||
-          record.recipientName ||
-          record.recipient ||
-          ''
-      ).trim()
-    })
-    .filter(Boolean)
-
-  return Array.from(new Set(names))
-}
-
 export type BeneficiaryRecipientMapping = {
   matchedBy: 'tag' | 'phone' | 'none'
   identifierValue?: string
@@ -126,24 +95,19 @@ export type BeneficiaryRecipientMapping = {
 
 export const getBeneficiaryIdentifiersForContext = (
   activeTab: BillsTabKey,
-  sendAsGift: boolean,
   beneficiary: GiftBillBeneficiary
 ): string[] => {
   const identifiers: string[] = []
-  const tag = (beneficiary.recipientTag || '').replace(/^@+/, '').trim()
-  const phone = (beneficiary.recipientPhone || '').trim()
   const direct = (beneficiary.recipient || '').trim()
-  const isBillTypeMatch = !beneficiary.billType || beneficiary.billType === activeTab
+  const isBillTypeMatch = beneficiary.billType === activeTab
 
   if (activeTab === 'airtime' || activeTab === 'data') {
-    if (phone) identifiers.push(phone)
-    if (sendAsGift && tag) identifiers.push(`@${tag}`)
+    if (isBillTypeMatch && direct) identifiers.push(direct)
     return identifiers
   }
 
   if (activeTab === 'electricity' || activeTab === 'cable_tv') {
     if (isBillTypeMatch && direct) identifiers.push(direct)
-    if (sendAsGift && tag) identifiers.push(`@${tag}`)
   }
 
   return identifiers
@@ -151,14 +115,9 @@ export const getBeneficiaryIdentifiersForContext = (
 
 export const mapBeneficiaryToRecipient = (
   activeTab: BillsTabKey,
-  sendAsGift: boolean,
   beneficiary: GiftBillBeneficiary
 ): BeneficiaryRecipientMapping => {
-  const identifiers = getBeneficiaryIdentifiersForContext(
-    activeTab,
-    sendAsGift,
-    beneficiary
-  )
+  const identifiers = getBeneficiaryIdentifiersForContext(activeTab, beneficiary)
   if (identifiers.length > 0) {
     const selected = identifiers[0]
     return {

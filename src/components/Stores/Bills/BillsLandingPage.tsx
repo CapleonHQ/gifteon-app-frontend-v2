@@ -74,21 +74,6 @@ const BillsLandingPage = () => {
     }))
   }
 
-  const addRecipientCard = () => {
-    setCardsByTab((prev) => ({
-      ...prev,
-      [activeTab]: (() => {
-        const currentCards = prev[activeTab]
-        const lastCard = currentCards[currentCards.length - 1]
-        const nextCard = createRecipientCard()
-        if (lastCard?.senderNote.trim()) {
-          nextCard.senderNote = lastCard.senderNote
-        }
-        return [...currentCards, nextCard]
-      })(),
-    }))
-  }
-
   const removeRecipientCard = (cardId: string) => {
     setCardsByTab((prev) => {
       const list = prev[activeTab]
@@ -511,7 +496,6 @@ const BillsLandingPage = () => {
             isActionBusy={isActionBusy}
             onUpdateCard={updateCard}
             onRemoveRecipientCard={removeRecipientCard}
-            onAddRecipientCard={addRecipientCard}
           />
           <BillsSummaryActions
             totalAmount={totalAmount}

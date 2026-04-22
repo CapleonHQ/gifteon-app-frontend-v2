@@ -6,12 +6,14 @@ import {
   getPublicPageBySlug,
   getPublicPageComments,
   type CreateCommentRequestBody,
-  type PublicPageActivitiesData,
-  type PublicPagesListApiData,
-  type PublicPagesQueryParams,
 } from '@/api/services/publicPages'
 import type { ApiResponse } from '@/types/Common'
 import type { PageCommentsData } from '@/types/Comments'
+import type {
+  PublicPageActivitiesData,
+  PublicPagesListApiData,
+  PublicPagesQueryParams,
+} from '@/types/PublicPages'
 import type { UseQueryOptions } from '@tanstack/react-query'
 
 const DEFAULT_PUBLIC_COMMENTS_LIMIT = 4

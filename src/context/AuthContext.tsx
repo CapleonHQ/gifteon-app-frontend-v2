@@ -104,9 +104,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   })
   const inFlightRef = useRef(false)
   const userRef = useRef<UserProfile | null>(null)
-  const hasShownOfflineStateRef = useRef(
-    typeof window !== 'undefined' && !window.navigator.onLine
-  )
 
   const markOffline = useCallback(() => {
     setIsOffline((prev) => {
@@ -116,7 +113,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return true
     })
-    hasShownOfflineStateRef.current = true
   }, [])
 
   useEffect(() => {
@@ -251,12 +247,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const handleOnline = () => {
-      setIsOffline(false)
-      if (hasShownOfflineStateRef.current) {
-        setConnectivityBanner('online')
-        setConnectivityBannerSession((session) => session + 1)
-      }
-      hasShownOfflineStateRef.current = false
+      setIsOffline((prev) => {
+        if (prev) {
+          setConnectivityBanner('online')
+          setConnectivityBannerSession((session) => session + 1)
+        }
+        return false
+      })
       if (!lastVerifiedAt || !isCacheFresh(lastVerifiedAt)) {
         refreshUser()
       }

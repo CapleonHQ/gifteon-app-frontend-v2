@@ -12,7 +12,6 @@ import {
 import type { BillsTabKey } from '../constants'
 import type { CardValidationIssue, RecipientCard } from '../models'
 import {
-  extractRecentBeneficiaries,
   getBeneficiaryIdentifiersForContext,
   mapBeneficiaryToRecipient,
   mapAirtimeNetworkOptions,
@@ -38,7 +37,6 @@ type BillsBuilderSectionProps = {
     updater: (card: RecipientCard) => RecipientCard
   ) => void
   onRemoveRecipientCard: (cardId: string) => void
-  onAddRecipientCard: () => void
 }
 
 const extractVerifiedCustomerName = (payload: unknown): string | null => {
@@ -64,7 +62,6 @@ const BillsBuilderSection = ({
   isActionBusy,
   onUpdateCard,
   onRemoveRecipientCard,
-  onAddRecipientCard,
 }: BillsBuilderSectionProps) => {
   const [verifyErrorByCard, setVerifyErrorByCard] = useState<
     Record<string, string>
@@ -93,9 +90,6 @@ const BillsBuilderSection = ({
     electricityDiscosQuery.data
   )
   const cableProviderOptions = mapCableProviderOptions(cableProvidersQuery.data)
-  const recentBeneficiaries = extractRecentBeneficiaries(
-    beneficiariesQuery.data
-  )
   const beneficiaries = beneficiariesQuery.data?.data?.beneficiaries ?? []
 
   const clearVerificationState = (cardId: string) => {
@@ -168,22 +162,6 @@ const BillsBuilderSection = ({
     }
   }
 
-  const applyQuickRecipient = (value: string) => {
-    const firstCard = activeCards[0]
-    if (!firstCard) return
-    onUpdateCard(firstCard.id, (current) => ({
-      ...current,
-      identifierValue: value,
-      sendAsGift: value.startsWith('@') ? true : current.sendAsGift,
-      ...(activeTab === 'electricity' || activeTab === 'cable_tv'
-        ? { recipientVerified: false }
-        : {}),
-    }))
-    if (activeTab === 'electricity' || activeTab === 'cable_tv') {
-      clearVerificationState(firstCard.id)
-    }
-  }
-
   const openBeneficiaryPicker = (cardId: string) => {
     setSelectedBeneficiaryCardId(cardId)
     setBeneficiariesModalSession((prev) => prev + 1)
@@ -199,7 +177,6 @@ const BillsBuilderSection = ({
     for (const beneficiary of beneficiaries) {
       const identifiers = getBeneficiaryIdentifiersForContext(
         activeTab,
-        card.sendAsGift,
         beneficiary
       )
       for (const identifier of identifiers) {
@@ -228,28 +205,45 @@ const BillsBuilderSection = ({
   const applyBeneficiaryToCard = (beneficiary: GiftBillBeneficiary) => {
     const targetCardId = selectedBeneficiaryCardId || activeCards[0]?.id
     if (!targetCardId) return
-    const targetCard = activeCards.find((card) => card.id === targetCardId)
-    if (!targetCard) return
+    if (!activeCards.some((card) => card.id === targetCardId)) return
 
-    const mapped = mapBeneficiaryToRecipient(
-      activeTab,
-      targetCard.sendAsGift,
-      beneficiary
-    )
+    const mapped = mapBeneficiaryToRecipient(activeTab, beneficiary)
     const identifier = mapped.identifierValue
     if (mapped.matchedBy === 'none' || !identifier) return
+    const beneficiaryProvider = (beneficiary.provider || '').trim()
+    const shouldApplyNetwork =
+      (activeTab === 'airtime' || activeTab === 'data') &&
+      beneficiaryProvider.length > 0
+
     analytics.trackBillsBeneficiarySelected({
       bill_type: activeTab,
       matched_by: mapped.matchedBy,
     })
 
-    onUpdateCard(targetCardId, (current) => ({
-      ...current,
-      identifierValue: identifier,
-      ...(activeTab === 'electricity' || activeTab === 'cable_tv'
-        ? { recipientVerified: false }
-        : {}),
-    }))
+    onUpdateCard(targetCardId, (current) => {
+      const didNetworkChange =
+        shouldApplyNetwork && current.network !== beneficiaryProvider
+
+      return {
+        ...current,
+        identifierValue: identifier,
+        ...(shouldApplyNetwork
+          ? {
+              network: beneficiaryProvider,
+              ...(activeTab === 'data' && didNetworkChange
+                ? { planCode: '', amount: '' }
+                : {}),
+            }
+          : {}),
+        ...(activeTab === 'electricity' || activeTab === 'cable_tv'
+          ? { recipientVerified: false }
+          : {}),
+      }
+    })
+
+    if (activeTab === 'data' && shouldApplyNetwork) {
+      void plansCatalog.ensureDataPlans(beneficiaryProvider)
+    }
 
     if (activeTab === 'electricity' || activeTab === 'cable_tv') {
       clearVerificationState(targetCardId)
@@ -309,11 +303,7 @@ const BillsBuilderSection = ({
           )
         })}
 
-        {/* <BillsQuickActions
-          recentBeneficiaries={recentBeneficiaries}
-          onAddRecipientCard={onAddRecipientCard}
-          onApplyQuickRecipient={applyQuickRecipient}
-        /> */}
+        {/* <BillsQuickActions /> */}
       </div>
 
       <BillsBeneficiariesModal
@@ -322,12 +312,6 @@ const BillsBuilderSection = ({
         onClose={() => setIsBeneficiariesModalOpen(false)}
         onPickBeneficiary={applyBeneficiaryToCard}
         activeTab={activeTab}
-        sendAsGift={
-          (
-            activeCards.find((card) => card.id === selectedBeneficiaryCardId) ||
-            activeCards[0]
-          )?.sendAsGift || false
-        }
       />
     </section>
   )

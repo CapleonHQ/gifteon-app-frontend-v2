@@ -1,5 +1,5 @@
-import type { PublicPageListApiItem } from '@/api/services/publicPages'
 import type { ExploreCard, ExploreCategory } from '@/types/Explore'
+import type { PublicPageListApiItem } from '@/types/PublicPages'
 
 export const normalizeCategoryQuery = (value: string | null): ExploreCategory => {
   const normalized = (value || '').trim().toLowerCase()

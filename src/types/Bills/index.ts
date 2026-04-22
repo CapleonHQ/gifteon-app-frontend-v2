@@ -92,14 +92,17 @@ export interface UpdateGiftBillBeneficiaryNicknameRequestBody {
 
 export interface GiftBillBeneficiary {
   id: string
-  nickname?: string
-  recipientName?: string
-  recipientTag?: string
-  recipientPhone?: string
-  recipientEmail?: string
-  recipient?: string
-  billType?: GiftBillType
-  provider?: string
+  userId: string
+  billType: GiftBillType
+  provider: string
+  recipient: string
+  nickname: string | null
+  planCode: string | null
+  meterType: GiftBillMeterType | null
+  lastUsedAt: string
+  metadata: Record<string, unknown> | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface GiftBillBeneficiariesData {

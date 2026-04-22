@@ -168,8 +168,13 @@ export default function PublicGiftPageClient({
 
   const safeTemplateId = resolvedTemplateId ?? getTemplateRegistryItem().id
 
-  const handleSelectGift = (giftId: string, checked: boolean) => {
-    setSelectedGiftIds((prev) => ({ ...prev, [giftId]: checked }))
+  const handleAddGift = (giftId: string) => {
+    setSelectedGiftIds((prev) => ({ ...prev, [giftId]: true }))
+    setGiftQuantities((prev) => ({ ...prev, [giftId]: prev[giftId] ?? 1 }))
+  }
+
+  const handleRemoveGift = (giftId: string) => {
+    setSelectedGiftIds((prev) => ({ ...prev, [giftId]: false }))
   }
 
   const handleOpenConfirmation = () => {
@@ -329,7 +334,8 @@ export default function PublicGiftPageClient({
             selectedGiftItems={selectedGiftItems}
             selectedGiftIds={selectedGiftIds}
             giftQuantities={giftQuantities}
-            onSelectGift={handleSelectGift}
+            onAddGift={handleAddGift}
+            onRemoveGift={handleRemoveGift}
             onChangeGiftQuantity={updateGiftQuantity}
             onSendCustomGift={() => setSuccessModalOpen(true)}
             onCheckout={handleOpenConfirmation}
