@@ -17,7 +17,8 @@ type GiftListSectionProps = {
   selectedGiftItems: GiftOption[]
   selectedGiftIds: Record<string, boolean>
   giftQuantities: Record<string, number>
-  onSelectGift: (giftId: string, checked: boolean) => void
+  onAddGift: (giftId: string) => void
+  onRemoveGift: (giftId: string) => void
   onChangeGiftQuantity: (giftId: string, direction: 'inc' | 'dec') => void
   onSendCustomGift: () => void
   onCheckout: () => void
@@ -30,7 +31,8 @@ export default function GiftListSection({
   selectedGiftItems,
   selectedGiftIds,
   giftQuantities,
-  onSelectGift,
+  onAddGift,
+  onRemoveGift,
   onChangeGiftQuantity,
   onSendCustomGift,
   onCheckout,
@@ -45,7 +47,8 @@ export default function GiftListSection({
       item={item}
       isSelected={Boolean(selectedGiftIds[item.id])}
       quantity={giftQuantities[item.id] ?? 1}
-      onSelect={(checked) => onSelectGift(item.id, Boolean(checked))}
+      onAdd={() => onAddGift(item.id)}
+      onRemove={() => onRemoveGift(item.id)}
       onDecrease={() => onChangeGiftQuantity(item.id, 'dec')}
       onIncrease={() => onChangeGiftQuantity(item.id, 'inc')}
       currency={currency}
@@ -58,16 +61,15 @@ export default function GiftListSection({
         {receiverName}&apos;s Gift List
       </h3>
       <p className='mt-1 text-sm leading-5 text-grey-800'>
-        Select the gifts you&apos;d like to purchase
+        Add gifts to your cart, then check out.
       </p>
 
       <div className='mt-4 overflow-hidden rounded-[10px] border border-grey-50 bg-white pb-2 shadow-[0px_10px_18px_-2px_#10192812]'>
         <div className='hidden md:grid grid-cols-[minmax(0,1fr)_140px_140px] gap-3 border-b border-grey-50/40 bg-grey-50/20 pr-5 py-[18px] leading-[125%] font-medium tracking-[-2%] text-grey-700'>
           <div className='pl-4 flex items-center gap-3'>
-            <span className='w-5 h-5' />
             <span>Gift</span>
           </div>
-          <span className='text-center'>Quantity</span>
+          <span className='text-center'>Cart</span>
           <span className='text-center'>Price</span>
         </div>
 
@@ -143,7 +145,7 @@ export default function GiftListSection({
                     <span aria-hidden />
                     <button
                       type='button'
-                      onClick={() => onSelectGift(item.id, false)}
+                      onClick={() => onRemoveGift(item.id)}
                       className='w-3.5 h-3.5 bg-error-50 border-[0.7px] border-white rounded-full text-error-300 hover:text-error-500 shrink-0 flex items-center justify-center'
                       aria-label={`Remove ${item.title}`}
                     >
