@@ -1,6 +1,7 @@
 export { default as ChevronDownIcon } from './ChevronDownIcon'
 export { default as ChevronLeftIcon } from './ChevronLeftIcon'
 export { default as DashboardIcon } from './DashboardIcon'
+export { default as FacebookIcon } from './brand/FacebookIcon'
 export { default as GiftIcon } from './GiftIcon'
 export { default as ImageIcon } from './ImageIcon'
 export { default as InstagramColored } from './InstagramColored'

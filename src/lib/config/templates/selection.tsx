@@ -1,6 +1,6 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import Image from 'next/image'
+import type { TemplateMeta } from './types'
 import {
   InstagramColored,
   LinkedinIcon,
@@ -8,35 +8,35 @@ import {
   ChevronDownIcon,
 } from '../../../assets/icons'
 
-export const TEMPLATES = [
+export const TEMPLATES: TemplateMeta[] = [
   {
-    id: 1,
-    title: 'Template 1',
+    id: 'e6f41b22-1594-42d2-8a93-36d33fd955ad',
+    title: 'Classic Split',
     description: 'Side by side layout',
-    layout: 'template1',
+    layout: 'classicSplit',
   },
   {
-    id: 2,
-    title: 'Template 2',
+    id: '6cba8e4e-87b3-4b9e-ba3d-b97e8b2897e2',
+    title: 'Halo Portrait',
     description: 'Centered circular image',
-    layout: 'template2',
+    layout: 'haloPortrait',
   },
   {
-    id: 3,
-    title: 'Template 3',
+    id: 'b24b6987-e436-4562-a2cf-1907a317d011',
+    title: 'Story Split',
     description: 'Horizontal split view',
-    layout: 'template3',
+    layout: 'storySplit',
   },
   {
-    id: 4,
-    title: 'Template 4',
+    id: 'aaad8ab5-c049-46bf-882e-53b55a502930',
+    title: 'Spotlight Grid',
     description: 'Grid layout',
-    layout: 'template4',
+    layout: 'spotlightGrid',
   },
 ]
 
 // ========== SELECTION TEMPLATES (Scaled for grid view) ==========
-export const Template1Selection = () => (
+export const ClassicSplitSelection = () => (
   <div className='w-full h-full flex flex-col gap-3 relative pb-6 bg-white'>
     {/* Colored Background - scaled down */}
     <div className='absolute top-0 left-0 right-0 h-32 bg-warning-50'></div>
@@ -123,7 +123,7 @@ export const Template1Selection = () => (
   </div>
 )
 
-export const Template2Selection = () => (
+export const HaloPortraitSelection = () => (
   <div className='w-full h-full flex flex-col gap-3 relative pb-6 bg-white'>
     <div className='absolute top-0 left-0 right-0 h-20 bg-warning-50'></div>
 
@@ -204,7 +204,7 @@ export const Template2Selection = () => (
   </div>
 )
 
-export const Template3Selection = () => (
+export const StorySplitSelection = () => (
   <div className='w-full h-full flex flex-col gap-3 relative pb-6 bg-white'>
     <div className='absolute top-[-10px] left-0 right-0 h-20 bg-secondary-100 rounded-full blur-[20px]'></div>
 
@@ -286,7 +286,7 @@ export const Template3Selection = () => (
   </div>
 )
 
-export const Template4Selection = () => (
+export const SpotlightGridSelection = () => (
   <div className='w-full h-full flex flex-col gap-2 relative pb-6 bg-white'>
     <div className='absolute top-0 left-0 right-0 h-full w-1/2 bg-secondary-50 rounded-br-[80px] blur-[20px]'></div>
 

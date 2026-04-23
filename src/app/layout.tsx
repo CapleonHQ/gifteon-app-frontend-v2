@@ -3,6 +3,11 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import degular from '@/assets/fonts/degular'
 import georgia from '@/assets/fonts/georgia'
+import CookieConsentBanner from '@/components/CookieConsent/CookieConsentBanner'
+import PostHogAuthBridge from '@/components/Providers/PostHogAuthBridge'
+import QueryProvider from '@/components/Providers/QueryProvider'
+import { AuthProvider } from '@/context/AuthContext'
+import { SuccessModalProvider } from '@/context/SuccessModalContext'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -59,7 +64,7 @@ export const metadata: Metadata = {
         type: 'image/jpeg',
       },
       {
-        url: '/og-image-square.jpg',
+        url: '/og-image.jpg',
         width: 400,
         height: 400,
         alt: 'Giftseon Logo',
@@ -72,7 +77,7 @@ export const metadata: Metadata = {
     title: "Giftseon - Celebrating Life's Special Moments",
     description:
       'Make every celebration unforgettable. Create beautiful gift collections and unite loved ones for special moments.',
-    images: ['/twitter-image.jpg'],
+    images: ['/og-image.jpg'],
     creator: '@giftseon',
     site: '@giftseon',
   },
@@ -97,13 +102,13 @@ export const metadata: Metadata = {
   category: 'technology',
   classification: 'Gift Collection Platform',
   other: {
-    'theme-color': '[#F97316]',
+    'theme-color': '[#1a1abc]',
     'color-scheme': 'light dark',
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': 'Giftseon',
     'mobile-web-app-capable': 'yes',
-    'msapplication-TileColor': '#F97316',
+    'msapplication-TileColor': '#1a1abc',
     'msapplication-config': '/browserconfig.xml',
   },
   manifest: '/manifest.json',
@@ -133,7 +138,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${degular.variable} ${georgia.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>
+          <AuthProvider>
+            <SuccessModalProvider>
+              <PostHogAuthBridge />
+              {children}
+              <CookieConsentBanner />
+            </SuccessModalProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   )

@@ -4,23 +4,33 @@ import {
   WalletIcon,
   ProfileIcon,
   StoresIcon,
+  SearchIcon,
 } from '@/assets/icons'
 
 export const MENU_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
+  { href: '/explore', label: 'Explore', icon: SearchIcon },
+  { href: '/stores', label: 'Stores', icon: StoresIcon },
   { href: '/gifts', label: 'Gift Pages & Donations', icon: GiftIcon },
   { href: '/wallet', label: 'Wallet', icon: WalletIcon },
   { href: '/profile', label: 'Profile', icon: ProfileIcon },
-  { href: '/stores', label: 'Stores', icon: StoresIcon },
 ]
 
-// Page title configuration
-export const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/gifts': 'Gift Pages & Donations',
-  '/gifts/create-new': 'Create a Gift Page',
-  '/wallet': 'Wallet',
-  '/profile': 'Profile',
-  '/stores': 'Stores',
-  '/settings': 'Settings',
-}
+export const PAGE_TITLE_ROUTES: Array<{
+  pattern: RegExp
+  title: string
+}> = [
+  // Most specific first
+  { pattern: /^\/gifts\/create-new$/, title: 'Create a Gift Page' },
+  { pattern: /^\/gifts\/[^/]+$/, title: 'Gift Page Details' }, // /gifts/:id
+  { pattern: /^\/gifts$/, title: 'Gift Pages & Donations' },
+  { pattern: /^\/contributions$/, title: 'All Gifts' },
+
+  { pattern: /^\/dashboard$/, title: 'Dashboard' },
+  { pattern: /^\/explore$/, title: 'Explore' },
+  { pattern: /^\/wallet$/, title: 'Wallet' },
+  { pattern: /^\/profile$/, title: 'Profile' },
+  { pattern: /^\/stores\/bills$/, title: 'Bills & Utilities' },
+  { pattern: /^\/stores$/, title: 'Stores' },
+  { pattern: /^\/settings$/, title: 'Settings' },
+]

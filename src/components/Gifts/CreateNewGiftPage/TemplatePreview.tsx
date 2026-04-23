@@ -1,9 +1,5 @@
-import {
-  PreviewTemplate1,
-  PreviewTemplate2,
-  PreviewTemplate3,
-  PreviewTemplate4,
-} from '../../../lib/config/templates/preview'
+import { memo } from 'react'
+import { renderPreviewTemplate } from '../../../lib/config/templates/registry'
 import { GiftPageData } from '../../../types/gifts'
 
 const TemplatePreview = ({
@@ -11,24 +7,13 @@ const TemplatePreview = ({
   templateId,
 }: {
   data: GiftPageData
-  templateId: number | null
+  templateId: string | null
 }) => {
-  const renderTemplate = () => {
-    switch (templateId) {
-      case 1:
-        return <PreviewTemplate1 data={data} />
-      case 2:
-        return <PreviewTemplate2 data={data} />
-      case 3:
-        return <PreviewTemplate3 data={data} />
-      case 4:
-        return <PreviewTemplate4 data={data} />
-      default:
-        return <PreviewTemplate1 data={data} />
-    }
-  }
-
-  return <div className='w-full max-w-2xl mx-auto'>{renderTemplate()}</div>
+  return (
+    <div className='w-full max-w-2xl mx-auto'>
+      {renderPreviewTemplate(templateId, { data })}
+    </div>
+  )
 }
 
-export default TemplatePreview
+export default memo(TemplatePreview)
