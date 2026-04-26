@@ -132,14 +132,14 @@ const LoginFormStep = ({
         </motion.button>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
         className='flex items-center justify-center w-full'
       >
         <span className='text-grey-600'>OR</span>
-      </motion.div>
+      </motion.div> */}
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -147,7 +147,7 @@ const LoginFormStep = ({
         transition={{ delay: 0.4 }}
         className='flex flex-col gap-7 w-full max-w-[450px] mx-auto'
       >
-        <SocialAuthButtons onSelect={onSocialLogin} disabled />
+        {/* <SocialAuthButtons onSelect={onSocialLogin} disabled /> */}
 
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Don&apos;t have an account?{' '}

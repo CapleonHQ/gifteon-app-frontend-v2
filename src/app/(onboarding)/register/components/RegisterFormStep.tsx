@@ -305,14 +305,14 @@ const RegisterFormStep = ({
         </motion.button>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
         className='flex items-center justify-center w-full'
       >
         <span className='text-grey-600'>OR</span>
-      </motion.div>
+      </motion.div> */}
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -320,7 +320,7 @@ const RegisterFormStep = ({
         transition={{ delay: 0.4 }}
         className='flex flex-col gap-7 w-full max-w-[450px] mx-auto'
       >
-        <SocialAuthButtons onSelect={onSocialRegister} disabled />
+        {/* <SocialAuthButtons onSelect={onSocialRegister} disabled /> */}
 
         <p className='text-center text-grey-600 sm:text-xl font-medium mb-6'>
           Already have an account?{' '}
