@@ -28,7 +28,7 @@ export const TEMPLATES: TemplateMeta[] = [
     layout: 'storySplit',
   },
   {
-    id: 'aaad8ab5-c049-46bf-882e-53b55a502930',
+    id: '979d2626-ef20-4964-85d4-26f530c2a5a9',
     title: 'Spotlight Grid',
     description: 'Grid layout',
     layout: 'spotlightGrid',

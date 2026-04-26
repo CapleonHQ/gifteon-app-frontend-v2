@@ -3,15 +3,7 @@
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import TemplateSelectionFooter from './TemplateSelectionFooter'
-
-export type CreatePageCategoryOption = {
-  id: string
-  slug: string
-  title: string
-  description: string
-  image: string
-  sourceName: string
-}
+import { type CreatePageCategoryOption } from './utils/categories'
 
 type CategorySelectionProps = {
   categories: CreatePageCategoryOption[]
