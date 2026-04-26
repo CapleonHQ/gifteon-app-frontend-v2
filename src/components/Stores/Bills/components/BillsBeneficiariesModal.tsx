@@ -179,9 +179,7 @@ const BillsBeneficiariesModal = ({
               const displayName =
                 beneficiary.nickname ||
                 beneficiary.recipient ||
-                primaryIdentifier ||
-                secondaryIdentifier ||
-                'Beneficiary'
+                'Unknown beneficiary'
               const detail = [primaryIdentifier, secondaryIdentifier]
                 .filter(Boolean)
                 .join('  •  ')
@@ -255,7 +253,7 @@ const BillsBeneficiariesModal = ({
                             <DropdownMenuItem
                               onClick={() => handleEdit(beneficiary)}
                             >
-                              Edit
+                              Edit label
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               variant='destructive'
