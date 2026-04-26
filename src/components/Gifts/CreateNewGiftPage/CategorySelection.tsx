@@ -1,24 +1,15 @@
 'use client'
 
 import Image from 'next/image'
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import TemplateSelectionFooter from './TemplateSelectionFooter'
-
-export type CreatePageCategoryOption = {
-  id: string
-  slug: string
-  title: string
-  description: string
-  image: string
-  sourceName: string
-}
+import { useCreateGiftCategories } from './hooks/useCreateGiftCategories'
 
 type CategorySelectionProps = {
-  categories: CreatePageCategoryOption[]
+  preselectedCategorySlug?: string | null
   selectedCategoryId: string | null
-  isLoading: boolean
-  isError: boolean
-  onSelectCategory: (categoryId: string) => void
+  onSelectCategory: (categoryId: string, categoryTitle: string) => void
   onContinue: () => void
 }
 
@@ -41,13 +32,24 @@ const LoadingCards = () => (
 )
 
 export default function CategorySelection({
-  categories,
+  preselectedCategorySlug,
   selectedCategoryId,
-  isLoading,
-  isError,
   onSelectCategory,
   onContinue,
 }: CategorySelectionProps) {
+  const { categories, isLoading, isError } = useCreateGiftCategories()
+
+  useEffect(() => {
+    if (!preselectedCategorySlug || selectedCategoryId) return
+
+    const preselectedCategory =
+      categories.find((category) => category.slug === preselectedCategorySlug) ??
+      null
+    if (!preselectedCategory) return
+
+    onSelectCategory(preselectedCategory.id, preselectedCategory.title)
+  }, [categories, onSelectCategory, preselectedCategorySlug, selectedCategoryId])
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -105,7 +107,7 @@ export default function CategorySelection({
               <button
                 key={category.id}
                 type='button'
-                onClick={() => onSelectCategory(category.id)}
+                onClick={() => onSelectCategory(category.id, category.title)}
                 className='group relative rounded-[20px] text-left transition-all'
               >
                 {isSelected ? (

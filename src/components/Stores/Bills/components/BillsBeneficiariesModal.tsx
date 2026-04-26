@@ -53,7 +53,9 @@ const BillsBeneficiariesModal = ({
     const term = search.trim().toLowerCase()
 
     const matchesContext = (beneficiary: GiftBillBeneficiary) => {
-      return getBeneficiaryIdentifiersForContext(activeTab, beneficiary).length > 0
+      return (
+        getBeneficiaryIdentifiersForContext(activeTab, beneficiary).length > 0
+      )
     }
 
     const searchable = source.filter(matchesContext)
@@ -66,7 +68,10 @@ const BillsBeneficiariesModal = ({
       )
       const searchableValues: string[] = []
       searchableValues.push(...identifiers)
-      searchableValues.push(beneficiary.nickname || '', beneficiary.recipient || '')
+      searchableValues.push(
+        beneficiary.nickname || '',
+        beneficiary.recipient || ''
+      )
       return searchableValues.join(' ').toLowerCase().includes(term)
     })
   }, [beneficiariesQuery.data?.data?.beneficiaries, search, activeTab])
@@ -102,6 +107,7 @@ const BillsBeneficiariesModal = ({
 
   const handleDelete = async (beneficiaryId: string) => {
     setFeedback(null)
+
     try {
       await deleteBeneficiaryMutation.mutateAsync(beneficiaryId)
       if (editingId === beneficiaryId) {
@@ -179,9 +185,7 @@ const BillsBeneficiariesModal = ({
               const displayName =
                 beneficiary.nickname ||
                 beneficiary.recipient ||
-                primaryIdentifier ||
-                secondaryIdentifier ||
-                'Beneficiary'
+                'Unknown beneficiary'
               const detail = [primaryIdentifier, secondaryIdentifier]
                 .filter(Boolean)
                 .join('  •  ')
@@ -255,7 +259,7 @@ const BillsBeneficiariesModal = ({
                             <DropdownMenuItem
                               onClick={() => handleEdit(beneficiary)}
                             >
-                              Edit
+                              Edit label
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               variant='destructive'

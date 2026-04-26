@@ -63,25 +63,28 @@ export const TEMPLATE_REGISTRY: TemplateRegistryItem[] = TEMPLATES.map((template
 export const DEFAULT_TEMPLATE_REGISTRY_ITEM = TEMPLATE_REGISTRY[0]
 
 export const getTemplateRegistryItem = (
-  templateId?: string | null
+  templateLayout?: TemplateMeta['layout'] | null
 ): TemplateRegistryItem => {
-  if (!templateId) return DEFAULT_TEMPLATE_REGISTRY_ITEM
-  return (
-    TEMPLATE_REGISTRY.find((template) => template.id === templateId) ??
-    DEFAULT_TEMPLATE_REGISTRY_ITEM
-  )
+  if (!templateLayout) return DEFAULT_TEMPLATE_REGISTRY_ITEM
+
+  return TEMPLATE_REGISTRY.find((template) => template.layout === templateLayout)
+    ?? DEFAULT_TEMPLATE_REGISTRY_ITEM
 }
 
 export const getTemplateSelectionComponent = (layout: TemplateMeta['layout']) => {
   return SELECTION_BY_LAYOUT[layout] ?? DEFAULT_TEMPLATE_REGISTRY_ITEM.selection
 }
 
-export const getTemplatePreviewComponent = (templateId?: string | null) => {
-  return getTemplateRegistryItem(templateId).preview
+export const getTemplatePreviewComponent = (
+  templateLayout?: TemplateMeta['layout'] | null
+) => {
+  return getTemplateRegistryItem(templateLayout).preview
 }
 
-export const getTemplateRenderComponent = (templateId?: string | null) => {
-  return getTemplateRegistryItem(templateId).render
+export const getTemplateRenderComponent = (
+  templateLayout?: TemplateMeta['layout'] | null
+) => {
+  return getTemplateRegistryItem(templateLayout).render
 }
 
 export const renderSelectionTemplate = (layout: TemplateMeta['layout']): ReactNode => {
@@ -90,17 +93,17 @@ export const renderSelectionTemplate = (layout: TemplateMeta['layout']): ReactNo
 }
 
 export const renderPreviewTemplate = (
-  templateId: string | null | undefined,
+  templateLayout: TemplateMeta['layout'] | null | undefined,
   props: PreviewTemplateProps
 ): ReactNode => {
-  const Preview = getTemplatePreviewComponent(templateId)
+  const Preview = getTemplatePreviewComponent(templateLayout)
   return <Preview {...props} />
 }
 
 export const renderRenderTemplate = (
-  templateId: string | null | undefined,
+  templateLayout: TemplateMeta['layout'] | null | undefined,
   props: RenderTemplateProps
 ): ReactNode => {
-  const Render = getTemplateRenderComponent(templateId)
+  const Render = getTemplateRenderComponent(templateLayout)
   return <Render {...props} />
 }

@@ -18,11 +18,13 @@ import type { Step } from './EditingSection'
 import { validateCreateGift, validateCustomizeDraft } from './utils/validation'
 import { buildCreatePageFormData } from './utils/formData'
 import { useCreateGiftPage } from './hooks/useCreateGiftPage'
+import type { TemplateLayout } from '@/lib/config/templates/types'
 
 interface TemplatingEditingProps {
   handleBack: () => void
   onCreated: (link: string) => void
   selectedTemplate: string | null
+  selectedTemplateLayout: TemplateLayout | null
   selectedCategoryId: string | null
 }
 
@@ -30,6 +32,7 @@ const TemplatingEditingContent = ({
   handleBack,
   onCreated,
   selectedTemplate,
+  selectedTemplateLayout,
   selectedCategoryId,
 }: TemplatingEditingProps) => {
   const [customizationOpen, setCustomizationOpen] = useState(true)
@@ -285,7 +288,7 @@ const TemplatingEditingContent = ({
       />
       <DesktopEditingLayout
         customizationOpen={customizationOpen}
-        selectedTemplate={selectedTemplate}
+        selectedTemplateLayout={selectedTemplateLayout}
         onCloseCustomization={() => setCustomizationOpen(false)}
         onSave={handleSave}
         isSaving={isSaving}
@@ -399,7 +402,7 @@ const TemplatingEditingContent = ({
       <MobilePreviewModal
         isOpen={mobilePreviewOpen}
         onClose={() => setMobilePreviewOpen(false)}
-        selectedTemplate={selectedTemplate}
+        selectedTemplateLayout={selectedTemplateLayout}
         showPreview={true}
       />
     </motion.div>

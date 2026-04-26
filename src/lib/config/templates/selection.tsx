@@ -10,30 +10,50 @@ import {
 
 export const TEMPLATES: TemplateMeta[] = [
   {
-    id: 'e6f41b22-1594-42d2-8a93-36d33fd955ad',
     title: 'Classic Split',
     description: 'Side by side layout',
     layout: 'classicSplit',
   },
   {
-    id: '6cba8e4e-87b3-4b9e-ba3d-b97e8b2897e2',
     title: 'Halo Portrait',
     description: 'Centered circular image',
     layout: 'haloPortrait',
   },
   {
-    id: 'b24b6987-e436-4562-a2cf-1907a317d011',
     title: 'Story Split',
     description: 'Horizontal split view',
     layout: 'storySplit',
   },
   {
-    id: 'aaad8ab5-c049-46bf-882e-53b55a502930',
     title: 'Spotlight Grid',
     description: 'Grid layout',
     layout: 'spotlightGrid',
   },
 ]
+
+const normalizeTemplateName = (value?: string | null) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+
+export const getTemplateMetaByName = (
+  name?: string | null
+): TemplateMeta | null => {
+  const normalizedName = normalizeTemplateName(name)
+  if (!normalizedName) return null
+
+  return (
+    TEMPLATES.find(
+      (template) => normalizeTemplateName(template.title) === normalizedName
+    ) ?? null
+  )
+}
+
+export const getTemplateLayoutByName = (
+  name?: string | null
+): TemplateMeta['layout'] | null => {
+  return getTemplateMetaByName(name)?.layout ?? null
+}
 
 // ========== SELECTION TEMPLATES (Scaled for grid view) ==========
 export const ClassicSplitSelection = () => (
