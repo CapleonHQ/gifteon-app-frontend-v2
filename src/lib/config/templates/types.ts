@@ -8,7 +8,14 @@ export type TemplateLayout =
   | 'spotlightGrid'
 
 export type TemplateMeta = {
+  title: string
+  description: string
+  layout: TemplateLayout
+}
+
+export type ApiTemplateOption = {
   id: string
+  name: string
   title: string
   description: string
   layout: TemplateLayout

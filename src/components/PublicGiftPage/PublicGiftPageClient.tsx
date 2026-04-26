@@ -3,11 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Share2 } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import {
-  getTemplateRegistryItem,
-  renderRenderTemplate,
-} from '@/lib/config/templates/registry'
+import { renderRenderTemplate } from '@/lib/config/templates/registry'
 import type { RenderTemplateProps } from '@/lib/config/templates/types'
+import { resolveTemplateLayout } from '@/lib/config/templates/resolver'
 import { usePublicPageBySlug } from '@/hooks/tanstack/publicPage'
 import ShareGiftPageModal from '@/components/Gifts/GiftDetails/ShareGiftPageModal'
 import { normalizePublicPageData } from './pageMapper'
@@ -67,10 +65,10 @@ export default function PublicGiftPageClient({
     () => (pageData ? resolveGiftOptions(pageData) : []),
     [pageData]
   )
-  const resolvedTemplateId = normalizedPage?.templateId
   const resolvedTemplateLayout = useMemo(() => {
-    return getTemplateRegistryItem(resolvedTemplateId).layout
-  }, [resolvedTemplateId])
+    const templateName = pageData?.template?.name
+    return resolveTemplateLayout(templateName)
+  }, [pageData?.template?.name])
   const isTemplate4 = resolvedTemplateLayout === 'spotlightGrid'
   const [isSuccessModalOpen, setSuccessModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
@@ -165,8 +163,6 @@ export default function PublicGiftPageClient({
   if (pageQuery.isError || !pageData || !normalizedPage) {
     return <PublicGiftPageErrorView />
   }
-
-  const safeTemplateId = resolvedTemplateId ?? getTemplateRegistryItem().id
 
   const handleAddGift = (giftId: string) => {
     setSelectedGiftIds((prev) => ({ ...prev, [giftId]: true }))
@@ -291,7 +287,7 @@ export default function PublicGiftPageClient({
   const renderProps: RenderTemplateProps = {
     data: {
       ...normalizedPage,
-      templateId: safeTemplateId,
+      templateId: normalizedPage.templateId || '',
     },
     engagementSection: isTemplate4 ? (
       <PublicGiftPageEngagementSection
@@ -305,7 +301,7 @@ export default function PublicGiftPageClient({
   return (
     <main className='min-h-screen md:bg-primary-50 md:px-4 md:py-8 lg:py-15'>
       <div className='mx-auto max-w-[924px] border border-white bg-white flex flex-col gap-4 lg:gap-7'>
-        {renderRenderTemplate(safeTemplateId, renderProps)}
+        {renderRenderTemplate(resolvedTemplateLayout, renderProps)}
         {isTemplate4 ? (
           <div className='hidden md:block'>{shareButton}</div>
         ) : (

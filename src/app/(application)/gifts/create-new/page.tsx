@@ -1,63 +1,54 @@
 'use client'
 
-import React, { useMemo, useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
-import { getPageCategories } from '@/api/services/pages'
 import { analytics } from '@/lib/analytics/events'
 import CategorySelection from '@/components/Gifts/CreateNewGiftPage/CategorySelection'
 import TemplateSelection from '@/components/Gifts/CreateNewGiftPage/TemplateSelection'
 import TemplatingEditing from '@/components/Gifts/CreateNewGiftPage/TemplatingEditing'
 import SuccessModal from '@/components/Gifts/CreateNewGiftPage/CreateSuccessModal'
-import {
-  extractCategoryOptions,
-  sortCategoryOptions,
-} from '@/components/Gifts/CreateNewGiftPage/utils/categories'
+import type { TemplateLayout } from '@/lib/config/templates/types'
 
 const CreateNewGiftPage = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedCategorySlug = searchParams.get('category')
   const [step, setStep] = useState<'category' | 'template' | 'customize'>(
-    preselectedCategorySlug ? 'template' : 'category'
+    'category'
   )
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null
   )
+  const [selectedCategoryName, setSelectedCategoryName] = useState<
+    string | undefined
+  >(undefined)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [selectedTemplateLayout, setSelectedTemplateLayout] =
+    useState<TemplateLayout | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [giftPageLink, setGiftPageLink] = useState('')
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const categoriesQuery = useQuery({
-    queryKey: ['gift-page-create-categories'],
-    queryFn: () => getPageCategories(),
-  })
-  const categoryOptions = sortCategoryOptions(
-    extractCategoryOptions(categoriesQuery.data)
-  )
-  const preselectedCategory = useMemo(
-    () =>
-      categoryOptions.find((item) => item.slug === preselectedCategorySlug) ??
-      null,
-    [categoryOptions, preselectedCategorySlug]
-  )
-  const effectiveSelectedCategoryId =
-    selectedCategoryId ?? preselectedCategory?.id ?? null
-  const selectedCategory = categoryOptions.find(
-    (item) => item.id === effectiveSelectedCategoryId
-  )
 
-  const handleTemplateSelect = (templateId: string) => {
+  const handleCategorySelect = (categoryId: string, categoryTitle: string) => {
+    setSelectedCategoryId(categoryId)
+    setSelectedCategoryName(categoryTitle)
+  }
+
+  const handleTemplateSelect = (
+    templateId: string,
+    templateLayout: TemplateLayout
+  ) => {
     setSelectedTemplate(templateId)
+    setSelectedTemplateLayout(templateLayout)
     analytics.trackGiftCreateTemplateSelected({
       template_id: templateId,
-      category_id: effectiveSelectedCategoryId,
+      category_id: selectedCategoryId,
     })
   }
 
   const handleContinueFromCategory = () => {
-    if (effectiveSelectedCategoryId) {
+    if (selectedCategoryId) {
       setStep('template')
     }
   }
@@ -80,7 +71,7 @@ const CreateNewGiftPage = () => {
     setGiftPageLink(link)
     setShowSuccessModal(true)
     analytics.trackGiftCreateSucceeded({
-      category_id: effectiveSelectedCategoryId,
+      category_id: selectedCategoryId,
       template_id: selectedTemplate,
     })
     if (redirectTimerRef.current) {
@@ -95,15 +86,10 @@ const CreateNewGiftPage = () => {
     analytics.trackGiftCreateStepViewed({
       step,
       has_preselected_category: Boolean(preselectedCategorySlug),
-      category_id: effectiveSelectedCategoryId,
+      category_id: selectedCategoryId,
       template_id: selectedTemplate,
     })
-  }, [
-    effectiveSelectedCategoryId,
-    preselectedCategorySlug,
-    selectedTemplate,
-    step,
-  ])
+  }, [preselectedCategorySlug, selectedCategoryId, selectedTemplate, step])
 
   useEffect(() => {
     return () => {
@@ -118,11 +104,9 @@ const CreateNewGiftPage = () => {
       <AnimatePresence mode='wait'>
         {step === 'category' && (
           <CategorySelection
-            categories={categoryOptions}
-            selectedCategoryId={effectiveSelectedCategoryId}
-            isLoading={categoriesQuery.isLoading}
-            isError={categoriesQuery.isError}
-            onSelectCategory={setSelectedCategoryId}
+            preselectedCategorySlug={preselectedCategorySlug}
+            selectedCategoryId={selectedCategoryId}
+            onSelectCategory={handleCategorySelect}
             onContinue={handleContinueFromCategory}
           />
         )}
@@ -133,7 +117,7 @@ const CreateNewGiftPage = () => {
             onTemplateSelect={handleTemplateSelect}
             onContinue={handleContinueFromTemplate}
             onBack={handleBackToCategory}
-            selectedCategoryName={selectedCategory?.title}
+            selectedCategoryName={selectedCategoryName}
           />
         )}
 
@@ -142,7 +126,8 @@ const CreateNewGiftPage = () => {
             handleBack={handleBack}
             onCreated={handleCreated}
             selectedTemplate={selectedTemplate}
-            selectedCategoryId={effectiveSelectedCategoryId}
+            selectedTemplateLayout={selectedTemplateLayout}
+            selectedCategoryId={selectedCategoryId}
           />
         )}
       </AnimatePresence>
@@ -151,7 +136,7 @@ const CreateNewGiftPage = () => {
         isOpen={showSuccessModal}
         onClose={() => {
           setShowSuccessModal(false)
-          router.push('/gift-pages')
+          router.push('/gifts')
         }}
         giftPageLink={giftPageLink}
       />

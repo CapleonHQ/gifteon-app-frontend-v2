@@ -4,10 +4,11 @@ import TemplatePreview from './TemplatePreview'
 import EditingSection from './EditingSection'
 import { useGiftPageData } from './CreateGiftContext'
 import type { Step } from './EditingSection'
+import type { TemplateLayout } from '@/lib/config/templates/types'
 
 type DesktopEditingLayoutProps = {
   customizationOpen: boolean
-  selectedTemplate: string | null
+  selectedTemplateLayout: TemplateLayout | null
   onCloseCustomization: () => void
   onSave: () => void
   isSaving?: boolean
@@ -37,7 +38,7 @@ type DesktopEditingLayoutProps = {
 
 const DesktopEditingLayout = ({
   customizationOpen,
-  selectedTemplate,
+  selectedTemplateLayout,
   onCloseCustomization,
   onSave,
   isSaving,
@@ -76,7 +77,7 @@ const DesktopEditingLayout = ({
             {showPreview ? (
               <TemplatePreview
                 data={previewData}
-                templateId={selectedTemplate}
+                templateLayout={selectedTemplateLayout}
               />
             ) : (
               <div className='h-full flex items-center justify-center text-sm text-grey-500'>

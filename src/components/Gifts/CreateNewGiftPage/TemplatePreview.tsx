@@ -1,17 +1,18 @@
 import { memo } from 'react'
 import { renderPreviewTemplate } from '../../../lib/config/templates/registry'
 import { GiftPageData } from '../../../types/gifts'
+import type { TemplateLayout } from '@/lib/config/templates/types'
 
 const TemplatePreview = ({
   data,
-  templateId,
+  templateLayout,
 }: {
   data: GiftPageData
-  templateId: string | null
+  templateLayout: TemplateLayout | null
 }) => {
   return (
     <div className='w-full max-w-2xl mx-auto'>
-      {renderPreviewTemplate(templateId, { data })}
+      {renderPreviewTemplate(templateLayout, { data })}
     </div>
   )
 }

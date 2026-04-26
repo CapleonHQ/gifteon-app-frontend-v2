@@ -1,24 +1,24 @@
-import { TEMPLATES } from './selection'
+import { getTemplateLayoutByName, getTemplateMetaByName, TEMPLATES } from './selection'
 import type { TemplateLayout, TemplateMeta } from './types'
 
 export const DEFAULT_TEMPLATE_LAYOUT: TemplateLayout = 'classicSplit'
 
 export const DEFAULT_TEMPLATE: TemplateMeta = TEMPLATES[0]
 
-export const resolveTemplateById = (
-  templateId?: string | null
+export const resolveTemplateByName = (
+  templateName?: string | null
 ): TemplateMeta => {
-  if (!templateId) return DEFAULT_TEMPLATE
-  return TEMPLATES.find((item) => item.id === templateId) ?? DEFAULT_TEMPLATE
+  if (!templateName) return DEFAULT_TEMPLATE
+  return getTemplateMetaByName(templateName) ?? DEFAULT_TEMPLATE
 }
 
 export const resolveTemplateLayout = (
-  templateId?: string | null
+  templateName?: string | null
 ): TemplateLayout => {
-  return resolveTemplateById(templateId).layout
+  return getTemplateLayoutByName(templateName) ?? DEFAULT_TEMPLATE_LAYOUT
 }
 
-export const isKnownTemplateId = (templateId?: string | null): boolean => {
-  if (!templateId) return false
-  return TEMPLATES.some((item) => item.id === templateId)
+export const isKnownTemplateName = (templateName?: string | null): boolean => {
+  if (!templateName) return false
+  return Boolean(getTemplateMetaByName(templateName))
 }
