@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import ResponsiveModal from './ResponsiveModal'
 import StepHeader from './kycVerificationModal/StepHeader'
@@ -18,6 +19,7 @@ import {
 import { uploadDocument, uploadImage } from '@/api/services/upload'
 import { toApiError } from '@/api/errorHelpers'
 import { analytics } from '@/lib/analytics/events'
+import { useProfile } from '@/hooks/tanstack/account'
 import type { KycStatusItem } from '@/types/Kyc'
 import type { KycRequiredAction, KycStep } from './kycVerificationModal/types'
 
@@ -29,6 +31,7 @@ type KycModalProps = {
 const ENABLE_FACE_VERIFICATION = false
 
 const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
+  const router = useRouter()
   const { openSuccess } = useSuccessModal()
   const [step, setStep] = useState<KycStep>(0)
   const [documentNumber, setDocumentNumber] = useState('')
@@ -44,6 +47,7 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const faceInputRef = useRef<HTMLInputElement>(null)
   const faceScanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const profileQuery = useProfile()
   const kycStatusQuery = useKycStatus(isOpen)
   const submitDocumentMutation = useSubmitKycDocument()
   const submitUtilityBillMutation = useSubmitUtilityBill()
@@ -54,6 +58,20 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
     submitUtilityBillMutation.isPending ||
     submitFaceMutation.isPending
   const isRefreshingStatus = kycStatusQuery.isFetching && !isSubmitting
+  const profile = profileQuery.data?.data
+  const missingProfileFields = [
+    profile?.firstName?.trim() ? null : 'first name',
+    profile?.lastName?.trim() ? null : 'last name',
+    profile?.dateOfBirth ? null : 'date of birth',
+  ].filter((field): field is string => Boolean(field))
+  const hasMissingProfileRequirements =
+    !profileQuery.isLoading && missingProfileFields.length > 0
+  const missingProfileFieldsLabel = missingProfileFields.join(', ')
+  const profileRequirementsMessage = profileQuery.isError
+    ? 'We could not confirm your profile details right now. Please retry from your profile page before continuing with KYC.'
+    : hasMissingProfileRequirements
+    ? `Add your ${missingProfileFieldsLabel} before starting KYC.`
+    : ''
 
   const handleClose = () => {
     if (faceScanTimerRef.current) {
@@ -70,6 +88,11 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
     setFormError('')
     setRefreshStatusMessage('')
     onClose()
+  }
+
+  const handleOpenProfileEdit = () => {
+    handleClose()
+    router.push('/profile?mode=edit')
   }
 
   const handleUtilityBillSelect = (
@@ -236,7 +259,10 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
   }
 
   const actionMeta = getActionMeta()
-  const canSubmitAction = kycStatusQuery.isLoading
+  const canSubmitAction =
+    hasMissingProfileRequirements || profileQuery.isError
+      ? false
+      : kycStatusQuery.isLoading
     ? false
     : requiredAction === 'none'
     ? true
@@ -254,6 +280,11 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
   const handleSubmitAction = async () => {
     setFormError('')
     setRefreshStatusMessage('')
+
+    if (hasMissingProfileRequirements || profileQuery.isError) {
+      handleOpenProfileEdit()
+      return
+    }
 
     if (requiredAction === 'none') {
       handleClose()
@@ -388,7 +419,11 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
 
   const headerTitle =
     step === 0
-      ? kycStatusQuery.isLoading
+      ? profileQuery.isError
+        ? 'Profile details unavailable'
+        : hasMissingProfileRequirements
+        ? 'Complete your profile first'
+        : kycStatusQuery.isLoading
         ? 'Setting up your verification'
         : requiredAction === 'none'
         ? 'Verification up to date'
@@ -396,7 +431,11 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
       : actionMeta.title
   const headerSubtitle =
     step === 0
-      ? kycStatusQuery.isLoading
+      ? profileQuery.isError
+        ? 'We need your profile details before KYC can continue.'
+        : hasMissingProfileRequirements
+        ? 'Add your names and date of birth to continue with verification.'
+        : kycStatusQuery.isLoading
         ? 'We are checking your current KYC level.'
         : requiredAction === 'none'
         ? 'No additional information is required right now.'
@@ -427,6 +466,17 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
         ? 'Scanning...'
         : 'Submit Face Verification'
       : actionMeta.primaryLabel
+  const stepZeroPrimaryLabel =
+    hasMissingProfileRequirements || profileQuery.isError
+      ? 'Update Profile'
+      : 'Continue'
+  const handleNextStep = () => {
+    if (hasMissingProfileRequirements || profileQuery.isError) {
+      handleOpenProfileEdit()
+      return
+    }
+    setStep(1)
+  }
 
   return (
     <ResponsiveModal
@@ -449,6 +499,7 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
             <IntroStepBody
               action={requiredAction}
               isLoadingStatus={kycStatusQuery.isLoading}
+              profileRequirementsMessage={profileRequirementsMessage}
             />
           ) : null}
           {step === 1 ? (
@@ -494,8 +545,9 @@ const KycVerificationModal = ({ isOpen, onClose }: KycModalProps) => {
           isUploading={isUploading}
           isRefreshingStatus={isRefreshingStatus}
           primaryLabel={primaryLabel}
+          stepZeroPrimaryLabel={stepZeroPrimaryLabel}
           onClose={handleClose}
-          onNext={() => setStep(1)}
+          onNext={handleNextStep}
           onBack={() => setStep(0)}
           onSubmit={handleSubmitAction}
         />
