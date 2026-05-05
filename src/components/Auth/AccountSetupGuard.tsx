@@ -13,14 +13,14 @@ const AccountSetupGuard = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!user) return
-    const needsSetup = !user.pinActivated
+    const needsSetup = !user.passwordActivated || !user.pinActivated
     if (!needsSetup || pathname === ACCOUNT_SETUP_PATH) return
     router.replace(ACCOUNT_SETUP_PATH)
   }, [pathname, router, user])
 
   if (!user) return <>{children}</>
 
-  const needsSetup = !user.pinActivated
+  const needsSetup = !user.passwordActivated || !user.pinActivated
   if (needsSetup && pathname !== ACCOUNT_SETUP_PATH) {
     return (
       <div className='w-full h-screen flex items-center justify-center bg-grey-50'>

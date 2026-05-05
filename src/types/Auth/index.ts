@@ -17,6 +17,17 @@ export interface ResendVerificationRequestBody {
   email: string
 }
 
+export interface RequestResetPasswordOtpRequestBody {
+  email: string
+  purpose: 'reset-password'
+}
+
+export interface ResetPasswordRequestBody {
+  email: string
+  newPassword: string
+  otp: string
+}
+
 export interface LoginRequestBody {
   email: string
   password?: string

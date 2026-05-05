@@ -1,6 +1,14 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ClipboardEvent,
+  type KeyboardEvent,
+} from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   useProfile,
@@ -12,13 +20,18 @@ import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
 import ResponsiveModal from '@/components/common/ResponsiveModal'
 import SuccessModal from '@/components/common/SuccessModal'
+import OtpInputs from '@/app/(onboarding)/components/OtpInputs'
 import { getAuthTokenIssuedAt } from '@/api/token'
 import {
   INITIAL_SETUP_WINDOW_MS,
-  sanitizeOtp,
   sanitizePin,
   STRONG_PASSWORD_REGEX,
 } from '@/lib/utils/security'
+
+const OTP_RESEND_WINDOW_SECONDS = 60
+
+type SetupPurpose = 'set-password' | 'set-pin'
+type SetupViewStep = 'request-otp' | 'complete'
 
 const AccountSetupPage = () => {
   const router = useRouter()
@@ -28,8 +41,8 @@ const AccountSetupPage = () => {
   const requestOtpMutation = useRequestAccountOtp()
   const setPasswordMutation = useSetPassword()
   const setPinMutation = useSetPin()
-  const requestedPurposeRef = useRef<'change-password' | 'change-pin' | null>(null)
-  const [otp, setOtp] = useState('')
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [pin, setPin] = useState('')
@@ -42,9 +55,8 @@ const AccountSetupPage = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [isCompletingSetup, setIsCompletingSetup] = useState(false)
   const [successStage, setSuccessStage] = useState<'password' | 'pin' | null>(null)
-  const [otpRequestedFor, setOtpRequestedFor] = useState<
-    'change-password' | 'change-pin' | null
-  >(null)
+  const [otpRequestedFor, setOtpRequestedFor] = useState<SetupPurpose | null>(null)
+  const [otpCountdown, setOtpCountdown] = useState(0)
   const [setupEntryTimestamp] = useState(() => Date.now())
   const profile = profileQuery.data?.data
 
@@ -57,14 +69,15 @@ const AccountSetupPage = () => {
     return requested
   }, [searchParams])
 
-  const currentPurpose =
+  const currentPurpose: SetupPurpose | null =
     !profile || profileQuery.isLoading
       ? null
-      : !profile.pinActivated
-      ? 'change-pin'
       : !profile.passwordActivated
-      ? 'change-password'
+      ? 'set-password'
+      : !profile.pinActivated
+      ? 'set-pin'
       : null
+
   const tokenIssuedAt = getAuthTokenIssuedAt()
   const canBypassOtp = (() => {
     if (!tokenIssuedAt) return false
@@ -72,8 +85,25 @@ const AccountSetupPage = () => {
     if (Number.isNaN(issuedAtMs)) return false
     return setupEntryTimestamp - issuedAtMs < INITIAL_SETUP_WINDOW_MS
   })()
+
   const requiresOtp = Boolean(currentPurpose) && !canBypassOtp
   const hasRequestedOtp = currentPurpose !== null && otpRequestedFor === currentPurpose
+  const currentStep: SetupViewStep =
+    requiresOtp && !hasRequestedOtp ? 'request-otp' : 'complete'
+  const isPasswordStep = currentPurpose === 'set-password'
+  const isSetupRequired =
+    profile?.passwordActivated === false || profile?.pinActivated === false
+  const needsPinAfterPassword = profile?.pinActivated === false
+  const isResolvingSetup =
+    status === 'checking' || profileQuery.isLoading || (status === 'authenticated' && !profile)
+
+  useEffect(() => {
+    if (otpCountdown <= 0) return
+    const timer = window.setTimeout(() => {
+      setOtpCountdown((current) => Math.max(0, current - 1))
+    }, 1000)
+    return () => window.clearTimeout(timer)
+  }, [otpCountdown])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -89,50 +119,104 @@ const AccountSetupPage = () => {
     }
   }, [nextPath, profile, router, successStage])
 
-  const handleResendOtp = async () => {
-    if (!currentPurpose || !requiresOtp) return
-    try {
-      setErrorMessage('')
-      setOtpError('')
-      setPasswordError('')
-      setConfirmPasswordError('')
-      setPinError('')
-      setConfirmPinError('')
-      requestedPurposeRef.current = currentPurpose
-      await requestOtpMutation.mutateAsync({ purpose: currentPurpose })
-      setOtp('')
-      setOtpRequestedFor(currentPurpose)
-    } catch (error: unknown) {
-      requestedPurposeRef.current = null
-      setErrorMessage(
-        toApiError(error).message || 'Unable to resend OTP right now.'
-      )
+  useEffect(() => {
+    if (currentStep === 'complete' && requiresOtp) {
+      otpInputRefs.current[0]?.focus()
     }
-  }
+  }, [currentStep, requiresOtp])
 
-  const handleSubmit = async () => {
-    if (!currentPurpose) return
+  const clearErrors = () => {
+    setErrorMessage('')
     setOtpError('')
     setPasswordError('')
     setConfirmPasswordError('')
     setPinError('')
     setConfirmPinError('')
+  }
 
-    if (requiresOtp && !hasRequestedOtp) {
-      setErrorMessage('Request an OTP to continue with setup.')
-      return
+  const resetOtpState = () => {
+    setOtp(['', '', '', '', '', ''])
+    setOtpError('')
+  }
+
+  const handleRequestOtp = async () => {
+    if (!currentPurpose || !requiresOtp || otpCountdown > 0) return
+    try {
+      clearErrors()
+      await requestOtpMutation.mutateAsync({ purpose: currentPurpose })
+      resetOtpState()
+      setOtpRequestedFor(currentPurpose)
+      setOtpCountdown(OTP_RESEND_WINDOW_SECONDS)
+    } catch (error: unknown) {
+      setErrorMessage(
+        toApiError(error).message || 'Unable to request an OTP right now.'
+      )
     }
-    if (requiresOtp && otp.length !== 6) {
+  }
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) return
+    if (otpError) setOtpError('')
+    if (errorMessage) setErrorMessage('')
+    const nextOtp = [...otp]
+    nextOtp[index] = value.replace(/\D/g, '')
+    setOtp(nextOtp)
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus()
+    }
+  }
+
+  const handleOtpPaste = (event: ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    if (otpError) setOtpError('')
+    if (errorMessage) setErrorMessage('')
+    const pastedData = event.clipboardData.getData('text').replace(/\D/g, '')
+    if (pastedData.length === 6) {
+      const nextOtp = pastedData.split('').slice(0, 6)
+      setOtp(nextOtp)
+      otpInputRefs.current[5]?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (
+    index: number,
+    event: KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (otpError) setOtpError('')
+    if (errorMessage) setErrorMessage('')
+    const { key } = event
+    if (key === 'Backspace') {
+      if (otp[index] === '' && index > 0) {
+        const nextOtp = [...otp]
+        nextOtp[index - 1] = ''
+        setOtp(nextOtp)
+        otpInputRefs.current[index - 1]?.focus()
+      } else {
+        const nextOtp = [...otp]
+        nextOtp[index] = ''
+        setOtp(nextOtp)
+      }
+    } else if (key === 'ArrowLeft' && index > 0) {
+      otpInputRefs.current[index - 1]?.focus()
+    } else if (key === 'ArrowRight' && index < 5) {
+      otpInputRefs.current[index + 1]?.focus()
+    }
+  }
+
+  const handleSubmit = async () => {
+    if (!currentPurpose) return
+    clearErrors()
+
+    if (requiresOtp && !otp.every((digit) => digit !== '')) {
       setOtpError('Enter the 6-digit OTP sent to your email.')
       return
     }
 
     try {
       setErrorMessage('')
-      setOtpError('')
       const submittedPurpose = currentPurpose
 
-      if (submittedPurpose === 'change-password') {
+      if (submittedPurpose === 'set-password') {
         if (!STRONG_PASSWORD_REGEX.test(password)) {
           setPasswordError(
             'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
@@ -145,7 +229,7 @@ const AccountSetupPage = () => {
         }
 
         await setPasswordMutation.mutateAsync({
-          otp: requiresOtp ? otp : undefined,
+          otp: requiresOtp ? otp.join('') : undefined,
           password,
         })
         setPassword('')
@@ -168,19 +252,20 @@ const AccountSetupPage = () => {
         }
 
         await setPinMutation.mutateAsync({
-          otp: requiresOtp ? otp : undefined,
+          otp: requiresOtp ? otp.join('') : undefined,
           pin,
         })
         setPin('')
         setConfirmPin('')
       }
 
+      const nextSuccessStage = submittedPurpose === 'set-password' ? 'password' : 'pin'
       setIsCompletingSetup(true)
-      setOtp('')
-      requestedPurposeRef.current = null
+      setSuccessStage(nextSuccessStage)
+      resetOtpState()
+      setOtpRequestedFor(null)
       await refreshUser()
       setIsCompletingSetup(false)
-      setSuccessStage(submittedPurpose === 'change-password' ? 'password' : 'pin')
     } catch (error: unknown) {
       setIsCompletingSetup(false)
       setErrorMessage(
@@ -197,49 +282,86 @@ const AccountSetupPage = () => {
     setPasswordMutation.isPending ||
     setPinMutation.isPending
 
-  const isPasswordStep = currentPurpose === 'change-password'
-  const isPinRequired = profile?.pinActivated === false
+  const otpButtonLabel =
+    otpCountdown > 0
+      ? `Request OTP again in ${otpCountdown}s`
+      : hasRequestedOtp
+      ? 'Request OTP Again'
+      : 'Request OTP'
+
   const handleCloseSuccess = () => {
     if (successStage === 'password') {
       setSuccessStage(null)
-      requestedPurposeRef.current = null
       setOtpRequestedFor(null)
+      resetOtpState()
       return
     }
 
     setSuccessStage(null)
     router.replace(nextPath)
   }
+
   const handleCloseSetup = () => {
-    if (isPinRequired) return
+    if (isSetupRequired) return
     router.replace(nextPath)
   }
-  const modalBody = (
+
+  const renderLoadingStep = () => (
+    <div className='flex flex-col items-center justify-center gap-4 py-8 text-center'>
+      <span className='h-10 w-10 rounded-full border-2 border-primary-500 border-t-transparent animate-spin' />
+      <p className='text-sm text-grey-600'>Checking your setup requirements...</p>
+    </div>
+  )
+
+  const renderRequestOtpStep = () => (
+    <div className='space-y-6 py-2'>
+      <div className='space-y-2 text-center'>
+        <p className='text-sm text-grey-600'>
+          Request a one-time code to continue setting up your account.
+        </p>
+      </div>
+
+      <button
+        type='button'
+        onClick={handleRequestOtp}
+        disabled={requestOtpMutation.isPending || otpCountdown > 0 || !currentPurpose}
+        className='w-full rounded-[12px] border border-primary-500 bg-linear-to-r from-primary-400 to-primary-600 px-4 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60'
+      >
+        {requestOtpMutation.isPending ? (
+          <span className='inline-flex items-center justify-center gap-2'>
+            <span className='h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin' />
+            <span>Sending OTP...</span>
+          </span>
+        ) : (
+          'Request OTP'
+        )}
+      </button>
+
+      {otpCountdown > 0 ? (
+        <p className='text-center text-sm text-grey-600'>
+          {`Request OTP again in ${otpCountdown}s`}
+        </p>
+      ) : null}
+
+      {errorMessage ? <p className='text-sm text-error-500'>{errorMessage}</p> : null}
+    </div>
+  )
+
+  const renderCompleteStep = () => (
     <div className='space-y-5'>
       {requiresOtp ? (
-        <label className='flex flex-col gap-2'>
+        <div className='flex flex-col gap-2'>
           <span className='text-sm font-medium text-grey-900'>OTP</span>
-          <input
-            type='text'
-            inputMode='numeric'
-            autoComplete='one-time-code'
-            value={otp}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              setOtp(sanitizeOtp(event.target.value))
-              if (otpError) setOtpError('')
-              if (errorMessage) setErrorMessage('')
-            }}
-            placeholder='Enter 6-digit OTP'
-            className='w-full rounded-[12px] border border-grey-100 px-4 py-3 text-blackish outline-none transition focus:border-primary-400 focus:ring-1 focus:ring-primary-400'
+          <OtpInputs
+            otp={otp}
+            inputRefs={otpInputRefs}
+            onChange={handleOtpChange}
+            onKeyDown={handleOtpKeyDown}
+            onPaste={handleOtpPaste}
           />
           {otpError ? <p className='text-sm text-error-500'>{otpError}</p> : null}
-        </label>
-      ) : (
-        <p className='text-sm text-grey-600'>
-          You are still within the secure setup window. You can complete this step
-          without requesting an OTP.
-        </p>
-      )}
+        </div>
+      ) : null}
 
       {isPasswordStep ? (
         <>
@@ -249,7 +371,7 @@ const AccountSetupPage = () => {
               type='password'
               autoComplete='new-password'
               value={password}
-              onChange={(event) => {
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setPassword(event.target.value)
                 if (passwordError) setPasswordError('')
                 if (errorMessage) setErrorMessage('')
@@ -267,7 +389,7 @@ const AccountSetupPage = () => {
               type='password'
               autoComplete='new-password'
               value={confirmPassword}
-              onChange={(event) => {
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setConfirmPassword(event.target.value)
                 if (confirmPasswordError) setConfirmPasswordError('')
                 if (errorMessage) setErrorMessage('')
@@ -289,7 +411,7 @@ const AccountSetupPage = () => {
               inputMode='numeric'
               autoComplete='off'
               value={pin}
-              onChange={(event) => {
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setPin(sanitizePin(event.target.value))
                 if (pinError) setPinError('')
                 if (errorMessage) setErrorMessage('')
@@ -306,7 +428,7 @@ const AccountSetupPage = () => {
               inputMode='numeric'
               autoComplete='off'
               value={confirmPin}
-              onChange={(event) => {
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setConfirmPin(sanitizePin(event.target.value))
                 if (confirmPinError) setConfirmPinError('')
                 if (errorMessage) setErrorMessage('')
@@ -325,31 +447,55 @@ const AccountSetupPage = () => {
     </div>
   )
 
-  const modalFooter = (
-    <div className='space-y-3'>
-      <button
-        type='button'
-        onClick={handleSubmit}
-        disabled={isLoading || !currentPurpose}
-        className='w-full rounded-[12px] border border-primary-500 bg-linear-to-r from-primary-400 to-primary-600 px-4 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60'
-      >
-        {isLoading
-          ? 'Please wait...'
-          : isPasswordStep
-          ? 'Create Password'
-          : 'Create PIN'}
-      </button>
+  const modalTitle =
+    isResolvingSetup
+      ? 'Preparing your setup'
+      : currentStep === 'request-otp'
+      ? 'Verify it’s you'
+      : isPasswordStep
+      ? 'Create your password'
+      : 'Create your transaction PIN'
 
-      <button
-        type='button'
-        onClick={handleResendOtp}
-        disabled={requestOtpMutation.isPending || !currentPurpose || !requiresOtp}
-        className='w-full text-sm font-medium text-primary-500 underline underline-offset-2 disabled:opacity-50'
-      >
-        {hasRequestedOtp ? 'Resend OTP' : 'Request OTP'}
-      </button>
-    </div>
-  )
+  const modalFooter =
+    isResolvingSetup || currentStep === 'request-otp' ? null : (
+      <div className='space-y-3'>
+        <button
+          type='button'
+          onClick={handleSubmit}
+          disabled={isLoading || !currentPurpose}
+          className='w-full rounded-[12px] border border-primary-500 bg-linear-to-r from-primary-400 to-primary-600 px-4 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60'
+        >
+          {isLoading ? (
+            <span className='inline-flex items-center justify-center gap-2'>
+              <span className='h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin' />
+              <span>Please wait...</span>
+            </span>
+          ) : isPasswordStep ? (
+            'Create Password'
+          ) : (
+            'Create PIN'
+          )}
+        </button>
+
+        {requiresOtp ? (
+          <button
+            type='button'
+            onClick={handleRequestOtp}
+            disabled={requestOtpMutation.isPending || otpCountdown > 0}
+            className='w-full text-sm font-medium text-primary-500 underline underline-offset-2 disabled:opacity-50'
+          >
+            {requestOtpMutation.isPending ? (
+              <span className='inline-flex items-center gap-2'>
+                <span className='h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin' />
+                <span>Sending OTP...</span>
+              </span>
+            ) : (
+              otpButtonLabel
+            )}
+          </button>
+        ) : null}
+      </div>
+    )
 
   return (
     <>
@@ -364,18 +510,17 @@ const AccountSetupPage = () => {
               Account Setup
             </p>
             <h1 className='text-3xl font-semibold leading-tight text-blackish sm:text-4xl'>
-              {isPasswordStep
-                ? 'Create your password'
-                : 'Create your transaction PIN'}
+              {modalTitle}
             </h1>
-            <p className='text-sm leading-6 text-grey-600 sm:text-base'>
-              {isPasswordStep
-                ? 'We sent a one-time code to your registered email. Enter it below and create your password to continue.'
-                : 'We sent a one-time code to your registered email. Enter it below and create your 4-digit PIN to continue.'}
-            </p>
           </div>
         }
-        body={modalBody}
+        body={
+          isResolvingSetup
+            ? renderLoadingStep()
+            : currentStep === 'request-otp'
+            ? renderRequestOtpStep()
+            : renderCompleteStep()
+        }
         footer={modalFooter}
         desktopPanelClassName='max-h-[88vh]'
         mobilePanelClassName='rounded-t-[24px]'
@@ -386,7 +531,9 @@ const AccountSetupPage = () => {
         title={successStage === 'password' ? 'Password Created' : 'PIN Created'}
         message={
           successStage === 'password'
-            ? 'Your password has been set successfully. Continue to create your transaction PIN.'
+            ? needsPinAfterPassword
+              ? 'Your password has been set successfully. Continue to create your transaction PIN.'
+              : 'Your password has been set successfully.'
             : 'Your transaction PIN has been set successfully.'
         }
       />

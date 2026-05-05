@@ -78,6 +78,18 @@ const AccountPinSection = ({
     setPinErrors({})
   }
 
+  const handleStartPasswordEdit = () => {
+    handleCancelPin()
+    setIsEditingPassword(true)
+    setPasswordErrors({})
+  }
+
+  const handleStartPinEdit = () => {
+    handleCancelPassword()
+    setIsEditingPin(true)
+    setPinErrors({})
+  }
+
   const handleSavePassword = async () => {
     const nextErrors: {
       currentPassword?: string
@@ -220,18 +232,20 @@ const AccountPinSection = ({
                   disabled={changePasswordMutation.isPending}
                   className='rounded-[8px] bg-primary-50 text-primary-500 px-3 py-1.5 text-sm leading-[18px] hover:bg-primary-100 transition-colors min-w-[126px] disabled:opacity-60'
                 >
-                  {changePasswordMutation.isPending
-                    ? 'Saving...'
-                    : 'Save Changes'}
+                  {changePasswordMutation.isPending ? (
+                    <span className='inline-flex items-center gap-2'>
+                      <span className='h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin' />
+                      <span>Saving...</span>
+                    </span>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             ) : (
               <button
                 type='button'
-                onClick={() => {
-                  setIsEditingPassword(true)
-                  setPasswordErrors({})
-                }}
+                onClick={handleStartPasswordEdit}
                 className='rounded-[8px] bg-primary-50 text-primary-500 px-3 py-1.5 text-sm leading-[18px] hover:bg-primary-100 transition-colors min-w-[126px]'
               >
                 <span className='hidden md:block'>Change Password</span>
@@ -351,9 +365,14 @@ const AccountPinSection = ({
                 disabled={changePasswordMutation.isPending}
                 className='flex-1 py-3 rounded-[10px] bg-linear-to-b from-primary-400 from-[17.5%] to-primary-600 border border-primary-500 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed'
               >
-                {changePasswordMutation.isPending
-                  ? 'Saving...'
-                  : 'Save Changes'}
+                {changePasswordMutation.isPending ? (
+                  <span className='inline-flex items-center justify-center gap-2'>
+                    <span className='h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin' />
+                    <span>Saving...</span>
+                  </span>
+                ) : (
+                  'Save Changes'
+                )}
               </button>
             </div>
           ) : null}
@@ -392,16 +411,20 @@ const AccountPinSection = ({
                   disabled={changePinMutation.isPending}
                   className='rounded-[8px] bg-primary-50 text-primary-500 px-3 py-1.5 text-sm leading-[18px] hover:bg-primary-100 transition-colors min-w-[106px] disabled:opacity-60'
                 >
-                  {changePinMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  {changePinMutation.isPending ? (
+                    <span className='inline-flex items-center gap-2'>
+                      <span className='h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin' />
+                      <span>Saving...</span>
+                    </span>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             ) : (
               <button
                 type='button'
-                onClick={() => {
-                  setIsEditingPin(true)
-                  setPinErrors({})
-                }}
+                onClick={handleStartPinEdit}
                 className='rounded-[8px] bg-primary-50 text-primary-500 px-3 py-1.5 text-sm leading-[18px] hover:bg-primary-100 transition-colors min-w-[106px]'
               >
                 Change PIN
@@ -504,7 +527,14 @@ const AccountPinSection = ({
                 disabled={changePinMutation.isPending}
                 className='flex-1 py-3 rounded-[10px] bg-linear-to-b from-primary-400 from-[17.5%] to-primary-600 border border-primary-500 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed'
               >
-                {changePinMutation.isPending ? 'Saving...' : 'Save Changes'}
+                {changePinMutation.isPending ? (
+                  <span className='inline-flex items-center justify-center gap-2'>
+                    <span className='h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin' />
+                    <span>Saving...</span>
+                  </span>
+                ) : (
+                  'Save Changes'
+                )}
               </button>
             </div>
           ) : null}

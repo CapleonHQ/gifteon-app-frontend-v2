@@ -17,7 +17,7 @@ import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
 import { analytics } from '@/lib/analytics/events'
 
-type LoginStep = 'email' | 'password' | 'verification' | 'magic-link'
+type LoginStep = 'email' | 'password' | 'verification'
 
 const LoginPage = () => {
   const router = useRouter()
@@ -49,6 +49,9 @@ const LoginPage = () => {
   const registerHref = requestedNextPath
     ? `/register?next=${encodeURIComponent(requestedNextPath)}`
     : '/register'
+  const resetPasswordHref = email
+    ? `/reset-password?email=${encodeURIComponent(email)}`
+    : '/reset-password'
 
   useEffect(() => {
     if (currentStep === 'verification' && countdown > 0) {
@@ -174,17 +177,11 @@ const LoginPage = () => {
 
     try {
       analytics.trackAuthLoginSubmitted({ method: 'email' })
-      const resp = await loginUser({ email })
-      const loginType = resp.data?.type?.toLowerCase()
-
-      if (loginType === 'otp') {
-        setOtp(['', '', '', '', '', ''])
-        setCountdown(59)
-        setCanResend(false)
-        setCurrentStep('verification')
-      } else {
-        setCurrentStep('magic-link')
-      }
+      await loginUser({ email })
+      setOtp(['', '', '', '', '', ''])
+      setCountdown(59)
+      setCanResend(false)
+      setCurrentStep('verification')
     } catch (error: unknown) {
       const apiError = toApiError(error)
       analytics.trackAuthLoginFailed({
@@ -307,11 +304,6 @@ const LoginPage = () => {
     setError('')
   }
 
-  const handleBackToSignInOptions = () => {
-    setCurrentStep('password')
-    setError('')
-  }
-
   const handleDismissError = () => {
     setError('')
   }
@@ -334,6 +326,7 @@ const LoginPage = () => {
             isValidEmail={isValidEmail}
             isPasswordStep={currentStep === 'password'}
             registerHref={registerHref}
+            resetPasswordHref={resetPasswordHref}
             onEmailChange={handleEmailChange}
             onPasswordChange={handlePasswordChange}
             onContinue={handleContinue}
@@ -362,27 +355,6 @@ const LoginPage = () => {
             onChangeEmail={handleChangeEmailFromOtp}
             onDismissError={handleDismissError}
           />
-        )
-      case 'magic-link':
-        return (
-          <div className='flex flex-col gap-5 items-center w-full text-center'>
-            <div className='w-full max-w-[450px] space-y-4'>
-              <h2 className='text-[32px] sm:text-[40px] leading-[130%] font-semibold text-blackish'>
-                Check your email
-              </h2>
-              <p className='text-grey-600 sm:text-xl leading-[140%]'>
-                We sent a sign-in link to {maskedEmail}. Open it to continue to
-                your account.
-              </p>
-              <button
-                type='button'
-                onClick={handleBackToSignInOptions}
-                className='text-sm font-medium text-primary-500 underline underline-offset-2'
-              >
-                Back to sign in options
-              </button>
-            </div>
-          </div>
         )
       default:
         return null

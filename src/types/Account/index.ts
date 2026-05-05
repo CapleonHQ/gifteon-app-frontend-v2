@@ -47,7 +47,7 @@ export interface ChangePinRequestBody {
   newPin: string
 }
 
-export type AccountOtpPurpose = 'change-pin' | 'change-password'
+export type AccountOtpPurpose = 'set-pin' | 'set-password' | 'reset-password'
 
 export interface RequestAccountOtpRequestBody {
   purpose: AccountOtpPurpose

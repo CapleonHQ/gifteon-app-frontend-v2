@@ -15,6 +15,7 @@ type LoginFormStepProps = {
   isValidEmail: boolean
   isPasswordStep: boolean
   registerHref?: string
+  resetPasswordHref?: string
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void
   onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void
   onContinue: (event: SyntheticEvent) => void
@@ -34,6 +35,7 @@ const LoginFormStep = ({
   isValidEmail,
   isPasswordStep,
   registerHref = '/register',
+  resetPasswordHref = '/reset-password',
   onEmailChange,
   onPasswordChange,
   onContinue,
@@ -155,6 +157,15 @@ const LoginFormStep = ({
                   </motion.p>
                 ) : null}
               </AnimatePresence>
+            </div>
+
+            <div className='flex justify-end'>
+              <Link
+                href={resetPasswordHref}
+                className='text-sm font-medium text-primary-500 underline underline-offset-2 transition-colors hover:text-primary-600'
+              >
+                Forgot password?
+              </Link>
             </div>
 
             <motion.button
