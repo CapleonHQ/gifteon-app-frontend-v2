@@ -31,7 +31,9 @@ const WalletPageClient = () => {
   const pendingWithdrawalsQuery = useWalletWithdrawals({ page: 1, limit: 20 })
 
   const walletDetails = detailsQuery.data?.data
-  const availableBalance = parseWalletBalance(walletDetails?.balance)
+  const totalBalance = parseWalletBalance(walletDetails?.balance)
+  const withdrawableBalance = parseWalletBalance(walletDetails?.withdrawableBalance)
+  const receivedBalance = parseWalletBalance(walletDetails?.receivedBalance)
   const totalReceived = parseWalletBalance(walletDetails?.totalReceived)
   const totalWithdrawn = parseWalletBalance(walletDetails?.totalWithdrawn)
   const currency = walletDetails?.currency || 'USD'
@@ -67,7 +69,12 @@ const WalletPageClient = () => {
           <WalletSummarySkeleton />
         ) : (
           <WalletSummarySection
-            availableBalance={formatCurrency(availableBalance, {
+            availableBalance={formatCurrency(totalBalance, {
+              currency,
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            receivedBalance={formatCurrency(receivedBalance, {
               currency,
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -107,7 +114,7 @@ const WalletPageClient = () => {
       <WalletWithdrawModal
         isOpen={isWithdrawOpen}
         onClose={() => setIsWithdrawOpen(false)}
-        availableBalance={availableBalance}
+        availableBalance={withdrawableBalance}
         currency={currency}
         bankAccounts={bankAccounts}
         defaultBankId={defaultBankId}
