@@ -6,7 +6,7 @@ import Header from '@/components/LandingPage/Layout/Header'
 import Footer from '@/components/LandingPage/Layout/Footer'
 import ApplicationShell from '@/components/Layout/ApplicationShell'
 import OfflineBanner from '@/components/Layout/OfflineBanner'
-import ApplicationPinGuard from '@/components/Dashboard/ApplicationPinGuard'
+import AccountSetupGuard from '@/components/Auth/AccountSetupGuard'
 import { MobileBackProvider } from '@/components/Layout/MobileTitleContext'
 import { resolvePageTitle } from '@/lib/utils/pageTitle'
 import { useAuth } from '@/context/AuthContext'
@@ -24,15 +24,14 @@ const LandingPageLayout = ({
 
   if (isAuthenticatedExplore) {
     return (
-      <>
-        <MobileBackProvider>
+      <MobileBackProvider>
+        <AccountSetupGuard>
           <ApplicationShell pageTitle={pageTitle}>
             <OfflineBanner />
             {children}
           </ApplicationShell>
-        </MobileBackProvider>
-        <ApplicationPinGuard />
-      </>
+        </AccountSetupGuard>
+      </MobileBackProvider>
     )
   }
 

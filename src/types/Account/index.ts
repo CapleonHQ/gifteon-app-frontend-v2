@@ -34,15 +34,33 @@ export interface UserProfile {
   createdAt: string
   updatedAt: string
   pinActivated: boolean
+  passwordActivated: boolean
 }
 
 export interface SetPinRequestBody {
   pin: string
+  otp?: string
 }
 
 export interface ChangePinRequestBody {
   oldPin: string
   newPin: string
+}
+
+export type AccountOtpPurpose = 'change-pin' | 'change-password'
+
+export interface RequestAccountOtpRequestBody {
+  purpose: AccountOtpPurpose
+}
+
+export interface SetPasswordRequestBody {
+  password: string
+  otp?: string
+}
+
+export interface ChangePasswordRequestBody {
+  oldPassword: string
+  newPassword: string
 }
 
 export interface VerifyTagRequestBody {

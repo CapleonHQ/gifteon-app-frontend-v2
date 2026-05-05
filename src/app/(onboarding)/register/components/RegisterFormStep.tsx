@@ -4,7 +4,6 @@ import type { ChangeEvent, SyntheticEvent } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import FormErrorAlert from '../../components/FormErrorAlert'
-import SocialAuthButtons from '../../components/SocialAuthButtons'
 import {
   Select,
   SelectContent,
@@ -18,10 +17,14 @@ type RegisterFormStepProps = {
   firstName: string
   lastName: string
   email: string
+  password: string
+  confirmPassword: string
   referralCode: string
   country: string
   gender: 'male' | 'female' | ''
   emailError: string
+  passwordError: string
+  confirmPasswordError: string
   error: string
   isLoading: boolean
   isFormValid: boolean
@@ -29,22 +32,27 @@ type RegisterFormStepProps = {
   onFirstNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onLastNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void
+  onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void
+  onConfirmPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void
   onReferralCodeChange: (event: ChangeEvent<HTMLInputElement>) => void
   onCountryChange: (country: string) => void
   onGenderChange: (gender: 'male' | 'female') => void
   onRegister: (event: SyntheticEvent) => void
   onDismissError: () => void
-  onSocialRegister: (provider: 'google' | 'apple') => void
 }
 
 const RegisterFormStep = ({
   firstName,
   lastName,
   email,
+  password,
+  confirmPassword,
   referralCode,
   country,
   gender,
   emailError,
+  passwordError,
+  confirmPasswordError,
   error,
   isLoading,
   isFormValid,
@@ -52,12 +60,13 @@ const RegisterFormStep = ({
   onFirstNameChange,
   onLastNameChange,
   onEmailChange,
+  onPasswordChange,
+  onConfirmPasswordChange,
   onReferralCodeChange,
   onCountryChange,
   onGenderChange,
   onRegister,
   onDismissError,
-  onSocialRegister,
 }: RegisterFormStepProps) => {
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -115,6 +124,8 @@ const RegisterFormStep = ({
           <input
             type='text'
             id='firstName'
+            name='given-name'
+            autoComplete='given-name'
             value={firstName}
             onChange={onFirstNameChange}
             placeholder='Enter your first name'
@@ -133,6 +144,8 @@ const RegisterFormStep = ({
           <input
             type='text'
             id='lastName'
+            name='family-name'
+            autoComplete='family-name'
             value={lastName}
             onChange={onLastNameChange}
             placeholder='Enter your last name'
@@ -151,6 +164,8 @@ const RegisterFormStep = ({
           <input
             type='email'
             id='email'
+            name='email'
+            autoComplete='email'
             value={email}
             onChange={onEmailChange}
             placeholder='Enter your email address'
@@ -172,6 +187,78 @@ const RegisterFormStep = ({
                 {emailError}
               </motion.p>
             )}
+          </AnimatePresence>
+        </div>
+
+        <div className='flex flex-col gap-1'>
+          <label
+            htmlFor='password'
+            className='text-sm font-medium leading-[145%] text-grey-900'
+          >
+            Password
+          </label>
+          <input
+            type='password'
+            id='password'
+            name='password'
+            autoComplete='new-password'
+            value={password}
+            onChange={onPasswordChange}
+            placeholder='Create a password'
+            className={`w-full text-sm px-3 py-3.5 border rounded-[12px] outline-none focus:ring-1 transition-all duration-200 text-blackish placeholder-grey-400 ${
+              passwordError
+                ? 'border-error-500 focus:ring-error-500 focus:border-transparent'
+                : 'border-grey-50 focus:ring-primary-500 focus:border-transparent'
+            }`}
+            required
+          />
+          <AnimatePresence>
+            {passwordError ? (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className='text-error-500 text-xs mt-1 overflow-hidden'
+              >
+                {passwordError}
+              </motion.p>
+            ) : null}
+          </AnimatePresence>
+        </div>
+
+        <div className='flex flex-col gap-1'>
+          <label
+            htmlFor='confirmPassword'
+            className='text-sm font-medium leading-[145%] text-grey-900'
+          >
+            Confirm Password
+          </label>
+          <input
+            type='password'
+            id='confirmPassword'
+            name='confirm-password'
+            autoComplete='new-password'
+            value={confirmPassword}
+            onChange={onConfirmPasswordChange}
+            placeholder='Confirm your password'
+            className={`w-full text-sm px-3 py-3.5 border rounded-[12px] outline-none focus:ring-1 transition-all duration-200 text-blackish placeholder-grey-400 ${
+              confirmPasswordError
+                ? 'border-error-500 focus:ring-error-500 focus:border-transparent'
+                : 'border-grey-50 focus:ring-primary-500 focus:border-transparent'
+            }`}
+            required
+          />
+          <AnimatePresence>
+            {confirmPasswordError ? (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className='text-error-500 text-xs mt-1 overflow-hidden'
+              >
+                {confirmPasswordError}
+              </motion.p>
+            ) : null}
           </AnimatePresence>
         </div>
 

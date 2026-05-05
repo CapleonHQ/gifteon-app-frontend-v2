@@ -174,8 +174,23 @@ const parseFieldErrors = (data: unknown): NormalizedApiError['fieldErrors'] => {
       ? (source.data as Record<string, unknown>)
       : undefined
   const errors = source.errors ?? source.fieldErrors ?? nestedData?.errors
-  if (!errors || typeof errors !== 'object') return undefined
+  if (!errors) return undefined
   const fieldErrors: Record<string, string[]> = {}
+  if (Array.isArray(errors)) {
+    for (const item of errors) {
+      if (!item || typeof item !== 'object') continue
+      const field = typeof (item as Record<string, unknown>).field === 'string'
+        ? (item as Record<string, unknown>).field
+        : undefined
+      const message = typeof (item as Record<string, unknown>).message === 'string'
+        ? (item as Record<string, unknown>).message
+        : undefined
+      if (!field || !message) continue
+      fieldErrors[field] = [...(fieldErrors[field] ?? []), message]
+    }
+    return Object.keys(fieldErrors).length ? fieldErrors : undefined
+  }
+  if (typeof errors !== 'object') return undefined
   for (const [key, value] of Object.entries(errors)) {
     if (Array.isArray(value)) {
       fieldErrors[key] = value.map(String)
@@ -184,6 +199,19 @@ const parseFieldErrors = (data: unknown): NormalizedApiError['fieldErrors'] => {
     }
   }
   return Object.keys(fieldErrors).length ? fieldErrors : undefined
+}
+
+const firstArrayErrorMessage = (data: unknown): string | undefined => {
+  if (!data || typeof data !== 'object') return undefined
+  const source = data as Record<string, unknown>
+  const errors = source.errors
+  if (!Array.isArray(errors)) return undefined
+  for (const item of errors) {
+    if (!item || typeof item !== 'object') continue
+    const message = (item as Record<string, unknown>).message
+    if (typeof message === 'string' && message.trim()) return message
+  }
+  return undefined
 }
 
 export const normalizeApiError = (error: unknown): NormalizedApiError => {
@@ -200,12 +228,19 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
     const serviceKey = resolveServiceKey(error.config?.url)
     const serviceMessage = resolveServiceMessage(serviceKey, code)
 
-    const message =
+    const rawMessage =
+      firstArrayErrorMessage(data) ||
       (typeof data?.message === 'string' ? data.message : undefined) ||
       (typeof data?.error === 'string' ? data.error : undefined) ||
       (typeof data?.statusMessage === 'string' ? data.statusMessage : undefined) ||
       serviceMessage ||
       fallbackMessageFor(code)
+
+    const message =
+      code === 'RATE_LIMITED' ||
+      rawMessage.toLowerCase().includes('throttlerexception')
+        ? 'Too many attempts. Please wait a moment and try again.'
+        : rawMessage
 
     const requestId =
       error.response?.headers?.['x-request-id'] ||

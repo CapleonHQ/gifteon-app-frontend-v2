@@ -102,5 +102,5 @@ export const paymentMethodsSeed: PaymentMethod[] = [
 export const tabs = [
   { id: 'personal', label: 'Personal Information' },
   { id: 'notifications', label: 'Notifications' },
-  { id: 'pin', label: 'Account PIN' },
+  { id: 'pin', label: 'Security' },
 ] as const

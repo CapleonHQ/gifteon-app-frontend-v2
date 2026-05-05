@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence } from 'framer-motion'
 import OnboardingLogo from '../components/OnboardingLogo'
@@ -8,7 +8,7 @@ import MagicLinkError from './components/MagicLinkError'
 import MagicLinkLoading from './components/MagicLinkLoading'
 import RegisterSuccessStep from '../register/components/RegisterSuccessStep'
 import { verifyMagicLink } from '@/api/services/auth'
-import { setAccessToken, setRefreshToken } from '@/api/token'
+import { setAccessToken, setAuthTokenIssuedAt, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
 import { analytics } from '@/lib/analytics/events'
@@ -22,6 +22,15 @@ const MagicLinkVerifyContent = () => {
   const [verificationState, setVerificationState] =
     useState<VerificationState>('loading')
   const [errorMessage, setErrorMessage] = useState('')
+
+  const resolvePostAuthPath = useCallback(() => {
+    const requestedNextPath = searchParams.get('next')
+    if (!requestedNextPath) return '/dashboard'
+    if (!requestedNextPath.startsWith('/')) return '/dashboard'
+    if (requestedNextPath.startsWith('//')) return '/dashboard'
+    if (requestedNextPath.startsWith('/login')) return '/dashboard'
+    return requestedNextPath
+  }, [searchParams])
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -48,13 +57,16 @@ const MagicLinkVerifyContent = () => {
         if (resp.refreshToken) {
           setRefreshToken(resp.refreshToken)
         }
+        if (resp.tokenIssuedAt) {
+          setAuthTokenIssuedAt(resp.tokenIssuedAt)
+        }
         await refreshUser()
         analytics.trackMagicLinkVerificationSucceeded({ action })
 
         if (action === 'register') {
           setVerificationState('success')
         } else {
-          router.push('/dashboard')
+          router.push(resolvePostAuthPath())
         }
       } catch (error: unknown) {
         const apiError = toApiError(error)
@@ -76,7 +88,7 @@ const MagicLinkVerifyContent = () => {
     }
 
     verifyToken()
-  }, [searchParams, router, refreshUser])
+  }, [resolvePostAuthPath, searchParams, router, refreshUser])
 
   const renderCurrentState = () => {
     switch (verificationState) {
@@ -84,7 +96,7 @@ const MagicLinkVerifyContent = () => {
         return <MagicLinkLoading />
       case 'success':
         return (
-          <RegisterSuccessStep onProceed={() => router.push('/dashboard')} />
+          <RegisterSuccessStep onProceed={() => router.push(resolvePostAuthPath())} />
         )
       case 'error':
         return <MagicLinkError message={errorMessage} />
