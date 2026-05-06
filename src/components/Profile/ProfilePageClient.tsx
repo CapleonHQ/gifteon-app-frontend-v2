@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import ProfileHeader from '@/components/Profile/ProfileHeader'
@@ -44,6 +45,7 @@ const normalizeTag = (value: string) => value.trim().replace(/^@+/, '').toLowerC
 const normalizeInterestValue = (value: string) => value.trim().toLowerCase()
 
 const ProfilePageClient = () => {
+  const router = useRouter()
   const { openSuccess } = useSuccessModal()
   const { refreshUser } = useAuth()
   const [activeTab, setActiveTab] = useState<ProfileTabId>('personal')
@@ -588,11 +590,10 @@ const ProfilePageClient = () => {
 
             {activeTab === 'pin' && (
               <AccountPinSection
+                passwordActivated={profileData?.passwordActivated ?? false}
                 pinActivated={profileData?.pinActivated ?? false}
-                onRequestSetPin={() => {
-                  if (typeof window === 'undefined') return
-                  window.dispatchEvent(new Event('open-transaction-pin-modal'))
-                }}
+                onRequestSetPassword={() => router.push('/account-setup')}
+                onRequestSetPin={() => router.push('/account-setup')}
               />
             )}
           </div>

@@ -17,15 +17,32 @@ export interface ResendVerificationRequestBody {
   email: string
 }
 
+export interface RequestResetPasswordOtpRequestBody {
+  email: string
+  purpose: 'reset-password'
+}
+
+export interface ResetPasswordRequestBody {
+  email: string
+  newPassword: string
+  otp: string
+}
+
 export interface LoginRequestBody {
   email: string
+  password?: string
 }
 
 export interface LoginResponse {
-  success: boolean
+  status?: string
+  success?: boolean
   message: string
   data?: {
-    type: string
+    user?: AuthUser
+    accessToken?: string
+    refreshToken?: string
+    tokenIssuedAt?: string
+    type?: string
   }
 }
 
@@ -66,6 +83,7 @@ export interface VerifyOtpResponse {
   message: string
   accessToken: string
   refreshToken?: string
+  tokenIssuedAt?: string
   user?: AuthUser
 }
 

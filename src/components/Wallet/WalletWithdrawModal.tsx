@@ -301,7 +301,7 @@ const WalletWithdrawModal = ({
   const headerSubtitle =
     step === 'pin'
       ? 'Provide your account PIN to move forward'
-      : `Available balance: ${formatCurrency(availableBalance, {
+      : `Available withdrawable balance: ${formatCurrency(availableBalance, {
           currency,
           maximumFractionDigits: 0,
         })}`

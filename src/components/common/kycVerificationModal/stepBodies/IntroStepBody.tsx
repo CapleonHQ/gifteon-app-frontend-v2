@@ -64,16 +64,29 @@ const getVerificationSteps = (action: KycRequiredAction): IntroStepItem[] => {
 type IntroStepBodyProps = {
   action: KycRequiredAction
   isLoadingStatus?: boolean
+  profileRequirementsMessage?: string
 }
 
 export const IntroStepBody = ({
   action,
   isLoadingStatus = false,
+  profileRequirementsMessage,
 }: IntroStepBodyProps) => {
   const verificationSteps = getVerificationSteps(action)
 
   return (
     <div className='space-y-4'>
+      {profileRequirementsMessage ? (
+        <div className='rounded-[12px] border border-warning-200 bg-warning-50 p-3'>
+          <p className='font-medium leading-[22px] text-warning-700'>
+            Complete your profile first
+          </p>
+          <p className='mt-1 text-sm leading-[20px] text-warning-700'>
+            {profileRequirementsMessage}
+          </p>
+        </div>
+      ) : null}
+
       <div className='bg-secondary-50 rounded-[12px] p-3 flex flex-col gap-2'>
         <p className='font-medium leading-[22px] text-[#143535]'>
           Why do we need this?

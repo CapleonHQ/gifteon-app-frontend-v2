@@ -12,10 +12,14 @@ import { setAccessToken, setRefreshToken } from '@/api/token'
 import { toApiError } from '@/api/errorHelpers'
 import { useAuth } from '@/context/AuthContext'
 import { analytics } from '@/lib/analytics/events'
+import { STRONG_PASSWORD_REGEX } from '@/lib/utils/security'
 
 type RegisterStep = 'register' | 'verification' | 'success'
 
 type Gender = 'male' | 'female' | ''
+
+const STRONG_PASSWORD_MESSAGE =
+  'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
 
 const RegisterPage = () => {
   const router = useRouter()
@@ -25,12 +29,16 @@ const RegisterPage = () => {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [referralCode, setReferralCode] = useState('')
   const [country, setCountry] = useState('NG')
   const [gender, setGender] = useState<Gender>('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [countdown, setCountdown] = useState(59)
   const [canResend, setCanResend] = useState(false)
@@ -88,11 +96,38 @@ const RegisterPage = () => {
     }
   }
 
+  const validatePassword = (value: string) => STRONG_PASSWORD_REGEX.test(value)
+
+  const resolvePasswordError = (value: string) => {
+    if (!value) return ''
+    if (validatePassword(value)) return ''
+    return STRONG_PASSWORD_MESSAGE
+  }
+
+  const resolveConfirmPasswordError = (
+    passwordValue: string,
+    confirmPasswordValue: string
+  ) => {
+    if (!confirmPasswordValue) return ''
+    if (!passwordValue) return ''
+    if (confirmPasswordValue.length < passwordValue.length) return ''
+    if (passwordValue === confirmPasswordValue) return ''
+    return 'Passwords do not match.'
+  }
+
   const handleRegister = async (event: SyntheticEvent) => {
     event.preventDefault()
 
     if (!validateEmail(email)) {
       setEmailError('Please enter a valid email address')
+      return
+    }
+    if (!validatePassword(password)) {
+      setPasswordError(STRONG_PASSWORD_MESSAGE)
+      return
+    }
+    if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match.')
       return
     }
 
@@ -109,6 +144,7 @@ const RegisterPage = () => {
         firstName,
         lastName,
         email,
+        password,
         referralCode: referralCode.trim() || undefined,
         gender: gender ? `${gender[0].toUpperCase()}${gender.slice(1)}` : undefined,
         country,
@@ -124,14 +160,12 @@ const RegisterPage = () => {
       if (apiError.fieldErrors?.email?.length) {
         setEmailError(apiError.fieldErrors.email[0])
       }
+      if (apiError.fieldErrors?.password?.length) {
+        setPasswordError(apiError.fieldErrors.password[0])
+      }
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleSocialRegister = (provider: 'google' | 'apple') => {
-    analytics.trackAuthRegisterSubmitted({ method: provider })
-    console.log(`Register with ${provider}`)
   }
 
   const handleOtpChange = (index: number, value: string) => {
@@ -239,6 +273,53 @@ const RegisterPage = () => {
     setError('')
   }
 
+  const handleFirstNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(event.target.value)
+  }
+
+  const handleLastNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(event.target.value)
+  }
+
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextPassword = event.target.value
+    setPassword(nextPassword)
+    setPasswordError(resolvePasswordError(nextPassword))
+    setConfirmPasswordError(
+      resolveConfirmPasswordError(nextPassword, confirmPassword)
+    )
+    if (error) setError('')
+  }
+
+  const handleConfirmPasswordChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const nextConfirmPassword = event.target.value
+    setConfirmPassword(nextConfirmPassword)
+    setConfirmPasswordError(
+      resolveConfirmPasswordError(password, nextConfirmPassword)
+    )
+    if (error) setError('')
+  }
+
+  const handleReferralCodeChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setReferralCode(event.target.value)
+  }
+
+  const handleCountryChange = (value: string) => {
+    setCountry(value)
+  }
+
+  const handleGenderChange = (value: 'male' | 'female') => {
+    setGender(value)
+  }
+
+  const handleDismissError = () => {
+    setError('')
+  }
+
   const handleProceedToDashboard = () => {
     router.push(resolvePostRegisterPath())
   }
@@ -249,8 +330,14 @@ const RegisterPage = () => {
     : '/login'
 
   const isValidEmail = Boolean(email) && validateEmail(email)
+  const isValidPassword = validatePassword(password)
   const isFormValid =
-    Boolean(firstName) && Boolean(lastName) && isValidEmail && Boolean(gender)
+    Boolean(firstName) &&
+    Boolean(lastName) &&
+    isValidEmail &&
+    Boolean(gender) &&
+    isValidPassword &&
+    password === confirmPassword
   const maskedEmail = email ? maskEmail(email) : ''
 
   const renderCurrentStep = () => {
@@ -261,23 +348,28 @@ const RegisterPage = () => {
             firstName={firstName}
             lastName={lastName}
             email={email}
+            password={password}
+            confirmPassword={confirmPassword}
             referralCode={referralCode}
             country={country}
             gender={gender}
             emailError={emailError}
+            passwordError={passwordError}
+            confirmPasswordError={confirmPasswordError}
             error={error}
             isLoading={isLoading}
             isFormValid={isFormValid}
             loginHref={loginHref}
-            onFirstNameChange={(event) => setFirstName(event.target.value)}
-            onLastNameChange={(event) => setLastName(event.target.value)}
+            onFirstNameChange={handleFirstNameChange}
+            onLastNameChange={handleLastNameChange}
             onEmailChange={handleEmailChange}
-            onReferralCodeChange={(event) => setReferralCode(event.target.value)}
-            onCountryChange={(value) => setCountry(value)}
-            onGenderChange={(value) => setGender(value)}
+            onPasswordChange={handlePasswordChange}
+            onConfirmPasswordChange={handleConfirmPasswordChange}
+            onReferralCodeChange={handleReferralCodeChange}
+            onCountryChange={handleCountryChange}
+            onGenderChange={handleGenderChange}
             onRegister={handleRegister}
-            onDismissError={() => setError('')}
-            onSocialRegister={handleSocialRegister}
+            onDismissError={handleDismissError}
           />
         )
       case 'verification':
@@ -297,7 +389,7 @@ const RegisterPage = () => {
             onOtpSubmit={handleOtpSubmit}
             onResend={handleResend}
             onChangeEmail={handleBackToRegister}
-            onDismissError={() => setError('')}
+            onDismissError={handleDismissError}
           />
         )
       case 'success':
