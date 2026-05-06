@@ -179,12 +179,11 @@ const parseFieldErrors = (data: unknown): NormalizedApiError['fieldErrors'] => {
   if (Array.isArray(errors)) {
     for (const item of errors) {
       if (!item || typeof item !== 'object') continue
-      const field = typeof (item as Record<string, unknown>).field === 'string'
-        ? (item as Record<string, unknown>).field
-        : undefined
-      const message = typeof (item as Record<string, unknown>).message === 'string'
-        ? (item as Record<string, unknown>).message
-        : undefined
+      const errorItem = item as Record<string, unknown>
+      const field =
+        typeof errorItem.field === 'string' ? errorItem.field : undefined
+      const message =
+        typeof errorItem.message === 'string' ? errorItem.message : undefined
       if (!field || !message) continue
       fieldErrors[field] = [...(fieldErrors[field] ?? []), message]
     }
