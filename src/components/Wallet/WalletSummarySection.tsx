@@ -9,7 +9,7 @@ import { RefreshCw } from 'lucide-react'
 
 type WalletSummarySectionProps = {
   availableBalance: string
-  receivedBalance: string
+  withdrawableBalance: string
   totalReceived: string
   totalWithdrawn: string
   onTopUp: () => void
@@ -23,7 +23,7 @@ type WalletSummarySectionProps = {
 
 const WalletSummarySection = ({
   availableBalance,
-  receivedBalance,
+  withdrawableBalance,
   totalReceived,
   totalWithdrawn,
   onTopUp,
@@ -133,7 +133,9 @@ const WalletSummarySection = ({
         }
         helperContent={
           <div className='mt-3 text-xs text-grey-600'>
-            <p>{`Received: ${isBalanceHidden ? '*****' : receivedBalance}`}</p>
+            <p>{`Withdrawable Balance: ${
+              isBalanceHidden ? '*****' : withdrawableBalance
+            }`}</p>
           </div>
         }
       />
