@@ -98,7 +98,7 @@ export default function ContactContent() {
               <div className='mt-3 flex items-start gap-2 text-grey-700'>
                 <MapPin className='mt-0.5 h-4 w-4 shrink-0 text-primary-500' />
                 <p className='text-sm leading-6'>
-                  12 Celebration Lane, Victoria Island, Lagos, Nigeria.
+                  Victoria Island, Lagos, Nigeria.
                 </p>
               </div>
               <div className='mt-2 flex items-start gap-2 text-grey-700'>

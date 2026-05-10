@@ -21,12 +21,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Giftseon - Celebrating Life's Special Moments",
+    default: 'Giftseon - Send Gifts Globally',
     template: '%s | Giftseon',
   },
   description:
     'Make every celebration unforgettable with Giftseon. Create elegant gift collections, gather meaningful contributions, and unite loved ones for birthdays, weddings, graduations and more. Trusted by 200K+ users worldwide.',
   keywords: [
+    'send gift',
+    'gift global',
     'gift collection',
     'birthday celebration',
     'wedding gifts',
@@ -52,7 +54,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://giftseon.com',
     siteName: 'Giftseon',
-    title: "Giftseon - Celebrating Life's Special Moments",
+    title: 'Giftseon - Send Gifts Globally',
     description:
       'Make every celebration unforgettable. Create beautiful gift collections and unite loved ones for birthdays, weddings, graduations and more. Join 200K+ happy users.',
     images: [
@@ -60,7 +62,7 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Giftseon - Make Every Celebration Unforgettable',
+        alt: 'Giftseon - Send Gifts Globally',
         type: 'image/jpeg',
       },
       {
@@ -74,7 +76,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Giftseon - Celebrating Life's Special Moments",
+    title: 'Giftseon - Send Gifts Globally',
     description:
       'Make every celebration unforgettable. Create beautiful gift collections and unite loved ones for special moments.',
     images: ['/og-image.jpg'],
