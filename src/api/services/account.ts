@@ -2,8 +2,11 @@ import { AxiosResponse } from 'axios'
 import apiService from '../'
 import { ApiResponse } from '@/types/Common'
 import {
+  ChangePasswordRequestBody,
   ChangeTagRequestBody,
   ChangePinRequestBody,
+  RequestAccountOtpRequestBody,
+  SetPasswordRequestBody,
   VerifyTagRequestBody,
   VerifyTagResponseData,
   SetPinRequestBody,
@@ -38,6 +41,30 @@ export const changePin = async (
 ): Promise<ApiResponse<null>> => {
   const resp: AxiosResponse<ApiResponse<null>> =
     await apiService.appPrivate.post('/account/change-pin', data)
+  return resp.data
+}
+
+export const requestAccountOtp = async (
+  data: RequestAccountOtpRequestBody
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
+    await apiService.appPrivate.post('/account/request-otp', data)
+  return resp.data
+}
+
+export const setPassword = async (
+  data: SetPasswordRequestBody
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
+    await apiService.appPrivate.post('/account/set-password', data)
+  return resp.data
+}
+
+export const changePassword = async (
+  data: ChangePasswordRequestBody
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
+    await apiService.appPrivate.post('/account/change-password', data)
   return resp.data
 }
 

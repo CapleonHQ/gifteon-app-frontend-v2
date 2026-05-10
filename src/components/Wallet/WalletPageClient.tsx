@@ -31,7 +31,11 @@ const WalletPageClient = () => {
   const pendingWithdrawalsQuery = useWalletWithdrawals({ page: 1, limit: 20 })
 
   const walletDetails = detailsQuery.data?.data
-  const availableBalance = parseWalletBalance(walletDetails?.balance)
+  const totalBalance = parseWalletBalance(walletDetails?.balance)
+  const withdrawableBalance = parseWalletBalance(
+    walletDetails?.withdrawableBalance
+  )
+
   const totalReceived = parseWalletBalance(walletDetails?.totalReceived)
   const totalWithdrawn = parseWalletBalance(walletDetails?.totalWithdrawn)
   const currency = walletDetails?.currency || 'USD'
@@ -67,7 +71,12 @@ const WalletPageClient = () => {
           <WalletSummarySkeleton />
         ) : (
           <WalletSummarySection
-            availableBalance={formatCurrency(availableBalance, {
+            availableBalance={formatCurrency(totalBalance, {
+              currency,
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            withdrawableBalance={formatCurrency(withdrawableBalance, {
               currency,
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -102,12 +111,15 @@ const WalletPageClient = () => {
 
       <WalletTransactionsSection onReport={() => setIsDisputeOpen(true)} />
 
-      <WalletTopUpModal isOpen={isTopUpOpen} onClose={() => setIsTopUpOpen(false)} />
+      <WalletTopUpModal
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+      />
 
       <WalletWithdrawModal
         isOpen={isWithdrawOpen}
         onClose={() => setIsWithdrawOpen(false)}
-        availableBalance={availableBalance}
+        availableBalance={withdrawableBalance}
         currency={currency}
         bankAccounts={bankAccounts}
         defaultBankId={defaultBankId}

@@ -9,6 +9,7 @@ type StepFooterProps = {
   isUploading?: boolean
   isRefreshingStatus?: boolean
   primaryLabel: string
+  stepZeroPrimaryLabel?: string
   onClose: () => void
   onNext: () => void
   onBack: () => void
@@ -23,6 +24,7 @@ const StepFooter = ({
   isUploading = false,
   isRefreshingStatus = false,
   primaryLabel,
+  stepZeroPrimaryLabel = 'Continue',
   onClose,
   onNext,
   onBack,
@@ -37,7 +39,7 @@ const StepFooter = ({
           Cancel
         </button>
         <button type='button' onClick={onNext} className={PRIMARY_BTN_CLASS}>
-          Continue
+          {stepZeroPrimaryLabel}
         </button>
       </div>
     )

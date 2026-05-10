@@ -7,7 +7,9 @@ import {
   RefreshTokenResponse,
   RegisterRequestBody,
   RegisterResponse,
+  RequestResetPasswordOtpRequestBody,
   ResendVerificationRequestBody,
+  ResetPasswordRequestBody,
   ResendVerificationResponse,
   VerifyOtpRequestBody,
   VerifyOtpResponse,
@@ -69,6 +71,28 @@ export const loginUser = async (
       skipAuthRefresh: true,
     }
   )
+  return resp.data
+}
+
+export const requestResetPasswordOtp = async (
+  data: RequestResetPasswordOtpRequestBody
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
+    await apiService.authPublic.post('/auth/forgot-password', data, {
+      skipAuthLogout: true,
+      skipAuthRefresh: true,
+    })
+  return resp.data
+}
+
+export const resetPassword = async (
+  data: ResetPasswordRequestBody
+): Promise<ApiResponse<null>> => {
+  const resp: AxiosResponse<ApiResponse<null>> =
+    await apiService.authPublic.post('/auth/reset-password', data, {
+      skipAuthLogout: true,
+      skipAuthRefresh: true,
+    })
   return resp.data
 }
 

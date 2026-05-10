@@ -12,6 +12,7 @@ export interface CookieOptions {
 
 const ACCESS_TOKEN_COOKIE = 'giftseon_access_token'
 const REFRESH_TOKEN_COOKIE = 'giftseon_refresh_token'
+const AUTH_TOKEN_ISSUED_AT_KEY = 'giftseon_auth_token_issued_at'
 
 const isBrowser = (): boolean => typeof document !== 'undefined'
 const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -116,6 +117,21 @@ export const clearRefreshToken = (options: CookieOptions = {}): void => {
     path: options.path ?? '/',
     domain: options.domain,
   })
+}
+
+export const setAuthTokenIssuedAt = (value: string): void => {
+  if (!isBrowser()) return
+  window.localStorage.setItem(AUTH_TOKEN_ISSUED_AT_KEY, value)
+}
+
+export const getAuthTokenIssuedAt = (): string => {
+  if (!isBrowser()) return ''
+  return window.localStorage.getItem(AUTH_TOKEN_ISSUED_AT_KEY) ?? ''
+}
+
+export const clearAuthTokenIssuedAt = (): void => {
+  if (!isBrowser()) return
+  window.localStorage.removeItem(AUTH_TOKEN_ISSUED_AT_KEY)
 }
 
 export const ACCESS_TOKEN_COOKIE_NAME = ACCESS_TOKEN_COOKIE

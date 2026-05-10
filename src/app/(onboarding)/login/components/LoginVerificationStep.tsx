@@ -71,11 +71,11 @@ const LoginVerificationStep = ({
         className='mb-2 flex flex-col items-center text-center w-full max-w-[450px] mx-auto'
       >
         <h2 className='text-[32px] sm:text-[40px] leading-[130%] tracking-[0%] font-semibold text-blackish mb-2'>
-          Email Verification
+          Check Your Email
         </h2>
         <p className='text-grey-600 sm:text-xl leading-[140%] mb-2'>
-          Almost there 🎉 <br /> Just click the verification link we sent to{' '}
-          {maskedEmail} to verify your email address or enter the OTP code below
+          We sent a magic link and one-time code to {maskedEmail}. Open the link
+          in your email or enter the OTP below to continue.
         </p>
 
         <button
@@ -136,7 +136,7 @@ const LoginVerificationStep = ({
         className='text-center'
       >
         <div className='flex items-center justify-center gap-1'>
-          <p className='text-grey-600 sm:text-xl'>Didn&apos;t get the OTP?</p>
+          <p className='text-grey-600 sm:text-xl'>Didn&apos;t get the email?</p>
           {canResend ? (
             <button
               onClick={onResend}

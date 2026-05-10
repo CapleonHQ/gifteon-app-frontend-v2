@@ -6,6 +6,7 @@ type WalletSummaryCardProps = {
   title: string
   value: string
   valueContent?: ReactNode
+  helperContent?: ReactNode
   subtitle: string
   icon?: ReactNode
   titleAction?: ReactNode
@@ -17,6 +18,7 @@ const WalletSummaryCard = ({
   title,
   value,
   valueContent,
+  helperContent,
   subtitle,
   icon,
   titleAction,
@@ -44,6 +46,7 @@ const WalletSummaryCard = ({
             {value}
           </p>
         )}
+        {helperContent}
       </div>
       <div className='flex flex-col gap-1'>
         <div className='flex justify-between items-end'>

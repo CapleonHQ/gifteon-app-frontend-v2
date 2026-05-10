@@ -7,7 +7,7 @@ import { MobileBackProvider } from '@/components/Layout/MobileTitleContext'
 import ApplicationShell from '@/components/Layout/ApplicationShell'
 import OfflineBanner from '@/components/Layout/OfflineBanner'
 import AuthGuard from '@/components/Auth/AuthGuard'
-import ApplicationPinGuard from '@/components/Dashboard/ApplicationPinGuard'
+import AccountSetupGuard from '@/components/Auth/AccountSetupGuard'
 import { Toaster } from 'sonner'
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
@@ -37,11 +37,12 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         }}
       />
       <AuthGuard>
-        <ApplicationShell pageTitle={pageTitle}>
-          <OfflineBanner />
-          {children}
-        </ApplicationShell>
-        <ApplicationPinGuard />
+        <AccountSetupGuard>
+          <ApplicationShell pageTitle={pageTitle}>
+            <OfflineBanner />
+            {children}
+          </ApplicationShell>
+        </AccountSetupGuard>
       </AuthGuard>
     </MobileBackProvider>
   )

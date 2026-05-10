@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  changePassword,
   changePin,
   changeTag,
   getProfile,
+  requestAccountOtp,
+  setPassword,
   setPin,
   updateProfile,
   verifyTag,
@@ -11,8 +14,11 @@ import type { ApiResponse } from '@/types/Common'
 import type {
   ChangeTagRequestBody,
   ChangePinRequestBody,
+  ChangePasswordRequestBody,
+  RequestAccountOtpRequestBody,
   VerifyTagRequestBody,
   UpdateProfilePayload,
+  SetPasswordRequestBody,
   SetPinRequestBody,
 } from '@/types/Account'
 import type { UserProfile } from '@/types/Account'
@@ -57,9 +63,44 @@ export const useSetPin = () => {
   })
 }
 
+export const useRequestAccountOtp = () => {
+  return useMutation({
+    mutationFn: (data: RequestAccountOtpRequestBody) => requestAccountOtp(data),
+  })
+}
+
+export const useSetPassword = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: SetPasswordRequestBody) => setPassword(data),
+    onSuccess: () => {
+      queryClient.setQueryData<ApiResponse<UserProfile>>(
+        ['account', 'profile'],
+        (current) => {
+          if (!current?.data) return current
+          return {
+            ...current,
+            data: {
+              ...current.data,
+              passwordActivated: true,
+            },
+          }
+        }
+      )
+      queryClient.invalidateQueries({ queryKey: ['account', 'profile'] })
+    },
+  })
+}
+
 export const useChangePin = () => {
   return useMutation({
     mutationFn: (data: ChangePinRequestBody) => changePin(data),
+  })
+}
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequestBody) => changePassword(data),
   })
 }
 

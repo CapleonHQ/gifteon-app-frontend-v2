@@ -49,10 +49,16 @@ export interface WalletTopupLocalsResponse
 
 export interface WalletDetails {
   balance: number
+  topupBalance: number
+  receivedBalance: number
+  withdrawableBalance: number
   totalReceived: number
   totalWithdrawn: number
   currency: string
   isLocked: boolean
+  weeklyLimit: number
+  weeklyWithdrawn: number
+  availableWeeklyLimit: number
 }
 
 export interface WalletWithdrawalDeviceInfo {
