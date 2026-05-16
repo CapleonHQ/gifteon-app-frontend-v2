@@ -6,7 +6,10 @@ import ComposerTextarea from './comment-composer/ComposerTextarea'
 import IdentityNameField from './comment-composer/IdentityNameField'
 import IdentityNotice from './comment-composer/IdentityNotice'
 import PreferenceSwitchRow from './comment-composer/PreferenceSwitchRow'
-import { MAX_COMMENT_LENGTH } from './comment-composer/types'
+import {
+  MAX_COMMENT_LENGTH,
+  MIN_COMMENT_LENGTH,
+} from './comment-composer/types'
 import { useCreatePublicPageComment } from '@/hooks/tanstack/publicPage'
 import { analytics } from '@/lib/analytics/events'
 
@@ -37,11 +40,12 @@ export default function CommentComposer({
   const createCommentMutation = useCreatePublicPageComment(pageId)
 
   const characterCount = comment.length
+  const trimmedCommentLength = comment.trim().length
   const isCharacterLimitReached = characterCount >= MAX_COMMENT_LENGTH
   const shouldShowNameInput =
     !hideName && (!isAuthenticated || useDifferentDisplayName)
   const isSubmitDisabled =
-    comment.trim().length === 0 ||
+    trimmedCommentLength < MIN_COMMENT_LENGTH ||
     createCommentMutation.isPending ||
     isCharacterLimitReached
 
@@ -60,7 +64,12 @@ export default function CommentComposer({
 
   const handleSubmit = () => {
     const trimmedComment = comment.trim()
-    if (!trimmedComment || isCharacterLimitReached) return
+    if (
+      trimmedComment.length < MIN_COMMENT_LENGTH ||
+      isCharacterLimitReached
+    ) {
+      return
+    }
 
     const normalizedFullName = normalizeName(fullName)
     const nextNameError = validateName(normalizedFullName)

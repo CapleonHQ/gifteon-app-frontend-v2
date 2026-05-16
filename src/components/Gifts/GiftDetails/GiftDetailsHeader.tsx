@@ -5,9 +5,7 @@ import CancelHalfCircle from '@/assets/icons/CancelHalfCircle'
 import CheckmarkStyledIcon from '@/assets/icons/CheckmarkStyledIcon'
 import EditIcon from '@/assets/icons/EditIcon'
 import EyeOnIcon from '@/assets/icons/EyeOnIcon'
-import ReloadIcon from '@/assets/icons/ReloadIcon'
 import ShareIcon from '@/assets/icons/ShareIcon'
-import { Power } from 'lucide-react'
 
 type GiftDetailsHeaderProps = {
   title: string
@@ -55,10 +53,10 @@ const GiftDetailsHeader = ({
           className={`px-3 py-1 rounded-full shadow-[0px_5px_13px_-5px_#1019280D] text-sm font-medium ${
             isActive
               ? 'bg-success-50 text-success-500'
-              : 'bg-grey-50 text-grey-600'
+              : 'bg-error-50 text-error-600'
           }`}
         >
-          {isActive ? 'Active' : 'Inactive'}
+          {isActive ? 'Active' : 'Deactivated'}
         </span>
       </div>
 

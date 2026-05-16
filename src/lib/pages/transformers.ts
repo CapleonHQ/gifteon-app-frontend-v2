@@ -34,8 +34,8 @@ const toListStatusLabel = (status: string): PageStatus => {
   return 'Ended'
 }
 
-const toDetailsStatusLabel = (active: boolean): PageStatus => {
-  return active ? 'Active' : 'Ended'
+const toDetailsStatusLabel = (status: string): PageStatus => {
+  return toListStatusLabel(status)
 }
 
 const toPublicUrl = (slug: string): string => `/u/${slug}`
@@ -68,9 +68,9 @@ const toSummaryNewDetailsItem = (item: PageDetailsApiItem): PageSummary => {
     totalGifts: 0,
     totalWishes: item.engagement.totalWishes,
     views: item.engagement.totalViews,
-    status: toDetailsStatusLabel(item.active),
+    status: toDetailsStatusLabel(item.status),
     image: item.coverImageUrl,
-    isActive: item.active,
+    isActive: toDetailsStatusLabel(item.status) === 'Active',
     publicUrl: toPublicUrl(item.slug),
   }
   return summary

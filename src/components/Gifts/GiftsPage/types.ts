@@ -28,6 +28,7 @@ export const activityStatusStyles = {
   Unclaimed: 'bg-information-50 text-information-500',
   Shipped: 'bg-information-50 text-information-500',
   Claimed: 'bg-success-50 text-success-500',
+  Fulfilled: 'bg-success-50 text-success-500',
   Pending: 'bg-warning-50 text-warning-500',
   Used: 'bg-grey-50 text-grey-500',
 } as const
