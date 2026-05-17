@@ -17,6 +17,36 @@ type BuildFormDataInput = {
 
 type SocialProvider = 'instagram' | 'facebook' | 'x' | 'linkedin'
 
+const SOCIAL_PROVIDER_CONFIG = {
+  instagram: {
+    domains: ['instagram.com', 'www.instagram.com'],
+    baseUrl: 'https://www.instagram.com',
+    defaultPathPrefix: '',
+  },
+  facebook: {
+    domains: ['facebook.com', 'www.facebook.com', 'fb.com', 'www.fb.com'],
+    baseUrl: 'https://www.facebook.com',
+    defaultPathPrefix: '',
+  },
+  x: {
+    domains: ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'],
+    baseUrl: 'https://x.com',
+    defaultPathPrefix: '',
+  },
+  linkedin: {
+    domains: ['linkedin.com', 'www.linkedin.com'],
+    baseUrl: 'https://www.linkedin.com',
+    defaultPathPrefix: 'in',
+  },
+} satisfies Record<
+  SocialProvider,
+  {
+    domains: string[]
+    baseUrl: string
+    defaultPathPrefix: string
+  }
+>
+
 const appendIf = (
   formData: FormData,
   key: string,
@@ -27,33 +57,59 @@ const appendIf = (
   formData.append(key, value)
 }
 
+const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, '')
+
+const buildStructuredSocialUrl = (
+  provider: SocialProvider,
+  handleOrPath: string
+) => {
+  const config = SOCIAL_PROVIDER_CONFIG[provider]
+  const normalizedPath = trimSlashes(handleOrPath)
+  if (!normalizedPath) return ''
+
+  const encodedSegments = normalizedPath
+    .split('/')
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+
+  if (encodedSegments.length === 0) return ''
+
+  const finalSegments =
+    config.defaultPathPrefix &&
+    encodedSegments[0]?.toLowerCase() !== config.defaultPathPrefix
+      ? [config.defaultPathPrefix, ...encodedSegments]
+      : encodedSegments
+
+  return `${config.baseUrl}/${finalSegments.join('/')}`
+}
+
 const normalizeSocialUrl = (provider: SocialProvider, value?: string) => {
   const rawValue = value?.trim()
   if (!rawValue) return ''
 
-  const sanitizedValue = rawValue.replace(/^@+/, '')
+  const sanitizedValue = rawValue.replace(/^@+/, '').trim()
+  if (!sanitizedValue) return ''
 
   try {
     const withProtocol = /^[a-z]+:\/\//i.test(sanitizedValue)
       ? sanitizedValue
       : `https://${sanitizedValue}`
+    const parsed = new URL(withProtocol)
+    const config = SOCIAL_PROVIDER_CONFIG[provider]
+    const hostname = parsed.hostname.toLowerCase()
 
-    return new URL(withProtocol).toString()
-  } catch {
-    const encodedHandle = encodeURIComponent(sanitizedValue)
-
-    switch (provider) {
-      case 'instagram':
-        return `https://www.instagram.com/${encodedHandle}`
-      case 'facebook':
-        return `https://www.facebook.com/${encodedHandle}`
-      case 'x':
-        return `https://x.com/${encodedHandle}`
-      case 'linkedin':
-        return `https://www.linkedin.com/in/${encodedHandle}`
-      default:
-        return ''
+    if (!config.domains.includes(hostname)) {
+      return buildStructuredSocialUrl(provider, sanitizedValue)
     }
+
+    const normalizedPath = trimSlashes(decodeURIComponent(parsed.pathname))
+    const rebuiltUrl = buildStructuredSocialUrl(provider, normalizedPath)
+    if (!rebuiltUrl) return config.baseUrl
+
+    return `${rebuiltUrl}${parsed.search}${parsed.hash}`
+  } catch {
+    return buildStructuredSocialUrl(provider, sanitizedValue)
   }
 }
 

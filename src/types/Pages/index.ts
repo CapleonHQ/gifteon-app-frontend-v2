@@ -134,6 +134,7 @@ export type PageDetailsApiItem = {
   coverImageUrl: string
   createdAt: string
   updatedAt: string
+  status: PageListApiStatus
   active: boolean
   categoryName: string
   visibility: PageApiPrivacy

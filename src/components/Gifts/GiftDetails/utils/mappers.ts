@@ -11,7 +11,8 @@ import type { PageDetails, PageDetailsGiftDistribution, PageDetailsVisitPoint } 
 import { formatCurrency } from '@/lib/utils/currency'
 
 const ACTIVITY_STATUS_MAP: Record<string, ActivityStatus> = {
-  success: 'Claimed',
+  success: 'Fulfilled',
+  fulfilled: 'Fulfilled',
   unclaimed: 'Unclaimed',
   shipped: 'Shipped',
   claimed: 'Claimed',
@@ -78,7 +79,10 @@ export const mapContributionItems = (
       throw new Error(`Unsupported contribution status: ${item.status}`)
     }
     const status = ACTIVITY_STATUS_MAP[rawStatus]
-    const worthValue = Number(item.amount)
+    const worthValue =
+      rawStatus === 'claimed'
+        ? Number(item.claimedAmount ?? 0)
+        : Number(item.amount)
 
     return {
       id: item.id,
