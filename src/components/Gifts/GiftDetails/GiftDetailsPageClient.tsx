@@ -73,7 +73,7 @@ const GiftDetailsPageClient = () => {
     canLoadMoreWishes,
     isLoadingMoreWishes,
   } = data
-  const isActive = ui.isActive ?? page?.isActive ?? true
+  const isActive = ui.isActive ?? page?.isActive ?? false
 
   useEffect(() => {
     setOnBack(() => () => {

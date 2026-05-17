@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export const useGiftDetailsUiState = (giftId: string, fallbackActive = true) => {
+export const useGiftDetailsUiState = (giftId: string) => {
   const [openMobileId, setOpenMobileId] = useState<string | null>(null)
   const [visitRange, setVisitRange] = useState('last-7-days')
   const [wishSort, setWishSort] = useState('most-recent')
@@ -10,7 +10,7 @@ export const useGiftDetailsUiState = (giftId: string, fallbackActive = true) => 
   const [isReactivateOpen, setIsReactivateOpen] = useState(false)
   const [activeOverrides, setActiveOverrides] = useState<Record<string, boolean>>({})
 
-  const isActive = activeOverrides[giftId] ?? fallbackActive
+  const isActive = activeOverrides[giftId]
 
   const markInactive = () => {
     setActiveOverrides((prev) => ({ ...prev, [giftId]: false }))

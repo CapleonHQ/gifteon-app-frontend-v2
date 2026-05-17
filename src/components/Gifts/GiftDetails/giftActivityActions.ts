@@ -52,6 +52,7 @@ export const getGiftActivityActions = (
       ]
     case 'Pending':
     case 'Claimed':
+    case 'Fulfilled':
     case 'Used':
     default:
       return [{ id: 'help', label: 'Get help', icon: HelpCircle, tone: 'ghost' }]
