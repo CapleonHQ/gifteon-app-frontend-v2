@@ -17,6 +17,7 @@ import CommentComposer from './engagement/CommentComposer'
 import GiftListSection from './engagement/GiftListSection'
 import SuccessModal from './engagement/SuccessModal'
 import ConfirmationModal from './engagement/ConfirmationModal'
+import ComingSoonModal from './ComingSoonModal'
 import {
   resolveGiftOptions,
   resolveRecipientName,
@@ -71,6 +72,7 @@ export default function PublicGiftPageClient({
   }, [pageData?.template?.name])
   const isTemplate4 = resolvedTemplateLayout === 'spotlightGrid'
   const [isSuccessModalOpen, setSuccessModalOpen] = useState(false)
+  const [isComingSoonModalOpen, setComingSoonModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isConfirmationModalOpen, setConfirmationModalOpen] = useState(false)
   const [confirmationGiftIds, setConfirmationGiftIds] = useState<string[]>([])
@@ -332,7 +334,7 @@ export default function PublicGiftPageClient({
             onAddGift={handleAddGift}
             onRemoveGift={handleRemoveGift}
             onChangeGiftQuantity={updateGiftQuantity}
-            onSendCustomGift={() => setSuccessModalOpen(true)}
+            onSendCustomGift={() => setComingSoonModalOpen(true)}
             onCheckout={handleOpenConfirmation}
           />
         </div>
@@ -348,6 +350,11 @@ export default function PublicGiftPageClient({
         onChangeGiftQuantity={updateGiftQuantity}
         currency={currency}
       />
+      <ComingSoonModal
+        isOpen={isComingSoonModalOpen}
+        onClose={() => setComingSoonModalOpen(false)}
+      />
+
       <ConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={handleCloseConfirmation}
