@@ -15,17 +15,11 @@ export default function ConfirmationHeader({
   onClose,
   onBack,
 }: ConfirmationHeaderProps) {
-  const title = step === 'review' ? 'Confirmation' : 'Payment Method'
-  const subtitle = (() => {
-    if (step === 'review') {
-      return 'This gift will be delivered as its cash equivalent.'
-    }
-    if (step === 'pin') {
-      return 'Provide your account PIN to move forward'
-    }
-    return 'Review your final summary and choose how to pay.'
-  })()
-  const resolvedTitle = step === 'pin' ? 'Confirmation' : title
+  const resolvedTitle = step === 'pin' ? 'Confirmation' : 'Complete your gift'
+  const subtitle =
+    step === 'pin'
+      ? 'Provide your account PIN to move forward'
+      : 'Review your items and choose how to pay.'
 
   return (
     <div className='relative'>
