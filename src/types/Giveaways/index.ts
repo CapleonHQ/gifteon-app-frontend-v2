@@ -7,6 +7,7 @@ export type GiveawayStatus =
   | 'active'
   | 'closed'
   | 'completed'
+  | 'disbursed'
   | 'cancelled'
 
 export type GiveawayPrizeType = 'cash' | 'gift' | 'voucher'

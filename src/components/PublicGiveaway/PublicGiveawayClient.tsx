@@ -170,7 +170,9 @@ const PublicGiveawayClient = ({ giveawayId }: { giveawayId: string }) => {
   }
 
   const meta = CATEGORY_META[giveaway.category]
-  const isActive = giveaway.status === 'active'
+
+  const hasWinners = Boolean(leaderboard?.revealed)
+  const isActive = giveaway.status === 'active' && !hasWinners
 
   const ctaLabel = enterMutation.isPending
     ? 'Entering…'
@@ -236,7 +238,7 @@ const PublicGiveawayClient = ({ giveawayId }: { giveawayId: string }) => {
               </h1>
             </div>
 
-            <HeroCountdown giveaway={giveaway} />
+            <HeroCountdown giveaway={giveaway} concluded={hasWinners} />
           </div>
         </div>
 
@@ -270,6 +272,10 @@ const PublicGiveawayClient = ({ giveawayId }: { giveawayId: string }) => {
                   <div className='rounded-[12px] bg-grey-50 px-4 py-3 text-sm text-grey-600'>
                     {giveaway.status === 'pending'
                       ? 'This giveaway hasn’t started yet — check back soon.'
+                      : giveaway.status === 'cancelled'
+                      ? 'This giveaway was cancelled.'
+                      : hasWinners
+                      ? 'Winners have been announced — see the leaderboard below.'
                       : 'Entries for this giveaway are closed.'}
                   </div>
                 ) : null}

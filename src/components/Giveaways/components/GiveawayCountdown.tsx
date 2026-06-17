@@ -12,6 +12,7 @@ type GiveawayCountdownProps = {
 const STATUS_LABEL: Partial<Record<Giveaway['status'], string>> = {
   closed: 'Entries closed',
   completed: 'Ended',
+  disbursed: 'Ended',
   cancelled: 'Cancelled',
 }
 

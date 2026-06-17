@@ -7,6 +7,7 @@ import type { Giveaway } from '@/types/Giveaways'
 
 type HeroCountdownProps = {
   giveaway: Pick<Giveaway, 'startsAt' | 'endsAt' | 'status'>
+  concluded?: boolean
 }
 
 const Unit = ({
@@ -51,16 +52,17 @@ const Unit = ({
 const STATUS_PILL: Partial<Record<Giveaway['status'], string>> = {
   closed: 'Entries are closed',
   completed: 'This giveaway has ended',
+  disbursed: 'This giveaway has ended',
   cancelled: 'This giveaway was cancelled',
 }
 
-const HeroCountdown = ({ giveaway }: HeroCountdownProps) => {
+const HeroCountdown = ({ giveaway, concluded = false }: HeroCountdownProps) => {
   const reduce = useReducedMotion()
   const { phase, totalSeconds } = useCountdown(giveaway)
   const parts = getCountdownParts(totalSeconds)
 
   const statusPill = STATUS_PILL[giveaway.status]
-  if (statusPill || phase === 'ended') {
+  if (statusPill || concluded || phase === 'ended') {
     return (
       <span className='inline-flex px-3 py-1.5 rounded-full bg-grey-100 text-grey-600 text-sm font-medium'>
         {statusPill ?? 'This giveaway has ended'}

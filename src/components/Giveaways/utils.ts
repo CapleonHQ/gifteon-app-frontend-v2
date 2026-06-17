@@ -69,6 +69,11 @@ export const STATUS_META: Record<GiveawayStatus, StatusMeta> = {
     tone: 'bg-information-50 text-information-600',
     dot: 'bg-information-500',
   },
+  disbursed: {
+    label: 'Winners paid',
+    tone: 'bg-success-50 text-success-600',
+    dot: 'bg-success-500',
+  },
   cancelled: {
     label: 'Cancelled',
     tone: 'bg-error-50 text-error-600',
