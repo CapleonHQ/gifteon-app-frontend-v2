@@ -40,6 +40,7 @@ const EditGiveawayModal = ({
   const [endsAt, setEndsAt] = useState(giveaway.endsAt)
   const [fieldErrors, setFieldErrors] = useState<{
     title?: string
+    startsAt?: string
     endsAt?: string
   }>({})
   const [apiError, setApiError] = useState('')
@@ -48,8 +49,10 @@ const EditGiveawayModal = ({
 
   const handleSubmit = async () => {
     setApiError('')
-    const errors: { title?: string; endsAt?: string } = {}
+    const errors: { title?: string; startsAt?: string; endsAt?: string } = {}
     if (!title.trim()) errors.title = 'Add a giveaway title.'
+    if (new Date(startsAt).getTime() < Date.now())
+      errors.startsAt = 'Start time must be in the future.'
     if (new Date(endsAt).getTime() <= new Date(startsAt).getTime())
       errors.endsAt = 'End must be after the start time.'
     if (Object.keys(errors).length > 0) {
@@ -160,6 +163,7 @@ const EditGiveawayModal = ({
                 }
               />
             </div>
+            <InlineError message={fieldErrors.startsAt} />
           </div>
 
           <div className='space-y-2'>

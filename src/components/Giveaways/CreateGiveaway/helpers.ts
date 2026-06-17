@@ -22,6 +22,8 @@ export const validateDetails = (draft: GiveawayDraft): DraftFieldErrors => {
   if (!Number.isFinite(maxP) || maxP < 1)
     errors.maxParticipants = 'Enter a max participant count.'
   if (!draft.startsAt) errors.startsAt = 'Pick a start date and time.'
+  else if (new Date(draft.startsAt).getTime() < Date.now())
+    errors.startsAt = 'Start time must be in the future.'
   if (!draft.endsAt) errors.endsAt = 'Pick an end date and time.'
   else if (
     draft.startsAt &&
