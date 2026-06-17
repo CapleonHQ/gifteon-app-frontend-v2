@@ -84,6 +84,11 @@ export const STATUS_META: Record<GiveawayStatus, StatusMeta> = {
 export const getStatusMeta = (status: GiveawayStatus): StatusMeta =>
   STATUS_META[status] ?? STATUS_META.pending
 
+const COUNTDOWN_STATUSES = new Set<GiveawayStatus>(['pending', 'active'])
+
+export const isLiveCountdownStatus = (status: GiveawayStatus): boolean =>
+  COUNTDOWN_STATUSES.has(status)
+
 export const formatPrize = (giveaway: Giveaway): string => {
   if (giveaway.prizeDescription) return giveaway.prizeDescription
   const value = Number(giveaway.prizeValue)

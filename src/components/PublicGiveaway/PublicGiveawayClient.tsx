@@ -61,8 +61,13 @@ const PublicGiveawayClient = ({ giveawayId }: { giveawayId: string }) => {
   useEffect(() => {
     if (giveaway && !trackedView.current) {
       trackedView.current = true
+      analytics.trackGiveawayViewed({
+        giveaway_id: giveawayId,
+        category: giveaway.category,
+        status: giveaway.status,
+      })
     }
-  }, [giveaway])
+  }, [giveaway, giveawayId])
 
   const beginPlay = () => {
     if (!giveaway) return

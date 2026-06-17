@@ -1,6 +1,7 @@
 'use client'
 
 import { useCountdown } from '@/components/Giveaways/hooks/useCountdown'
+import { isLiveCountdownStatus } from '@/components/Giveaways/utils'
 import ClockIcon from '@/assets/icons/ClockIcon'
 import type { Giveaway } from '@/types/Giveaways'
 
@@ -22,16 +23,18 @@ const GiveawayCountdown = ({
 }: GiveawayCountdownProps) => {
   const { label, urgent, phase } = useCountdown(giveaway)
 
-  const statusLabel = STATUS_LABEL[giveaway.status]
-  const displayLabel = statusLabel ?? label
-  const isUrgent = !statusLabel && urgent
+  const isTerminal =
+    !isLiveCountdownStatus(giveaway.status) || phase === 'ended'
+  const displayLabel = isTerminal
+    ? STATUS_LABEL[giveaway.status] ?? 'Ended'
+    : label
+  const isUrgent = !isTerminal && urgent
 
-  const tone =
-    statusLabel || phase === 'ended'
-      ? 'text-grey-500'
-      : isUrgent
-      ? 'text-warning-600'
-      : 'text-grey-600'
+  const tone = isTerminal
+    ? 'text-grey-500'
+    : isUrgent
+    ? 'text-warning-600'
+    : 'text-grey-600'
 
   return (
     <span

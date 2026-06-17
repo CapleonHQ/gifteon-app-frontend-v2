@@ -49,7 +49,9 @@ const GiveawaysPageClient = () => {
       {/* Header */}
       <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
         <div>
-          <h1 className='text-xl font-semibold text-grey-900'>Giveaways</h1>
+          <h1 className='hidden xl:block text-xl font-semibold text-grey-900'>
+            Giveaways
+          </h1>
           <p className='text-sm text-grey-600 mt-0.5'>
             Create and manage trivia, task, and lottery giveaways.
           </p>
@@ -112,7 +114,9 @@ const GiveawaysPageClient = () => {
             <EmptyBox />
           </span>
           <div>
-            <p className='text-sm font-medium text-grey-800'>No giveaways yet</p>
+            <p className='text-sm font-medium text-grey-800'>
+              No giveaways yet
+            </p>
             <p className='text-sm text-grey-500 mt-0.5'>
               Create your first giveaway to engage your audience.
             </p>

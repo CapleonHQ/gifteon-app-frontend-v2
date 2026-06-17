@@ -119,7 +119,7 @@ const CreateGiveawayPage = () => {
   }
 
   return (
-    <div className='w-full px-4 lg:px-0 flex-1 pb-12'>
+    <div className='w-full bg-white lg:bg-inherit px-4 lg:px-0 flex-1'>
       <div className='max-w-2xl mx-auto'>
         <AnimatePresence mode='wait'>
           {step === 'category' ? (

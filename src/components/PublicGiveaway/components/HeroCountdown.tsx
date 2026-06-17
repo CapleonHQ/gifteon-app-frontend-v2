@@ -2,7 +2,10 @@
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useCountdown } from '@/components/Giveaways/hooks/useCountdown'
-import { getCountdownParts } from '@/components/Giveaways/utils'
+import {
+  getCountdownParts,
+  isLiveCountdownStatus,
+} from '@/components/Giveaways/utils'
 import type { Giveaway } from '@/types/Giveaways'
 
 type HeroCountdownProps = {
@@ -61,11 +64,11 @@ const HeroCountdown = ({ giveaway, concluded = false }: HeroCountdownProps) => {
   const { phase, totalSeconds } = useCountdown(giveaway)
   const parts = getCountdownParts(totalSeconds)
 
-  const statusPill = STATUS_PILL[giveaway.status]
-  if (statusPill || concluded || phase === 'ended') {
+  const isLive = isLiveCountdownStatus(giveaway.status)
+  if (!isLive || concluded || phase === 'ended') {
     return (
       <span className='inline-flex px-3 py-1.5 rounded-full bg-grey-100 text-grey-600 text-sm font-medium'>
-        {statusPill ?? 'This giveaway has ended'}
+        {STATUS_PILL[giveaway.status] ?? 'This giveaway has ended'}
       </span>
     )
   }

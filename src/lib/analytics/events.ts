@@ -343,4 +343,9 @@ export const analytics = {
     giveaway_id: string
     task_id: string
   }) => capture('giveaway_task_submitted', properties),
+  trackGiveawayViewed: (properties: {
+    giveaway_id: string
+    category: 'trivia' | 'task' | 'lottery'
+    status: string
+  }) => capture('giveaway_viewed', properties),
 }
