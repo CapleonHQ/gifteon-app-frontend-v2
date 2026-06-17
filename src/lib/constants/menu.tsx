@@ -1,6 +1,7 @@
 import {
   DashboardIcon,
   GiftIcon,
+  GiveawaysIcon,
   WalletIcon,
   ProfileIcon,
   StoresIcon,
@@ -12,6 +13,7 @@ export const MENU_ITEMS = [
   { href: '/explore', label: 'Explore', icon: SearchIcon },
   { href: '/stores', label: 'Stores', icon: StoresIcon },
   { href: '/gifts', label: 'Gift Pages & Donations', icon: GiftIcon },
+  { href: '/giveaways', label: 'Giveaways', icon: GiveawaysIcon },
   { href: '/wallet', label: 'Wallet', icon: WalletIcon },
   { href: '/profile', label: 'Profile', icon: ProfileIcon },
 ]
@@ -25,6 +27,10 @@ export const PAGE_TITLE_ROUTES: Array<{
   { pattern: /^\/gifts\/[^/]+$/, title: 'Gift Page Details' }, // /gifts/:id
   { pattern: /^\/gifts$/, title: 'Gift Pages & Donations' },
   { pattern: /^\/contributions$/, title: 'All Gifts' },
+
+  { pattern: /^\/giveaways\/create-new$/, title: 'Create a Giveaway' },
+  { pattern: /^\/giveaways\/[^/]+$/, title: 'Giveaway Details' }, // /giveaways/:id
+  { pattern: /^\/giveaways$/, title: 'Giveaways' },
 
   { pattern: /^\/dashboard$/, title: 'Dashboard' },
   { pattern: /^\/explore$/, title: 'Explore' },

@@ -312,4 +312,35 @@ export const analytics = {
   trackBillsIdentifierSuggestionSelected: (properties: {
     bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
   }) => capture('bills_identifier_suggestion_selected', properties),
+  trackGiveawayCreateStepViewed: (properties: {
+    step: 'category' | 'details' | 'content' | 'review'
+    category: 'trivia' | 'task' | 'lottery' | null
+  }) => capture('giveaway_create_step_viewed', properties),
+  trackGiveawayCreated: (properties: {
+    category: 'trivia' | 'task' | 'lottery'
+    prize_type: string
+    winner_count: number
+  }) => capture('giveaway_created', properties),
+  trackGiveawayPublished: (properties: { giveaway_id: string }) =>
+    capture('giveaway_published', properties),
+  trackGiveawayWinnersSelected: (properties: {
+    giveaway_id: string
+    winner_count: number
+  }) => capture('giveaway_winners_selected', properties),
+  trackGiveawayShareOpened: (properties: {
+    giveaway_id: string
+    source: 'owner_detail' | 'public_page'
+  }) => capture('giveaway_share_opened', properties),
+  trackGiveawayEntered: (properties: {
+    giveaway_id: string
+    category: 'trivia' | 'task' | 'lottery'
+  }) => capture('giveaway_entered', properties),
+  trackGiveawayTriviaSubmitted: (properties: {
+    giveaway_id: string
+    score: number
+  }) => capture('giveaway_trivia_submitted', properties),
+  trackGiveawayTaskSubmitted: (properties: {
+    giveaway_id: string
+    task_id: string
+  }) => capture('giveaway_task_submitted', properties),
 }
