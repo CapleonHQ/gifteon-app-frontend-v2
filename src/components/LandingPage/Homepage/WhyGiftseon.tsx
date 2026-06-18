@@ -31,7 +31,7 @@ const occasions = [
   },
 ]
 
-const WhyGifteon = () => {
+const WhyGiftseon = () => {
   const shouldReduceMotion = useReducedMotion()
 
   const cardsWrapVariants: Variants = {
@@ -115,4 +115,4 @@ const WhyGifteon = () => {
   )
 }
 
-export default WhyGifteon
+export default WhyGiftseon

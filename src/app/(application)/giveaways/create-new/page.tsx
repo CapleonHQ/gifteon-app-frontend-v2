@@ -88,6 +88,17 @@ const CreateGiveawayPage = () => {
     if (!draft.category) return
     setPinError('')
     setPinActionError('')
+
+    const detailErrors = validateDetails(draft)
+    const contentErrors = validateContent(draft)
+    const errors = { ...detailErrors, ...contentErrors }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setIsPinOpen(false)
+      setStep(Object.keys(detailErrors).length > 0 ? 'details' : 'content')
+      return
+    }
+
     try {
       const payload = buildCreatePayload(draft, pin)
       const response = await createMutation.mutateAsync(payload)

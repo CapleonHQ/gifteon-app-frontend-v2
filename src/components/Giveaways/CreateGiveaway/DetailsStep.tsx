@@ -21,7 +21,7 @@ import {
 } from '@/lib/constants/giveaways'
 import type { DraftFieldErrors } from './helpers'
 import type { GiveawayDraft } from './types'
-import type { GiveawayPrizeType } from '@/types/Giveaways'
+import type { GiveawayCategory, GiveawayPrizeType } from '@/types/Giveaways'
 
 type DetailsStepProps = {
   totalSteps: number
@@ -30,6 +30,12 @@ type DetailsStepProps = {
   errors: DraftFieldErrors
   onBack: () => void
   onContinue: () => void
+}
+
+const TITLE_PLACEHOLDER: Record<GiveawayCategory, string> = {
+  trivia: 'e.g. Friday Night Trivia Challenge',
+  task: 'e.g. Follow & Share to Win',
+  lottery: 'e.g. Weekend Lucky Draw',
 }
 
 const LABEL_CLASS = 'text-xs font-medium text-grey-700'
@@ -84,7 +90,11 @@ const DetailsStep = ({
             type='text'
             value={draft.title}
             onChange={(e) => update({ title: e.target.value })}
-            placeholder='e.g. Gifteon Trivia Challenge'
+            placeholder={
+              draft.category
+                ? TITLE_PLACEHOLDER[draft.category]
+                : 'e.g. Giveaway title'
+            }
             className={fieldClass(Boolean(errors.title))}
           />
           <InlineError message={errors.title} />
@@ -248,14 +258,18 @@ const DetailsStep = ({
               value={isoToDate(draft.endsAt)}
               minDate={isoToDate(draft.startsAt) ?? new Date()}
               onChange={(date) =>
-                update({ endsAt: combineDateTime(date, isoToTime(draft.endsAt)) })
+                update({
+                  endsAt: combineDateTime(date, isoToTime(draft.endsAt)),
+                })
               }
             />
             <BillsTimePickerField
               label=''
               value={isoToTime(draft.endsAt)}
               onChange={(time) =>
-                update({ endsAt: combineDateTime(isoToDate(draft.endsAt), time) })
+                update({
+                  endsAt: combineDateTime(isoToDate(draft.endsAt), time),
+                })
               }
             />
           </div>
