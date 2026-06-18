@@ -29,7 +29,10 @@ import {
   GIVEAWAY_TASK_TYPES,
   GIVEAWAY_TASK_VERIFICATION_METHODS,
 } from '@/lib/constants/giveaways'
-import type { GiveawayTaskType, TaskVerificationMethod } from '@/types/Giveaways'
+import type {
+  GiveawayTaskType,
+  TaskVerificationMethod,
+} from '@/types/Giveaways'
 
 type ContentStepProps = {
   totalSteps: number
@@ -66,7 +69,10 @@ const ContentStep = ({
     update({
       questions: draft.questions.map((q) =>
         q.id === id
-          ? { ...q, options: q.options.map((o, i) => (i === index ? value : o)) }
+          ? {
+              ...q,
+              options: q.options.map((o, i) => (i === index ? value : o)),
+            }
           : q
       ),
     })
@@ -167,15 +173,17 @@ const ContentStep = ({
                           correct
                             ? 'border-success-300'
                             : hasOptionError
-                              ? 'border-error-300'
-                              : 'border-grey-50'
+                            ? 'border-error-300'
+                            : 'border-grey-50'
                         }`}
                       >
                         <button
                           type='button'
                           aria-label='Mark correct'
                           onClick={() =>
-                            updateQuestion(q.id, { correctOptionIndex: optIndex })
+                            updateQuestion(q.id, {
+                              correctOptionIndex: optIndex,
+                            })
                           }
                           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
                             correct
@@ -262,7 +270,9 @@ const ContentStep = ({
                   <button
                     type='button'
                     onClick={() =>
-                      update({ tasks: draft.tasks.filter((x) => x.id !== t.id) })
+                      update({
+                        tasks: draft.tasks.filter((x) => x.id !== t.id),
+                      })
                     }
                     className='inline-flex items-center gap-1 text-xs font-medium text-error-500 hover:text-error-600'
                   >
@@ -280,7 +290,7 @@ const ContentStep = ({
                   onChange={(e) =>
                     updateTask(t.id, { description: e.target.value })
                   }
-                  placeholder='e.g. Follow @gifteon on Instagram'
+                  placeholder='e.g. Follow @giftseon on Instagram'
                   className={fieldClass(Boolean(errors[taskDescKey(t.id)]))}
                 />
                 <InlineError message={errors[taskDescKey(t.id)]} />
@@ -345,7 +355,9 @@ const ContentStep = ({
 
           <button
             type='button'
-            onClick={() => update({ tasks: [...draft.tasks, createEmptyTask()] })}
+            onClick={() =>
+              update({ tasks: [...draft.tasks, createEmptyTask()] })
+            }
             className='inline-flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-grey-200 py-3.5 text-sm font-medium text-grey-600 hover:border-primary-200 hover:text-primary-600 transition-colors'
           >
             <Plus className='h-4 w-4' />
