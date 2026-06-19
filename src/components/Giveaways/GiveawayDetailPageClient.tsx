@@ -54,6 +54,7 @@ const GiveawayDetailPageClient = ({ giveawayId }: { giveawayId: string }) => {
 
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isShareOpen, setIsShareOpen] = useState(false)
+  const [shareJustPublished, setShareJustPublished] = useState(false)
   const [pinAction, setPinAction] = useState<PinAction>(null)
   const [pinError, setPinError] = useState('')
   const [pinActionError, setPinActionError] = useState('')
@@ -108,10 +109,12 @@ const GiveawayDetailPageClient = ({ giveawayId }: { giveawayId: string }) => {
     try {
       await publishMutation.mutateAsync()
       analytics.trackGiveawayPublished({ giveaway_id: giveawayId })
-      openSuccess({
-        title: 'Giveaway published',
-        message: 'Your giveaway is now live and open for entries.',
+      analytics.trackGiveawayShareOpened({
+        giveaway_id: giveawayId,
+        source: 'owner_detail',
       })
+      setShareJustPublished(true)
+      setIsShareOpen(true)
     } catch (err) {
       showApiError(toApiError(err).message || 'Unable to publish giveaway.')
     }
@@ -122,6 +125,7 @@ const GiveawayDetailPageClient = ({ giveawayId }: { giveawayId: string }) => {
       giveaway_id: giveawayId,
       source: 'owner_detail',
     })
+    setShareJustPublished(false)
     setIsShareOpen(true)
   }
 
@@ -488,10 +492,14 @@ const GiveawayDetailPageClient = ({ giveawayId }: { giveawayId: string }) => {
 
       <GiveawayShareModal
         isOpen={isShareOpen}
-        onClose={() => setIsShareOpen(false)}
+        onClose={() => {
+          setIsShareOpen(false)
+          setShareJustPublished(false)
+        }}
         title={giveaway.title}
         subtitle={giveaway.prizeDescription}
         shareUrl={`/g/${giveawayId}`}
+        justPublished={shareJustPublished}
       />
 
       <GiveawayPinModal
