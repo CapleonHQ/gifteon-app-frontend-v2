@@ -12,6 +12,7 @@ import DetailsStep from '@/components/Giveaways/CreateGiveaway/DetailsStep'
 import ContentStep from '@/components/Giveaways/CreateGiveaway/ContentStep'
 import ReviewStep from '@/components/Giveaways/CreateGiveaway/ReviewStep'
 import GiveawayPinModal from '@/components/Giveaways/GiveawayPinModal'
+import GiveawayLivePreview from '@/components/Giveaways/CreateGiveaway/GiveawayLivePreview'
 import {
   createInitialDraft,
   type CreateStep,
@@ -131,7 +132,8 @@ const CreateGiveawayPage = () => {
 
   return (
     <div className='w-full bg-white lg:bg-inherit px-4 lg:px-0 flex-1'>
-      <div className='max-w-2xl mx-auto'>
+      <div className='mx-auto flex max-w-2xl flex-col gap-8 xl:max-w-[1180px] xl:flex-row xl:items-start'>
+        <div className='min-w-0 flex-1'>
         <AnimatePresence mode='wait'>
           {step === 'category' ? (
             <CategoryStep
@@ -179,6 +181,11 @@ const CreateGiveawayPage = () => {
             />
           ) : null}
         </AnimatePresence>
+        </div>
+
+        <aside className='hidden w-[380px] shrink-0 xl:block xl:sticky xl:top-6'>
+          <GiveawayLivePreview draft={draft} />
+        </aside>
       </div>
 
       <GiveawayPinModal

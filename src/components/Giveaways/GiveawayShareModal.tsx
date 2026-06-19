@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Copy, Download } from 'lucide-react'
+import { Check, Copy, Download, PartyPopper } from 'lucide-react'
 import QRCode from 'qrcode'
 import CloseIcon from '@/assets/icons/CloseIcon'
 import InstagramIcon from '@/assets/icons/brand/InstagramIcon'
@@ -15,6 +15,7 @@ type GiveawayShareModalProps = {
   title: string
   shareUrl: string
   subtitle?: string
+  justPublished?: boolean
 }
 
 const GiveawayShareModal = ({
@@ -23,6 +24,7 @@ const GiveawayShareModal = ({
   title,
   shareUrl,
   subtitle,
+  justPublished = false,
 }: GiveawayShareModalProps) => {
   const [tab, setTab] = useState<'link' | 'qr' | 'social'>('link')
   const [qrData, setQrData] = useState('')
@@ -135,6 +137,13 @@ const GiveawayShareModal = ({
         </button>
 
         <div className='flex flex-col gap-4'>
+          {justPublished ? (
+            <div className='flex items-center gap-2 rounded-[12px] bg-success-50 px-3 py-2.5 text-sm font-medium text-success-700'>
+              <PartyPopper className='h-4 w-4 shrink-0' />
+              Your giveaway is live — share it to start getting entries.
+            </div>
+          ) : null}
+
           <div>
             <h3 className='text-2xl font-medium text-blackish'>
               Share{' '}
