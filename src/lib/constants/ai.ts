@@ -3,6 +3,7 @@ import type { AiDifficulty } from '@/types/Ai'
 export const AI_DEFAULT_LANGUAGE = 'English'
 export const AI_TRIVIA_MIN_COUNT = 1
 export const AI_TRIVIA_MAX_COUNT = 10
+export const MAX_TRIVIA_QUESTIONS = 50
 
 export const AI_DIFFICULTIES: Array<{ value: AiDifficulty; label: string }> = [
   { value: 'easy', label: 'Easy' },

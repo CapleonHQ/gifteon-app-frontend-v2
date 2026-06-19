@@ -23,8 +23,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { InlineError } from '@/components/Stores/Bills/config'
 import TemplateSelectionFooter from '@/components/Gifts/CreateNewGiftPage/TemplateSelectionFooter'
 import AiCreditsPill from '@/components/Ai/AiCreditsPill'
+import AiCreditShopModal from '@/components/Ai/AiCreditShopModal'
 import GenerateTriviaModal from './GenerateTriviaModal'
 import { useAiCredits } from '@/hooks/tanstack/ai'
+import { MAX_TRIVIA_QUESTIONS } from '@/lib/constants/ai'
 import {
   createEmptyQuestion,
   createEmptyTask,
@@ -73,12 +75,18 @@ const ContentStep = ({
   const isTrivia = draft.category === 'trivia'
 
   const [isAiOpen, setIsAiOpen] = useState(false)
+  const [isShopOpen, setIsShopOpen] = useState(false)
   const [aiNotice, setAiNotice] = useState<{
     tone: 'success' | 'info'
     message: string
   } | null>(null)
   const creditsQuery = useAiCredits(isTrivia)
   const aiCredits = creditsQuery.data?.data?.credits
+
+  const questionSlotsLeft = Math.max(
+    0,
+    MAX_TRIVIA_QUESTIONS - draft.questions.length
+  )
 
   const handleAiGenerated = (
     generated: QuestionDraft[],
@@ -87,11 +95,14 @@ const ContentStep = ({
     const existing = draft.questions.filter(
       (q) => q.questionText.trim() || q.options.some((o) => o.trim())
     )
-    update({ questions: [...existing, ...generated] })
+    // Never exceed the per-giveaway question cap.
+    const room = Math.max(0, MAX_TRIVIA_QUESTIONS - existing.length)
+    const added = generated.slice(0, room)
+    update({ questions: [...existing, ...added] })
     setAiNotice({
       tone: 'success',
-      message: `${generated.length} question${
-        generated.length > 1 ? 's' : ''
+      message: `${added.length} question${
+        added.length > 1 ? 's' : ''
       } added${creditsUsed ? ` · ${creditsUsed} credits used` : ''}`,
     })
   }
@@ -193,11 +204,17 @@ const ContentStep = ({
             <button
               type='button'
               onClick={() => setIsAiOpen(true)}
-              className='mt-4 inline-flex items-center gap-2 rounded-xl bg-linear-to-b from-[17.5%] from-primary-400 to-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:from-primary-500 hover:to-primary-700'
+              disabled={questionSlotsLeft <= 0}
+              className='mt-4 inline-flex items-center gap-2 rounded-xl bg-linear-to-b from-[17.5%] from-primary-400 to-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:from-primary-500 hover:to-primary-700 disabled:cursor-not-allowed disabled:opacity-50'
             >
               <Sparkles className='h-4 w-4' />
               Generate with AI
             </button>
+            {questionSlotsLeft <= 0 ? (
+              <p className='mt-2 text-xs text-grey-500'>
+                You’ve reached the {MAX_TRIVIA_QUESTIONS}-question limit.
+              </p>
+            ) : null}
           </div>
 
           {aiNotice ? (
@@ -381,10 +398,11 @@ const ContentStep = ({
 
           <button
             type='button'
+            disabled={questionSlotsLeft <= 0}
             onClick={() =>
               update({ questions: [...draft.questions, createEmptyQuestion()] })
             }
-            className='inline-flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-grey-200 py-3.5 text-sm font-medium text-grey-600 hover:border-primary-200 hover:text-primary-600 transition-colors'
+            className='inline-flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-grey-200 py-3.5 text-sm font-medium text-grey-600 hover:border-primary-200 hover:text-primary-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-grey-200 disabled:hover:text-grey-600'
           >
             <Plus className='h-4 w-4' />
             Add question
@@ -508,18 +526,23 @@ const ContentStep = ({
       />
 
       {isTrivia ? (
-        <GenerateTriviaModal
-          isOpen={isAiOpen}
-          onClose={() => setIsAiOpen(false)}
-          onGenerated={handleAiGenerated}
-          onTopUp={() => {
-            setIsAiOpen(false)
-            setAiNotice({
-              tone: 'info',
-              message: 'AI credit top-up is coming soon.',
-            })
-          }}
-        />
+        <>
+          <GenerateTriviaModal
+            isOpen={isAiOpen}
+            onClose={() => setIsAiOpen(false)}
+            onGenerated={handleAiGenerated}
+            maxCount={questionSlotsLeft}
+            onTopUp={() => {
+              setIsAiOpen(false)
+              setIsShopOpen(true)
+            }}
+          />
+          <AiCreditShopModal
+            isOpen={isShopOpen}
+            onClose={() => setIsShopOpen(false)}
+            onPurchased={() => setIsAiOpen(true)}
+          />
+        </>
       ) : null}
     </motion.div>
   )

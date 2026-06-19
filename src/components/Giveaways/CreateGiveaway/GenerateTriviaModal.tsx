@@ -28,6 +28,7 @@ type GenerateTriviaModalProps = {
   onClose: () => void
   onGenerated: (questions: QuestionDraft[], creditsUsed?: number) => void
   onTopUp: () => void
+  maxCount?: number
 }
 
 const LABEL_CLASS = 'text-xs font-medium text-grey-700'
@@ -39,10 +40,16 @@ const GenerateTriviaModal = ({
   onClose,
   onGenerated,
   onTopUp,
+  maxCount = AI_TRIVIA_MAX_COUNT,
 }: GenerateTriviaModalProps) => {
   const creditsQuery = useAiCredits(isOpen)
   const credits = creditsQuery.data?.data?.credits
   const generateMutation = useGenerateTrivia()
+
+  const countCeiling = Math.max(
+    AI_TRIVIA_MIN_COUNT,
+    Math.min(AI_TRIVIA_MAX_COUNT, maxCount)
+  )
 
   const [category, setCategory] = useState('')
   const [refine, setRefine] = useState('')
@@ -50,6 +57,7 @@ const GenerateTriviaModal = ({
   const [difficulty, setDifficulty] = useState<AiDifficulty>('medium')
   const [error, setError] = useState('')
 
+  const effectiveCount = Math.min(count, countCeiling)
   const outOfCredits = typeof credits === 'number' && credits <= 0
 
   const reset = () => {
@@ -67,7 +75,7 @@ const GenerateTriviaModal = ({
 
   const adjustCount = (delta: number) =>
     setCount((c) =>
-      Math.min(AI_TRIVIA_MAX_COUNT, Math.max(AI_TRIVIA_MIN_COUNT, c + delta))
+      Math.min(countCeiling, Math.max(AI_TRIVIA_MIN_COUNT, c + delta))
     )
 
   const handleGenerate = async () => {
@@ -79,7 +87,7 @@ const GenerateTriviaModal = ({
     try {
       const res = await generateMutation.mutateAsync({
         topic: category,
-        count,
+        count: effectiveCount,
         difficulty,
         language: AI_DEFAULT_LANGUAGE,
         ...(refine.trim() ? { contextHint: refine.trim() } : {}),
@@ -180,19 +188,19 @@ const GenerateTriviaModal = ({
             <button
               type='button'
               onClick={() => adjustCount(-1)}
-              disabled={count <= AI_TRIVIA_MIN_COUNT}
+              disabled={effectiveCount <= AI_TRIVIA_MIN_COUNT}
               aria-label='Fewer questions'
               className='flex h-8 w-8 items-center justify-center rounded-lg text-grey-600 hover:bg-grey-50 disabled:opacity-40'
             >
               <Minus className='h-4 w-4' />
             </button>
             <span className='text-sm font-semibold tabular-nums text-grey-900'>
-              {count}
+              {effectiveCount}
             </span>
             <button
               type='button'
               onClick={() => adjustCount(1)}
-              disabled={count >= AI_TRIVIA_MAX_COUNT}
+              disabled={effectiveCount >= countCeiling}
               aria-label='More questions'
               className='flex h-8 w-8 items-center justify-center rounded-lg text-grey-600 hover:bg-grey-50 disabled:opacity-40'
             >

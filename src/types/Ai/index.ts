@@ -81,3 +81,17 @@ export interface PurchasePackResult {
   currency: string
   reference: string
 }
+
+export interface ExchangeRateQuery {
+  from: string
+  to: string
+  amount: number
+}
+
+export interface ExchangeRateData {
+  from: string
+  to: string
+  amount: number
+  rate: number
+  converted: number
+}
