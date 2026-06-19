@@ -1,7 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, ChevronLeft, Plus, Trash2 } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  Plus,
+  Sparkles,
+  Trash2,
+  X,
+} from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -12,6 +22,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { InlineError } from '@/components/Stores/Bills/config'
 import TemplateSelectionFooter from '@/components/Gifts/CreateNewGiftPage/TemplateSelectionFooter'
+import AiCreditsPill from '@/components/Ai/AiCreditsPill'
+import GenerateTriviaModal from './GenerateTriviaModal'
+import { useAiCredits } from '@/hooks/tanstack/ai'
 import {
   createEmptyQuestion,
   createEmptyTask,
@@ -59,6 +72,30 @@ const ContentStep = ({
 }: ContentStepProps) => {
   const isTrivia = draft.category === 'trivia'
 
+  const [isAiOpen, setIsAiOpen] = useState(false)
+  const [aiNotice, setAiNotice] = useState<{
+    tone: 'success' | 'info'
+    message: string
+  } | null>(null)
+  const creditsQuery = useAiCredits(isTrivia)
+  const aiCredits = creditsQuery.data?.data?.credits
+
+  const handleAiGenerated = (
+    generated: QuestionDraft[],
+    creditsUsed?: number
+  ) => {
+    const existing = draft.questions.filter(
+      (q) => q.questionText.trim() || q.options.some((o) => o.trim())
+    )
+    update({ questions: [...existing, ...generated] })
+    setAiNotice({
+      tone: 'success',
+      message: `${generated.length} question${
+        generated.length > 1 ? 's' : ''
+      } added${creditsUsed ? ` · ${creditsUsed} credits used` : ''}`,
+    })
+  }
+
   const updateQuestion = (id: string, patch: Partial<QuestionDraft>) =>
     update({
       questions: draft.questions.map((q) =>
@@ -75,6 +112,23 @@ const ContentStep = ({
             }
           : q
       ),
+    })
+  const moveOption = (id: string, from: number, to: number) =>
+    update({
+      questions: draft.questions.map((q) => {
+        if (q.id !== id || to < 0 || to >= q.options.length) return q
+        const options = [...q.options]
+        const [moved] = options.splice(from, 1)
+        options.splice(to, 0, moved)
+
+        let correctOptionIndex = q.correctOptionIndex
+        if (q.correctOptionIndex === from) correctOptionIndex = to
+        else if (from < q.correctOptionIndex && to >= q.correctOptionIndex)
+          correctOptionIndex -= 1
+        else if (from > q.correctOptionIndex && to <= q.correctOptionIndex)
+          correctOptionIndex += 1
+        return { ...q, options, correctOptionIndex }
+      }),
     })
   const updateTask = (id: string, patch: Partial<TaskDraft>) =>
     update({
@@ -114,6 +168,58 @@ const ContentStep = ({
 
       {isTrivia ? (
         <div className='mb-5 flex flex-col gap-4'>
+          <div className='overflow-hidden rounded-[20px] border border-primary-100 bg-linear-to-br from-primary-50 to-white p-5'>
+            <div className='flex items-start justify-between gap-3'>
+              <div className='flex items-start gap-3'>
+                <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-primary-600 shadow-sm'>
+                  <Sparkles className='h-5 w-5' />
+                </span>
+                <div>
+                  <h3 className='text-sm font-semibold text-grey-900'>
+                    Generate questions with AI
+                  </h3>
+                  <p className='mt-0.5 text-sm text-grey-600'>
+                    Pick a category and let AI draft questions — you can edit
+                    each one.
+                  </p>
+                </div>
+              </div>
+              <AiCreditsPill
+                credits={aiCredits}
+                isLoading={creditsQuery.isLoading}
+                className='hidden shrink-0 sm:inline-flex'
+              />
+            </div>
+            <button
+              type='button'
+              onClick={() => setIsAiOpen(true)}
+              className='mt-4 inline-flex items-center gap-2 rounded-xl bg-linear-to-b from-[17.5%] from-primary-400 to-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:from-primary-500 hover:to-primary-700'
+            >
+              <Sparkles className='h-4 w-4' />
+              Generate with AI
+            </button>
+          </div>
+
+          {aiNotice ? (
+            <div
+              className={`flex items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-sm ${
+                aiNotice.tone === 'success'
+                  ? 'bg-success-50 text-success-700'
+                  : 'bg-information-50 text-information-700'
+              }`}
+            >
+              <span>{aiNotice.message}</span>
+              <button
+                type='button'
+                onClick={() => setAiNotice(null)}
+                aria-label='Dismiss'
+                className='shrink-0 opacity-70 hover:opacity-100'
+              >
+                <X className='h-4 w-4' />
+              </button>
+            </div>
+          ) : null}
+
           {draft.questions.map((q, qIndex) => (
             <div
               key={q.id}
@@ -141,14 +247,16 @@ const ContentStep = ({
 
               <div className='space-y-1.5'>
                 <p className={LABEL_CLASS}>Question</p>
-                <input
-                  type='text'
+                <textarea
                   value={q.questionText}
                   onChange={(e) =>
                     updateQuestion(q.id, { questionText: e.target.value })
                   }
+                  rows={2}
                   placeholder='e.g. What is the capital of Nigeria?'
-                  className={fieldClass(Boolean(errors[questionTextKey(q.id)]))}
+                  className={`${fieldClass(
+                    Boolean(errors[questionTextKey(q.id)])
+                  )} min-h-[64px] resize-y leading-6 field-sizing-content`}
                 />
                 <InlineError message={errors[questionTextKey(q.id)]} />
               </div>
@@ -157,21 +265,23 @@ const ContentStep = ({
                 <p className={LABEL_CLASS}>
                   Options{' '}
                   <span className='font-normal text-grey-400'>
-                    (mark the correct one)
+                    (tap the circle to mark the correct one)
                   </span>
                 </p>
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                <div className='flex flex-col gap-2'>
                   {q.options.map((option, optIndex) => {
                     const correct = q.correctOptionIndex === optIndex
                     const hasOptionError = Boolean(
                       errors[questionOptionsKey(q.id)]
                     )
+                    const isFirst = optIndex === 0
+                    const isLast = optIndex === q.options.length - 1
                     return (
                       <div
                         key={optIndex}
-                        className={`flex items-center gap-2 rounded-xl border bg-white pl-2 pr-3 ${
+                        className={`flex items-center gap-2 rounded-xl border bg-white py-1.5 pl-2 pr-1.5 ${
                           correct
-                            ? 'border-success-300'
+                            ? 'border-success-300 bg-success-50/40'
                             : hasOptionError
                             ? 'border-error-300'
                             : 'border-grey-50'
@@ -179,7 +289,8 @@ const ContentStep = ({
                       >
                         <button
                           type='button'
-                          aria-label='Mark correct'
+                          aria-label='Mark as correct answer'
+                          aria-pressed={correct}
                           onClick={() =>
                             updateQuestion(q.id, {
                               correctOptionIndex: optIndex,
@@ -193,15 +304,39 @@ const ContentStep = ({
                         >
                           <Check className='h-3 w-3' strokeWidth={3} />
                         </button>
-                        <input
-                          type='text'
+                        <textarea
                           value={option}
                           onChange={(e) =>
                             updateOption(q.id, optIndex, e.target.value)
                           }
+                          rows={1}
                           placeholder={`Option ${optIndex + 1}`}
-                          className='flex-1 min-w-0 bg-transparent py-2.5 text-sm text-grey-800 placeholder:text-grey-500 focus:outline-none'
+                          className='field-sizing-content min-w-0 flex-1 resize-none wrap-break-word bg-transparent py-2 text-sm leading-6 text-grey-800 placeholder:text-grey-500 focus:outline-none'
                         />
+                        <div className='mt-0.5 flex shrink-0 flex-col'>
+                          <button
+                            type='button'
+                            aria-label='Move option up'
+                            disabled={isFirst}
+                            onClick={() =>
+                              moveOption(q.id, optIndex, optIndex - 1)
+                            }
+                            className='flex h-5 w-6 items-center justify-center rounded text-grey-400 hover:bg-grey-50 hover:text-grey-600 disabled:opacity-30 disabled:hover:bg-transparent'
+                          >
+                            <ChevronUp className='h-4 w-4' />
+                          </button>
+                          <button
+                            type='button'
+                            aria-label='Move option down'
+                            disabled={isLast}
+                            onClick={() =>
+                              moveOption(q.id, optIndex, optIndex + 1)
+                            }
+                            className='flex h-5 w-6 items-center justify-center rounded text-grey-400 hover:bg-grey-50 hover:text-grey-600 disabled:opacity-30 disabled:hover:bg-transparent'
+                          >
+                            <ChevronDown className='h-4 w-4' />
+                          </button>
+                        </div>
                       </div>
                     )
                   })}
@@ -371,6 +506,21 @@ const ContentStep = ({
         onContinue={onContinue}
         ctaLabel='Continue'
       />
+
+      {isTrivia ? (
+        <GenerateTriviaModal
+          isOpen={isAiOpen}
+          onClose={() => setIsAiOpen(false)}
+          onGenerated={handleAiGenerated}
+          onTopUp={() => {
+            setIsAiOpen(false)
+            setAiNotice({
+              tone: 'info',
+              message: 'AI credit top-up is coming soon.',
+            })
+          }}
+        />
+      ) : null}
     </motion.div>
   )
 }
