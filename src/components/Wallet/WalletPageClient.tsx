@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import WalletSummarySection from './WalletSummarySection'
 import WalletDisputeModal from './WalletDisputeModal'
 import WalletPendingWithdrawalsBanner from './WalletPendingWithdrawalsBanner'
@@ -19,9 +20,17 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { mapWalletBankAccounts } from './utils'
 
 const WalletPageClient = () => {
+  const searchParams = useSearchParams()
   const [isTopUpOpen, setIsTopUpOpen] = useState(false)
   const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
+
+  useEffect(() => {
+    const modal = searchParams.get('modal')
+    if (modal === 'topup') setIsTopUpOpen(true)
+    else if (modal === 'transfer') setIsTransferOpen(true)
+    else if (modal === 'withdraw') setIsWithdrawOpen(true)
+  }, [])
   const [isDisputeOpen, setIsDisputeOpen] = useState(false)
   const [isPendingWithdrawalsOpen, setIsPendingWithdrawalsOpen] =
     useState(false)

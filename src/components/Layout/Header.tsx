@@ -24,7 +24,7 @@ import {
   NotificationIcon,
 } from '@/assets/icons'
 import { usePathname, useRouter } from 'next/navigation'
-import { MENU_ITEMS } from '@/lib/constants/menu'
+import { NAV_GROUPS } from '@/lib/constants/menu'
 import { NOTIFICATIONS } from '@/lib/constants/dummy'
 import { useAuth } from '@/context/AuthContext'
 import { logout } from '@/api/auth'
@@ -38,8 +38,6 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
-  const [mobileProfileOpen, setMobileProfileOpen] = useState(false)
-
   const pathname = usePathname()
   const router = useRouter()
   const { user } = useAuth()
@@ -424,164 +422,79 @@ const Header = ({ pageTitle = 'Dashboard' }: { pageTitle: string }) => {
             >
               <div className='flex flex-col h-full'>
                 {/* Mobile Menu Navigation */}
-                <nav className='flex-1 p-4 flex flex-col gap-y-1.5'>
-                  {MENU_ITEMS.map((item) => {
-                    const Icon = item.icon
-                    const isActive = pathname.includes(item.href)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <motion.div
-                          className={`w-full flex items-center gap-2 px-3 py-3.5 rounded-lg transition-colors relative ${
-                            isActive
-                              ? 'text-primary-600 bg-primary-50'
-                              : 'text-grey-600 hover:bg-grey-50'
-                          }`}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <span className='w-4 h-4'>
-                            <Icon />
-                          </span>
-                          <span className='text-base leading-[129%] tracking-[0%]'>
-                            {item.label}
-                          </span>
-                        </motion.div>
-                      </Link>
-                    )
-                  })}
-
-                  {/* Log Out */}
-                  <div className='pt-3 pb-2 border-y border-grey-50'>
-                    <motion.button
-                      className='w-full flex items-center gap-2 px-3 py-3 rounded-lg text-left text-grey-600 hover:bg-grey-50 transition-colors'
-                      onClick={handleLogout}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <span className='w-6 h-6'>
-                        <LogoutIcon />
-                      </span>
-                      <span className='text-base leading-[129%] tracking-[0%]'>
-                        Log Out
-                      </span>
-                    </motion.button>
-                  </div>
-
-                  {/* Profile - Expandable */}
-                  <div className='mt-2'>
-                    <motion.div
-                      className='flex items-center gap-2 p-3 hover:bg-grey-50 rounded-xl cursor-pointer transition-colors duration-200'
-                      onClick={() => setMobileProfileOpen(!mobileProfileOpen)}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Avatar className='w-10 h-10'>
-                        {avatarUrl ? <AvatarImage src={avatarUrl} /> : null}
-                        <AvatarFallback className='bg-primary-100 text-primary-600 font-medium'>
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className='flex flex-col flex-1 gap-1'>
-                        <span className='font-medium text-blackish leading-[20px]'>
-                          {displayName}
-                        </span>
-                        <span className='text-xs text-grey-500 leading-[16px]'>
-                          {email}
-                        </span>
-                      </div>
-                      <motion.div
-                        animate={{ rotate: mobileProfileOpen ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronDown className='w-5 h-5 text-grey-400' />
-                      </motion.div>
-                    </motion.div>
-
-                    {/* Profile Dropdown Items */}
-                    <AnimatePresence>
-                      {mobileProfileOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className='overflow-hidden mt-2'
-                        >
-                          <div className='flex flex-col gap-1 py-2'>
-                            <div className='flex items-center text-grey-500 hover:bg-grey-50 transition-colors duration-300 cursor-pointer py-2.5 px-4 rounded-[8px]'>
-                              <span className='w-5 h-5 mr-2 text-grey-500'>
-                                <Favoriteicon />
-                              </span>
-                              Favorite Gifts
-                            </div>
-                            {/* <Link
-                              href='/settings'
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              <div className='flex items-center gap-3 px-3 py-2.5 rounded-lg text-grey-700 hover:bg-grey-50 transition-colors'>
-                                <svg
-                                  className='w-4 h-4'
-                                  viewBox='0 0 24 24'
-                                  fill='none'
-                                  stroke='currentColor'
-                                >
-                                  <path
-                                    strokeLinecap='round'
-                                    strokeLinejoin='round'
-                                    strokeWidth={2}
-                                    d='M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'
-                                  />
-                                  <path
-                                    strokeLinecap='round'
-                                    strokeLinejoin='round'
-                                    strokeWidth={2}
-                                    d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
-                                  />
-                                </svg>
-                                <span className='text-sm'>Settings</span>
-                              </div>
-                            </Link> */}
-                          </div>
-                        </motion.div>
+                <nav className='flex-1 p-4 flex flex-col gap-5 overflow-y-auto'>
+                  {NAV_GROUPS.map((group, groupIndex) => (
+                    <div key={groupIndex} className='flex flex-col gap-0.5'>
+                      {group.label && (
+                        <p className='text-[10px] font-semibold text-grey-400 uppercase tracking-widest px-3 mb-1'>
+                          {group.label}
+                        </p>
                       )}
-                    </AnimatePresence>
-                  </div>
+                      {group.items.map((item) => {
+                        const Icon = item.icon
+                        const isActive = pathname.includes(item.href)
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <motion.div
+                              className={`w-full flex items-center gap-2 px-3 py-3 rounded-xl transition-colors relative ${
+                                isActive
+                                  ? 'text-primary-600 bg-primary-50'
+                                  : 'text-grey-600 hover:bg-grey-50'
+                              }`}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              {isActive && (
+                                <motion.div
+                                  layoutId='mobileActiveIndicator'
+                                  className='absolute left-0 top-0 bottom-0 w-1 bg-primary-600 rounded-r'
+                                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                />
+                              )}
+                              <span className='w-4 h-4'>
+                                <Icon />
+                              </span>
+                              <span className='text-base leading-[129%] tracking-[0%]'>
+                                {item.label}
+                              </span>
+                            </motion.div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  ))}
                 </nav>
 
                 {/* User Profile Section - Mobile */}
-                <div className='px-6 pb-6'>
-                  {/* Create Gift Page Card */}
-                  <div className='mt-6 border border-secondary-100 bg-[#F6FBFD80] shadow-[0px_2px_4px_-1px_#10192805] p-[72px_12px_12px_12px] rounded-xl relative'>
-                    <div className='absolute -top-[31px] left-1/2 -translate-x-1/2'>
-                      <div className='w-[69px] h-[100px]'>
-                        <Image
-                          src='/assets/images/gift-bag-icon.svg'
-                          alt='Giftseon'
-                          className='w-full h-full'
-                          width={70}
-                          height={100}
-                        />
-                      </div>
-                    </div>
-                    <div className='flex flex-col gap-2'>
-                      <div className='flex flex-col gap-1 items-center text-grey-900'>
-                        <h5 className='font-medium leading-[129%] tracking-[0%]'>
-                          Create Gift Page
-                        </h5>
-                        <span className='leading-[129%] tracking-[0%] text-xs text-grey-600 text-center'>
-                          Create a gift page & share your story.
-                        </span>
-                      </div>
-                      <Link
-                        href='/gifts/create-new'
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className='text-primary-500 text-center bg-primary-50 rounded-lg py-2.5 font-medium transition-colors hover:bg-primary-50/70 text-sm'
-                      >
-                        Create Gift page
-                      </Link>
-                    </div>
+                <div className='border-t border-grey-100 mx-4' />
+                <div className='flex items-center gap-3 px-4 py-4'>
+                  <Avatar className='w-10 h-10'>
+                    {avatarUrl ? <AvatarImage src={avatarUrl} /> : null}
+                    <AvatarFallback className='bg-primary-100 text-primary-600 font-medium'>
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className='flex flex-col flex-1 min-w-0'>
+                    <span className='font-medium text-blackish text-sm leading-[20px] truncate'>
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                    <span className='text-xs text-grey-500 leading-[16px] truncate'>
+                      {email}
+                    </span>
                   </div>
+                  <button
+                    type='button'
+                    onClick={handleLogout}
+                    className='w-9 h-9 rounded-lg bg-grey-50 hover:bg-error-50 hover:text-error-500 flex items-center justify-center transition-colors shrink-0'
+                    aria-label='Log out'
+                  >
+                    <span className='w-4 h-4'>
+                      <LogoutIcon />
+                    </span>
+                  </button>
                 </div>
               </div>
             </motion.div>
