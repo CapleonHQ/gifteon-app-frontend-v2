@@ -8,8 +8,7 @@ import type { CheckoutPaymentRequestBody } from '@/types/Payment'
 import type { GiftOption } from './types'
 import CheckoutPinModal from './CheckoutPinModal'
 import ConfirmationHeader from './confirmation/ConfirmationHeader'
-import PaymentStepContent from './confirmation/PaymentStepContent'
-import ReviewStepContent from './confirmation/ReviewStepContent'
+import CheckoutStepContent from './confirmation/CheckoutStepContent'
 import DesktopPinStepContent from './confirmation/DesktopPinStepContent'
 import type { CheckoutStep, GuestDetails } from './confirmation/types'
 import {
@@ -26,7 +25,7 @@ type ConfirmationModalProps = {
   onClose: () => void
   onPaymentSuccess: (message: string) => void
   onRequestWalletSignIn?: (payload: {
-    step: 'payment'
+    step: 'checkout'
     cashAmountInputs: Record<string, string>
   }) => void
   pageId: string
@@ -47,7 +46,7 @@ export default function ConfirmationModal({
   onRequestWalletSignIn,
   pageId,
   isAuthenticated,
-  initialStep = 'review',
+  initialStep = 'checkout',
   initialCashAmountInputs = {},
   selectedGiftItems,
   giftQuantities,
@@ -55,7 +54,10 @@ export default function ConfirmationModal({
   currency,
   ownersName,
 }: ConfirmationModalProps) {
-  const [step, setStep] = useState<CheckoutStep>('review')
+  const [step, setStep] = useState<CheckoutStep>('checkout')
+  const [selectedMethod, setSelectedMethod] = useState<
+    'card' | 'wallet' | null
+  >(isAuthenticated ? null : 'card')
   const [cashAmountInputs, setCashAmountInputs] = useState<
     Record<string, string>
   >({})
@@ -112,7 +114,8 @@ export default function ConfirmationModal({
 
   useEffect(() => {
     if (!isOpen) {
-      setStep('review')
+      setStep('checkout')
+      setSelectedMethod(isAuthenticated ? null : 'card')
       setCashAmountInputs({})
       setCashAmountErrors({})
       setPaymentError('')
@@ -124,11 +127,12 @@ export default function ConfirmationModal({
 
     setStep(initialStep)
     setCashAmountInputs(initialCashAmountInputs)
+    setSelectedMethod(isAuthenticated ? null : 'card')
     setGuestDetails({
       fullName: '',
       email: '',
     })
-  }, [initialCashAmountInputs, initialStep, isOpen])
+  }, [initialCashAmountInputs, initialStep, isOpen, isAuthenticated])
 
   if (!isOpen) return null
 
@@ -145,16 +149,10 @@ export default function ConfirmationModal({
     0
   )
   const serviceCharge = Math.round(giftsTotal * 0.07)
-  const total = giftsTotal + serviceCharge
-  const paymentBreakdownItems = selectedGiftItems.map((item) => ({
-    id: item.id,
-    title: item.title,
-    quantityLabel:
-      item.kind === 'cash'
-        ? ''
-        : ` x${giftQuantities[item.id] ?? item.quantity}`,
-    amount: getLineAmount(item),
-  }))
+  const cardTotal = giftsTotal + serviceCharge
+  const walletTotal = giftsTotal
+  const effectiveTotal =
+    selectedMethod === 'wallet' ? walletTotal : cardTotal
 
   const validateCashAmounts = () => {
     const nextErrors: Record<string, string> = {}
@@ -404,7 +402,7 @@ export default function ConfirmationModal({
         }
         setPinError('')
         setIsPinModalOpen(false)
-        setStep('payment')
+        setStep('checkout')
         setPaymentError(message)
       } else {
         setPaymentError(message)
@@ -414,25 +412,36 @@ export default function ConfirmationModal({
     }
   }
 
-  const handleContinueToPayment = () => {
+  const handlePay = () => {
+    if (!selectedMethod) return
     setPaymentError('')
-    if (!validateCashAmounts()) return
-    setStep('payment')
+
+    if (selectedMethod === 'card') {
+      void submitCheckout('external')
+    } else {
+      if (!validateCashAmounts()) return
+      setPinError('')
+      setStep('pin')
+    }
   }
 
   const handleHeaderBack = () => {
     if (step === 'pin') {
-      setStep('payment')
+      setStep('checkout')
       setPinError('')
-      return
-    }
-    if (step === 'payment') {
-      setStep('review')
-      setPaymentError('')
       return
     }
     onClose()
   }
+
+  const payButtonLabel = (() => {
+    if (isSubmitting) return 'Processing...'
+    if (!selectedMethod) return 'Choose a payment method'
+    return `Pay ${formatCurrency(effectiveTotal, {
+      currency,
+      maximumFractionDigits: 0,
+    })}`
+  })()
 
   return (
     <>
@@ -451,8 +460,8 @@ export default function ConfirmationModal({
         }
         body={
           <div className='space-y-4'>
-            {step === 'review' ? (
-              <ReviewStepContent
+            {step === 'checkout' ? (
+              <CheckoutStepContent
                 selectedGiftItems={selectedGiftItems}
                 giftQuantities={giftQuantities}
                 currency={currency}
@@ -462,32 +471,14 @@ export default function ConfirmationModal({
                 onChangeGiftQuantity={onChangeGiftQuantity}
                 giftsTotal={giftsTotal}
                 serviceCharge={serviceCharge}
-                total={total}
-              />
-            ) : step === 'payment' ? (
-              <PaymentStepContent
-                selectedCount={selectedGiftItems.length}
-                breakdownItems={paymentBreakdownItems}
-                currency={currency}
-                total={total}
-                serviceCharge={serviceCharge}
                 isAuthenticated={isAuthenticated}
-                isSubmitting={isSubmitting}
+                selectedMethod={selectedMethod}
+                onSelectMethod={setSelectedMethod}
                 guestDetails={guestDetails}
                 guestErrors={guestErrors}
-                paymentError={paymentError}
-                cashAmountInputs={cashAmountInputs}
                 onChangeGuestDetails={handleGuestDetailsChange}
-                onExternalPay={() => void submitCheckout('external')}
-                onWalletPay={() => {
-                  setPinError('')
-                  setStep('pin')
-                }}
+                paymentError={paymentError}
                 onRequestWalletSignIn={onRequestWalletSignIn}
-                onGoBack={() => {
-                  setStep('review')
-                  setPaymentError('')
-                }}
               />
             ) : (
               <>
@@ -497,7 +488,7 @@ export default function ConfirmationModal({
                     pinError={pinError}
                     isSubmitting={isSubmitting}
                     onBack={() => {
-                      setStep('payment')
+                      setStep('checkout')
                       setPinError('')
                     }}
                     onConfirm={async (pin) => {
@@ -511,24 +502,15 @@ export default function ConfirmationModal({
           </div>
         }
         footer={
-          step === 'review' ? (
-            <div className='grid gap-3 grid-cols-2'>
-              <button
-                type='button'
-                onClick={onClose}
-                className='inline-flex h-12 items-center justify-center rounded-[14px] border border-grey-200 bg-grey-50 px-4 text-sm font-medium text-grey-800 hover:bg-grey-100 transition-colors duration-300'
-              >
-                Cancel
-              </button>
-              <button
-                type='button'
-                onClick={handleContinueToPayment}
-                disabled={selectedGiftItems.length === 0 || isSubmitting}
-                className='inline-flex h-12 items-center justify-center rounded-[14px] bg-linear-to-b from-primary-400 to-primary-600 px-4 text-sm font-medium text-white enabled:hover:from-primary-500 enabled:hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300'
-              >
-                {isSubmitting ? 'Processing...' : 'Make Payment'}
-              </button>
-            </div>
+          step === 'checkout' ? (
+            <button
+              type='button'
+              onClick={handlePay}
+              disabled={!selectedMethod || selectedGiftItems.length === 0 || isSubmitting}
+              className='w-full inline-flex h-12 items-center justify-center rounded-[14px] bg-linear-to-b from-primary-400 to-primary-600 px-4 text-sm font-medium text-white enabled:hover:from-primary-500 enabled:hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300'
+            >
+              {payButtonLabel}
+            </button>
           ) : undefined
         }
       />
@@ -540,7 +522,7 @@ export default function ConfirmationModal({
           isSubmitting={isSubmitting}
           onClose={() => {
             setIsPinModalOpen(false)
-            setStep('payment')
+            setStep('checkout')
             setPinError('')
           }}
           onClearError={() => setPinError('')}
