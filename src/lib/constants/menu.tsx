@@ -65,6 +65,7 @@ export const PAGE_TITLE_ROUTES: Array<{
   { pattern: /^\/explore$/, title: 'Explore' },
   { pattern: /^\/wallet$/, title: 'Wallet' },
   { pattern: /^\/profile$/, title: 'Profile' },
+  { pattern: /^\/rewards$/, title: 'Rewards & Referrals' },
   { pattern: /^\/stores\/bills$/, title: 'Bills & Utilities' },
   { pattern: /^\/stores$/, title: 'Stores' },
   { pattern: /^\/settings$/, title: 'Settings' },
