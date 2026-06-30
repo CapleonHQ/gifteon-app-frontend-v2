@@ -64,7 +64,7 @@ export const lookupTransferRecipient = async (
   tag: string
 ): Promise<ApiResponse<TransferRecipientLookupData>> => {
   const resp: AxiosResponse<ApiResponse<TransferRecipientLookupData>> =
-    await apiService.appPrivate.get('/wallet/transfer/lookup', {
+    await apiService.appPrivate.get('/misc/finance/transfer/lookup', {
       params: { tag },
     })
   return resp.data

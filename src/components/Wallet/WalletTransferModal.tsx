@@ -47,9 +47,8 @@ const WalletTransferModal = ({
   const [amountInput, setAmountInput] = useState('')
   const [pin, setPin] = useState(['', '', '', ''])
   const [isPinModalOpen, setIsPinModalOpen] = useState(false)
-  const [recipient, setRecipient] = useState<TransferRecipientLookupData | null>(
-    null
-  )
+  const [recipient, setRecipient] =
+    useState<TransferRecipientLookupData | null>(null)
   const [isResolvingRecipient, setIsResolvingRecipient] = useState(false)
   const [resolveErrorMessage, setResolveErrorMessage] = useState('')
   const [resolveErrorShakeKey, setResolveErrorShakeKey] = useState(0)
@@ -111,8 +110,8 @@ const WalletTransferModal = ({
   const currentTag = profileQuery.data?.data?.giftseonTag ?? undefined
   const isSelfTransfer = Boolean(
     recipient &&
-      currentTag &&
-      recipient.tag.toLowerCase() === currentTag.toLowerCase()
+    currentTag &&
+    recipient.tag.toLowerCase() === currentTag.toLowerCase(),
   )
 
   const amountValue = Number(amountInput)
@@ -124,7 +123,7 @@ const WalletTransferModal = ({
       })} in your account`
     : undefined
   const isCrossCurrency = Boolean(
-    recipient && recipient.walletCurrency !== currency
+    recipient && recipient.walletCurrency !== currency,
   )
 
   const isContinueDisabled =
@@ -191,7 +190,7 @@ const WalletTransferModal = ({
 
   const handlePinKeyDown = (
     index: number,
-    event: KeyboardEvent<HTMLInputElement>
+    event: KeyboardEvent<HTMLInputElement>,
   ) => {
     if (
       event.key === 'Backspace' &&
@@ -242,7 +241,7 @@ const WalletTransferModal = ({
       })
       const result = response.data
       const crossCurrency = Boolean(
-        result && result.senderCurrency !== result.receiverCurrency
+        result && result.senderCurrency !== result.receiverCurrency,
       )
       analytics.trackWalletTransferSucceeded({
         amount: amountValue,
@@ -264,14 +263,14 @@ const WalletTransferModal = ({
             currency: result.receiverCurrency,
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-          })} was credited to the recipient.`
+          })} was credited to the recipient.`,
         )
         messageParts.push(
           `A fee of ${formatCurrency(result.fee, {
             currency: result.senderCurrency,
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-          })} was applied.`
+          })} was applied.`,
         )
       }
       openSuccess({
@@ -333,7 +332,7 @@ const WalletTransferModal = ({
           {recipient.fullName}
         </p>
         <p className='text-xs text-grey-500 truncate'>
-          @{recipient.tag} · {recipient.walletCurrency}
+          {recipient.tag} · {recipient.walletCurrency}
         </p>
       </div>
     </div>
@@ -413,8 +412,8 @@ const WalletTransferModal = ({
                 ? 'border-error-400 focus:ring-1 focus:ring-error-200'
                 : 'border-error-400 focus:border-error-400'
               : mobileOverlay
-              ? 'border-grey-100 focus:ring-1 focus:ring-primary-300'
-              : 'border-grey-100 focus:border-primary-300'
+                ? 'border-grey-100 focus:ring-1 focus:ring-primary-300'
+                : 'border-grey-100 focus:border-primary-300'
           }`}
           type='password'
           inputMode='numeric'
@@ -495,7 +494,9 @@ const WalletTransferModal = ({
         </div>
 
         <div>
-          <label className='text-sm font-medium mb-2 block'>Amount to Send</label>
+          <label className='text-sm font-medium mb-2 block'>
+            Amount to Send
+          </label>
           <input
             type='text'
             value={formatAmountDigits(amountInput)}
