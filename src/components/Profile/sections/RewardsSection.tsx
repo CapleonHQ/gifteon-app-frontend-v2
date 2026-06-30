@@ -205,7 +205,6 @@ const RewardsSection = () => {
                   </span>
                 </p>
               </div>
-
               <button
                 type='button'
                 onClick={() => setIsRedeemOpen(true)}
