@@ -4,15 +4,10 @@ import {
   getWalletDetails,
   getWalletTransactions,
   getWalletWithdrawals,
-  lookupTransferRecipient,
   topupWalletLocals,
-  transferToWallet,
   withdrawFromWallet,
 } from '@/api/services/wallet'
 import type {
-  TransferRecipientLookupData,
-  TransferRequestBody,
-  TransferResultData,
   WalletDetails,
   WalletTopupInitialization,
   WalletWithdrawalData,
@@ -94,28 +89,6 @@ export const useWithdrawFromWallet = () => {
       queryClient.invalidateQueries({ queryKey: ['wallet', 'details'] })
       queryClient.invalidateQueries({ queryKey: ['wallet', 'transactions'] })
       queryClient.invalidateQueries({ queryKey: ['wallet', 'withdrawals'] })
-    },
-  })
-}
-
-export const useLookupTransferRecipient = () => {
-  return useMutation({
-    mutationFn: (
-      tag: string
-    ): Promise<ApiResponse<TransferRecipientLookupData>> =>
-      lookupTransferRecipient(tag),
-  })
-}
-
-export const useTransferToWallet = () => {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (
-      data: TransferRequestBody
-    ): Promise<ApiResponse<TransferResultData>> => transferToWallet(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallet', 'details'] })
-      queryClient.invalidateQueries({ queryKey: ['wallet', 'transactions'] })
     },
   })
 }

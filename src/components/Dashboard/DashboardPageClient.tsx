@@ -16,10 +16,10 @@ const DashboardPageClient = () => {
     () =>
       overviewData && currency
         ? overviewData.recentGifts.map((item) =>
-            mapDashboardRecentGiftItem(item, currency),
+            mapDashboardRecentGiftItem(item, currency)
           )
         : [],
-    [currency, overviewData],
+    [currency, overviewData]
   )
   const isLoadingRecentGifts =
     statsOverview.isLoading && recentGifts.length === 0
@@ -29,13 +29,12 @@ const DashboardPageClient = () => {
 
   return (
     <>
-      {' '}
       {/* <KycBanner
         message='You have been sent a huge amount of money. Please update your KYC to access it.'
         actionLabel='Update KYC'
         onAction={() => router.push('/profile?modal=kyc&source=dashboard')}
       /> */}
-      <div className='mt-4 lg:mt-0 w-full flex flex-col gap-6 lg:gap-6 px-4 lg:px-0 mb-5 lg:mb-0'>
+      <div className='mt-4 lg:mt-0 w-full flex flex-col gap-8 lg:gap-7 px-4 lg:px-0 mb-5 lg:mb-0'>
         <DashboardStatsSection />
 
         <RecentGiftsSection
@@ -46,6 +45,7 @@ const DashboardPageClient = () => {
           onRetry={() => statsOverview.refetch()}
         />
       </div>
+
       <button
         type='button'
         onClick={() => {

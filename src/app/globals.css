@@ -281,14 +281,6 @@ body {
   width: 100%;
 }
 
-.no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
 .app-shell-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(96, 92, 90, 0.18) transparent;

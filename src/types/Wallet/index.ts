@@ -19,28 +19,6 @@ export interface WithdrawRequestBody {
   pin: string
 }
 
-export interface TransferRecipientLookupData {
-  userId: string
-  fullName: string
-  tag: string
-  profilePicture: string | null
-  walletCurrency: string
-}
-
-export interface TransferRequestBody {
-  receiverTag: string
-  amount: number
-  pin: string
-}
-
-export interface TransferResultData {
-  reference: string
-  fee: number
-  convertedAmount: number
-  receiverCurrency: string
-  senderCurrency: string
-}
-
 export interface WalletWithdrawalData {
   id: string
   reference: string

@@ -55,11 +55,6 @@ const RegisterPage = () => {
     return requestedNextPath
   }
 
-  useEffect(() => {
-    const ref = searchParams.get('ref')
-    if (ref) setReferralCode(ref)
-  }, [searchParams])
-
   // Countdown timer for resend
   useEffect(() => {
     if (currentStep === 'verification' && countdown > 0) {
@@ -111,7 +106,7 @@ const RegisterPage = () => {
 
   const resolveConfirmPasswordError = (
     passwordValue: string,
-    confirmPasswordValue: string,
+    confirmPasswordValue: string
   ) => {
     if (!confirmPasswordValue) return ''
     if (!passwordValue) return ''
@@ -151,9 +146,7 @@ const RegisterPage = () => {
         email,
         password,
         referralCode: referralCode.trim() || undefined,
-        gender: gender
-          ? `${gender[0].toUpperCase()}${gender.slice(1)}`
-          : undefined,
+        gender: gender ? `${gender[0].toUpperCase()}${gender.slice(1)}` : undefined,
         country,
       })
       setCurrentStep('verification')
@@ -202,7 +195,7 @@ const RegisterPage = () => {
 
   const handleOtpKeyDown = (
     index: number,
-    event: React.KeyboardEvent<HTMLInputElement>,
+    event: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (error) setError('')
     const { key } = event
@@ -280,9 +273,7 @@ const RegisterPage = () => {
     setError('')
   }
 
-  const handleFirstNameChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFirstNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(event.target.value)
   }
 
@@ -295,24 +286,24 @@ const RegisterPage = () => {
     setPassword(nextPassword)
     setPasswordError(resolvePasswordError(nextPassword))
     setConfirmPasswordError(
-      resolveConfirmPasswordError(nextPassword, confirmPassword),
+      resolveConfirmPasswordError(nextPassword, confirmPassword)
     )
     if (error) setError('')
   }
 
   const handleConfirmPasswordChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const nextConfirmPassword = event.target.value
     setConfirmPassword(nextConfirmPassword)
     setConfirmPasswordError(
-      resolveConfirmPasswordError(password, nextConfirmPassword),
+      resolveConfirmPasswordError(password, nextConfirmPassword)
     )
     if (error) setError('')
   }
 
   const handleReferralCodeChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setReferralCode(event.target.value)
   }

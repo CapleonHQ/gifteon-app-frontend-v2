@@ -5,14 +5,14 @@ import { format, subDays, subMonths } from 'date-fns'
 import CashIcon from '@/assets/icons/CashIcon'
 import GiftIcon from '@/assets/icons/GiftIcon'
 import NotificationCircleIcon from '@/assets/icons/NotificationCircleIcon'
+import ViewIcon from '@/assets/icons/ViewIcon'
 import SummaryCards from './SummaryCards'
 import VisitSharesCard from './VisitSharesCard'
+import GiftTypeDistributionCard from './GiftTypeDistributionCard'
 import ClaimableBalanceModal from './ClaimableBalanceModal'
 import SummaryCardsSkeleton from './Skeletons/SummaryCardsSkeleton'
 import VisitSharesSkeleton from './Skeletons/VisitSharesSkeleton'
-import DashboardWalletBanner from './DashboardWalletBanner'
-import DashboardQuickActions from './DashboardQuickActions'
-import DashboardRecentTransactions from './DashboardRecentTransactions'
+import GiftTypeDistributionSkeleton from './Skeletons/GiftTypeDistributionSkeleton'
 import {
   useStatsOverview as useStatsOverviewQuery,
   useVisitSharesChart,
@@ -88,15 +88,15 @@ const DashboardStatsSection = () => {
       rangeLabel: string
     }>
   }, [])
-
   const overview = useStatsOverviewQuery()
   const visitShares = useVisitSharesChart({
     filter: visitRange,
   })
   const overviewData = overview.data?.data?.overview
+  const chartData = overview.data?.data?.chart
 
   const summaryItems = useMemo(() => {
-    if (!overviewData) return emptySummaryCards.slice(0, 3)
+    if (!overviewData) return emptySummaryCards
     const currency = overviewData.currency
     const visibilityMeta = [
       `${overviewData.visibilityBreakdown.public} public`,
@@ -111,9 +111,8 @@ const DashboardStatsSection = () => {
           maximumFractionDigits: 0,
         }),
         meta: 'Updated today',
-        iconBg: '#FFF4E9',
         icon: (
-          <span className='w-5 h-5 text-[#FF8D28]'>
+          <span className='w-4 h-4 text-[#FF8D28]'>
             <CashIcon />
           </span>
         ),
@@ -126,9 +125,8 @@ const DashboardStatsSection = () => {
         title: 'Active pages',
         value: String(overviewData.activePages),
         meta: visibilityMeta,
-        iconBg: '#E8FFF0',
         icon: (
-          <span className='w-5 h-5 text-[#34C759]'>
+          <span className='w-4 h-4 text-[#34C759]'>
             <NotificationCircleIcon />
           </span>
         ),
@@ -138,15 +136,48 @@ const DashboardStatsSection = () => {
         title: 'Pending gifts',
         value: String(overviewData.pendingContributions),
         meta: 'Updated today',
-        iconBg: '#E6FAFB',
         icon: (
-          <span className='w-5 h-5 text-[#00C3D0]'>
+          <span className='w-4 h-4 text-[#00C3D0]'>
             <GiftIcon />
+          </span>
+        ),
+      },
+      {
+        id: 'views',
+        title: 'Page views',
+        value: String(overviewData.pageViews),
+        meta: 'Updated today',
+        icon: (
+          <span className='w-4 h-4 text-[#CB1A14]'>
+            <ViewIcon />
           </span>
         ),
       },
     ]
   }, [overviewData])
+
+  const giftDistribution = useMemo(
+    () =>
+      chartData
+        ? [
+            { type: 'Cash Gifts', total: chartData.giftDistribution.cash },
+            {
+              type: 'Store and Custom Gifts',
+              total: chartData.giftDistribution.wishlist,
+            },
+            {
+              type: 'Open Gifts',
+              total: chartData.giftDistribution.custom,
+            },
+          ]
+        : [],
+    [chartData]
+  )
+
+  const giftDistributionTotal = useMemo(
+    () => giftDistribution.reduce((sum, item) => sum + item.total, 0),
+    [giftDistribution]
+  )
 
   const visitPoints = useMemo(
     () => visitShares.data?.data?.chart?.visitTOsharesLineChart ?? [],
@@ -155,17 +186,13 @@ const DashboardStatsSection = () => {
 
   return (
     <>
-      <DashboardWalletBanner />
-
-      <DashboardQuickActions />
-
       {overview.isLoading ? (
         <SummaryCardsSkeleton />
       ) : (
         <SummaryCards items={summaryItems} />
       )}
 
-      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,340px)] gap-4'>
+      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,346px)] gap-4 mt-2 lg:mt-0'>
         {visitShares.isLoading ? (
           <VisitSharesSkeleton />
         ) : (
@@ -176,7 +203,14 @@ const DashboardStatsSection = () => {
             points={visitPoints}
           />
         )}
-        <DashboardRecentTransactions />
+        {overview.isLoading ? (
+          <GiftTypeDistributionSkeleton />
+        ) : (
+          <GiftTypeDistributionCard
+            distribution={giftDistribution}
+            total={giftDistributionTotal}
+          />
+        )}
       </div>
 
       <ClaimableBalanceModal

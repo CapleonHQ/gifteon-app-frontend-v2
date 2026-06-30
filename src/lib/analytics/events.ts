@@ -168,27 +168,6 @@ export const analytics = {
     reason: 'pin' | 'kyc' | 'other'
     error_message: string
   }) => capture('wallet_withdraw_failed', properties),
-  trackWalletTransferRecipientResolved: (properties: { currency: string }) =>
-    capture('wallet_transfer_recipient_resolved', properties),
-  trackWalletTransferPinStepOpened: (properties: {
-    amount: number
-    currency: string
-  }) => capture('wallet_transfer_pin_step_opened', properties),
-  trackWalletTransferSubmitted: (properties: {
-    amount: number
-    currency: string
-  }) => capture('wallet_transfer_submitted', properties),
-  trackWalletTransferSucceeded: (properties: {
-    amount: number
-    currency: string
-    cross_currency: boolean
-  }) => capture('wallet_transfer_succeeded', properties),
-  trackWalletTransferFailed: (properties: {
-    amount: number
-    currency: string
-    reason: 'pin' | 'other'
-    error_message: string
-  }) => capture('wallet_transfer_failed', properties),
   trackKycModalOpened: (properties: { source: string }) =>
     capture('kyc_modal_opened', properties),
   trackDashboardRecentGiftActionOpened: (properties: {
@@ -333,40 +312,4 @@ export const analytics = {
   trackBillsIdentifierSuggestionSelected: (properties: {
     bill_type: 'airtime' | 'data' | 'electricity' | 'cable_tv'
   }) => capture('bills_identifier_suggestion_selected', properties),
-  trackGiveawayCreateStepViewed: (properties: {
-    step: 'category' | 'details' | 'content' | 'review'
-    category: 'trivia' | 'task' | 'lottery' | null
-  }) => capture('giveaway_create_step_viewed', properties),
-  trackGiveawayCreated: (properties: {
-    category: 'trivia' | 'task' | 'lottery'
-    prize_type: string
-    winner_count: number
-  }) => capture('giveaway_created', properties),
-  trackGiveawayPublished: (properties: { giveaway_id: string }) =>
-    capture('giveaway_published', properties),
-  trackGiveawayWinnersSelected: (properties: {
-    giveaway_id: string
-    winner_count: number
-  }) => capture('giveaway_winners_selected', properties),
-  trackGiveawayShareOpened: (properties: {
-    giveaway_id: string
-    source: 'owner_detail' | 'public_page'
-  }) => capture('giveaway_share_opened', properties),
-  trackGiveawayEntered: (properties: {
-    giveaway_id: string
-    category: 'trivia' | 'task' | 'lottery'
-  }) => capture('giveaway_entered', properties),
-  trackGiveawayTriviaSubmitted: (properties: {
-    giveaway_id: string
-    score: number
-  }) => capture('giveaway_trivia_submitted', properties),
-  trackGiveawayTaskSubmitted: (properties: {
-    giveaway_id: string
-    task_id: string
-  }) => capture('giveaway_task_submitted', properties),
-  trackGiveawayViewed: (properties: {
-    giveaway_id: string
-    category: 'trivia' | 'task' | 'lottery'
-    status: string
-  }) => capture('giveaway_viewed', properties),
 }

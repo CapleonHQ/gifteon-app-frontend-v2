@@ -13,16 +13,11 @@ const CURRENCY_LOCALE_MAP: Record<string, string> = {
   EUR: 'en-IE',
 }
 
-export const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+const CURRENCY_SYMBOL_MAP: Record<string, string> = {
   NGN: '₦',
   USD: '$',
   GBP: '£',
   EUR: '€',
-}
-
-export const formatAmountDigits = (value: string): string => {
-  const numeric = value.replace(/\D/g, '')
-  return numeric ? Number(numeric).toLocaleString('en-US') : ''
 }
 
 export const formatCurrency = (
@@ -37,11 +32,9 @@ export const formatCurrency = (
 ): string => {
   const normalizedValue = Number.isFinite(value) ? value : 0
   const normalizedCurrency = currency.toUpperCase()
-  const resolvedLocale =
-    locale || CURRENCY_LOCALE_MAP[normalizedCurrency] || 'en-US'
+  const resolvedLocale = locale || CURRENCY_LOCALE_MAP[normalizedCurrency] || 'en-US'
   const resolvedCurrencyDisplay =
-    currencyDisplay ||
-    (normalizedCurrency === 'NGN' ? 'narrowSymbol' : 'symbol')
+    currencyDisplay || (normalizedCurrency === 'NGN' ? 'narrowSymbol' : 'symbol')
 
   try {
     return new Intl.NumberFormat(resolvedLocale, {
@@ -52,8 +45,7 @@ export const formatCurrency = (
       maximumFractionDigits,
     }).format(normalizedValue)
   } catch {
-    const symbol =
-      CURRENCY_SYMBOL_MAP[normalizedCurrency] || `${normalizedCurrency} `
+    const symbol = CURRENCY_SYMBOL_MAP[normalizedCurrency] || `${normalizedCurrency} `
     return `${symbol}${normalizedValue.toLocaleString('en-US', {
       minimumFractionDigits,
       maximumFractionDigits,

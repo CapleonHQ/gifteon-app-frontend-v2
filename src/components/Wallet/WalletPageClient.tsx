@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useMemo, useState } from 'react'
 import WalletSummarySection from './WalletSummarySection'
 import WalletDisputeModal from './WalletDisputeModal'
 import WalletPendingWithdrawalsBanner from './WalletPendingWithdrawalsBanner'
@@ -9,7 +8,6 @@ import WalletPendingWithdrawalsModal from './WalletPendingWithdrawalsModal'
 import WalletSummarySkeleton from './WalletSummarySkeleton'
 import WalletTopUpModal from './WalletTopUpModal'
 import WalletTransactionsSection from './WalletTransactionsSection'
-import WalletTransferModal from './WalletTransferModal'
 import WalletWithdrawModal from './WalletWithdrawModal'
 import { useSuccessModal } from '@/context/SuccessModalContext'
 import { useConnectedBanks } from '@/hooks/tanstack/banks'
@@ -20,17 +18,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { mapWalletBankAccounts } from './utils'
 
 const WalletPageClient = () => {
-  const searchParams = useSearchParams()
   const [isTopUpOpen, setIsTopUpOpen] = useState(false)
-  const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
-
-  useEffect(() => {
-    const modal = searchParams.get('modal')
-    if (modal === 'topup') setIsTopUpOpen(true)
-    else if (modal === 'transfer') setIsTransferOpen(true)
-    else if (modal === 'withdraw') setIsWithdrawOpen(true)
-  }, [])
   const [isDisputeOpen, setIsDisputeOpen] = useState(false)
   const [isPendingWithdrawalsOpen, setIsPendingWithdrawalsOpen] =
     useState(false)
@@ -103,7 +92,6 @@ const WalletPageClient = () => {
               maximumFractionDigits: 2,
             })}
             onTopUp={() => setIsTopUpOpen(true)}
-            onSend={() => setIsTransferOpen(true)}
             onWithdraw={() => setIsWithdrawOpen(true)}
             hasError={hasOverviewError}
             isRetrying={hasOverviewError && detailsQuery.isFetching}
@@ -126,13 +114,6 @@ const WalletPageClient = () => {
       <WalletTopUpModal
         isOpen={isTopUpOpen}
         onClose={() => setIsTopUpOpen(false)}
-      />
-
-      <WalletTransferModal
-        isOpen={isTransferOpen}
-        onClose={() => setIsTransferOpen(false)}
-        availableBalance={totalBalance}
-        currency={currency}
       />
 
       <WalletWithdrawModal

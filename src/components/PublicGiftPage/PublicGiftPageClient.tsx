@@ -17,7 +17,6 @@ import CommentComposer from './engagement/CommentComposer'
 import GiftListSection from './engagement/GiftListSection'
 import SuccessModal from './engagement/SuccessModal'
 import ConfirmationModal from './engagement/ConfirmationModal'
-import ComingSoonModal from './ComingSoonModal'
 import {
   resolveGiftOptions,
   resolveRecipientName,
@@ -38,7 +37,7 @@ type CheckoutResumeState = {
   selectedGiftIds: Record<string, boolean>
   giftQuantities: Record<string, number>
   cashAmountInputs: Record<string, string>
-  step: 'checkout'
+  step: 'payment'
 }
 
 export default function PublicGiftPageClient({
@@ -72,7 +71,6 @@ export default function PublicGiftPageClient({
   }, [pageData?.template?.name])
   const isTemplate4 = resolvedTemplateLayout === 'spotlightGrid'
   const [isSuccessModalOpen, setSuccessModalOpen] = useState(false)
-  const [isComingSoonModalOpen, setComingSoonModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isConfirmationModalOpen, setConfirmationModalOpen] = useState(false)
   const [confirmationGiftIds, setConfirmationGiftIds] = useState<string[]>([])
@@ -82,8 +80,9 @@ export default function PublicGiftPageClient({
   const [selectedGiftIds, setSelectedGiftIds] = useState<
     Record<string, boolean>
   >({})
-  const [confirmationInitialStep, setConfirmationInitialStep] =
-    useState<'checkout'>('checkout')
+  const [confirmationInitialStep, setConfirmationInitialStep] = useState<
+    'review' | 'payment'
+  >('review')
   const [confirmationCashAmountInputs, setConfirmationCashAmountInputs] =
     useState<Record<string, string>>({})
   const isAuthenticated = status === 'authenticated' && Boolean(user)
@@ -135,7 +134,7 @@ export default function PublicGiftPageClient({
         )
         setConfirmationGiftIds(restoredIds)
         setConfirmationCashAmountInputs(parsed.cashAmountInputs ?? {})
-        setConfirmationInitialStep('checkout')
+        setConfirmationInitialStep('payment')
         setConfirmationModalOpen(true)
       }
     } catch {
@@ -183,7 +182,7 @@ export default function PublicGiftPageClient({
       source: 'public_page',
     })
     setConfirmationGiftIds(selectedGiftItems.map((item) => item.id))
-    setConfirmationInitialStep('checkout')
+    setConfirmationInitialStep('review')
     setConfirmationCashAmountInputs({})
     setConfirmationModalOpen(true)
   }
@@ -191,7 +190,7 @@ export default function PublicGiftPageClient({
   const handleCloseConfirmation = () => {
     setConfirmationModalOpen(false)
     setConfirmationGiftIds([])
-    setConfirmationInitialStep('checkout')
+    setConfirmationInitialStep('review')
     setConfirmationCashAmountInputs({})
   }
 
@@ -199,7 +198,7 @@ export default function PublicGiftPageClient({
     setSuccessModalOpen(false)
     if (giftIds.length === 0) return
     setConfirmationGiftIds(giftIds)
-    setConfirmationInitialStep('checkout')
+    setConfirmationInitialStep('review')
     setConfirmationCashAmountInputs({})
     setConfirmationModalOpen(true)
   }
@@ -208,7 +207,7 @@ export default function PublicGiftPageClient({
     setConfirmationModalOpen(false)
     setConfirmationGiftIds([])
     setSelectedGiftIds({})
-    setConfirmationInitialStep('checkout')
+    setConfirmationInitialStep('review')
     setConfirmationCashAmountInputs({})
     if (typeof window !== 'undefined') {
       window.sessionStorage.removeItem(checkoutResumeStateKey)
@@ -217,7 +216,7 @@ export default function PublicGiftPageClient({
   }
 
   const handleRequestWalletSignIn = (payload: {
-    step: 'checkout'
+    step: 'payment'
     cashAmountInputs: Record<string, string>
   }) => {
     if (typeof window !== 'undefined') {
@@ -334,7 +333,7 @@ export default function PublicGiftPageClient({
             onAddGift={handleAddGift}
             onRemoveGift={handleRemoveGift}
             onChangeGiftQuantity={updateGiftQuantity}
-            onSendCustomGift={() => setComingSoonModalOpen(true)}
+            onSendCustomGift={() => setSuccessModalOpen(true)}
             onCheckout={handleOpenConfirmation}
           />
         </div>
@@ -350,11 +349,6 @@ export default function PublicGiftPageClient({
         onChangeGiftQuantity={updateGiftQuantity}
         currency={currency}
       />
-      <ComingSoonModal
-        isOpen={isComingSoonModalOpen}
-        onClose={() => setComingSoonModalOpen(false)}
-      />
-
       <ConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={handleCloseConfirmation}

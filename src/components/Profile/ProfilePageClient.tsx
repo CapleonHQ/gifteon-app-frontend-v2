@@ -23,7 +23,9 @@ import {
   useUpdateProfile,
 } from '@/hooks/tanstack/account'
 import { useKycStatus } from '@/hooks/tanstack/kyc'
-import { useProfileVerificationBadge } from '@/components/Profile/hooks/useProfileVerificationBadge'
+import {
+  useProfileVerificationBadge,
+} from '@/components/Profile/hooks/useProfileVerificationBadge'
 import { useProfileKycModal } from '@/components/Profile/hooks/useProfileKycModal'
 import {
   toProfileForm,
@@ -39,8 +41,7 @@ import { toApiError } from '@/api/errorHelpers'
 
 const MAX_PROFILE_PHOTO_SIZE_BYTES = 5 * 1024 * 1024
 const GIFTSEON_TAG_PATTERN = /^[a-z0-9_-]+$/
-const normalizeTag = (value: string) =>
-  value.trim().replace(/^@+/, '').toLowerCase()
+const normalizeTag = (value: string) => value.trim().replace(/^@+/, '').toLowerCase()
 const normalizeInterestValue = (value: string) => value.trim().toLowerCase()
 
 const ProfilePageClient = () => {
@@ -52,17 +53,16 @@ const ProfilePageClient = () => {
   const [isInterestsOpen, setIsInterestsOpen] = useState(false)
   const [isGiftseonTagModalOpen, setIsGiftseonTagModalOpen] = useState(false)
   const [profileDraft, setProfileDraft] = useState<ProfileFormState | null>(
-    null,
+    null
   )
   const [profileErrorMessage, setProfileErrorMessage] = useState('')
   const [profilePhotoPreviewUrl, setProfilePhotoPreviewUrl] = useState('')
   const [isUploadingProfilePhoto, setIsUploadingProfilePhoto] = useState(false)
   const [giftseonTagDraft, setGiftseonTagDraft] = useState('')
   const [isCheckingGiftseonTag, setIsCheckingGiftseonTag] = useState(false)
-  const [verifiedAvailableGiftseonTag, setVerifiedAvailableGiftseonTag] =
-    useState('')
+  const [verifiedAvailableGiftseonTag, setVerifiedAvailableGiftseonTag] = useState('')
   const [giftseonTagMessage, setGiftseonTagMessage] = useState(
-    'You can change your Giftseon tag only once. Choose carefully.',
+    'You can change your Giftseon tag only once. Choose carefully.'
   )
   const [hasGiftseonTagError, setHasGiftseonTagError] = useState(false)
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
@@ -89,12 +89,9 @@ const ProfilePageClient = () => {
 
   const currentInterests = useMemo(
     () => interestOptions.filter((item) => selectedInterests.includes(item.id)),
-    [selectedInterests],
+    [selectedInterests]
   )
-  const profileFromApi = useMemo(
-    () => toProfileForm(profileData),
-    [profileData],
-  )
+  const profileFromApi = useMemo(() => toProfileForm(profileData), [profileData])
   const activeProfile = useMemo(() => {
     const base = profileDraft ?? profileFromApi
     return {
@@ -104,11 +101,11 @@ const ProfilePageClient = () => {
   }, [profileDraft, profileFromApi])
   const normalizedDraftTag = useMemo(
     () => normalizeTag(giftseonTagDraft),
-    [giftseonTagDraft],
+    [giftseonTagDraft]
   )
   const normalizedCurrentApiTag = useMemo(
     () => normalizeTag(profileFromApi.giftseonTag),
-    [profileFromApi.giftseonTag],
+    [profileFromApi.giftseonTag]
   )
   const canChangeGiftseonTag = Boolean(profileData?.temporaryTag)
   const debouncedGiftseonTag = useDebounce(normalizedDraftTag, 500)
@@ -127,10 +124,7 @@ const ProfilePageClient = () => {
     profileQuery.isRefetchError ||
     (!profileQuery.isLoading && !profileData)
   const { label: verificationLabel, tone: verificationTone } =
-    useProfileVerificationBadge(
-      kycStatusQuery.data?.data,
-      profileData?.kycEnabled,
-    )
+    useProfileVerificationBadge(kycStatusQuery.data?.data, profileData?.kycEnabled)
 
   useEffect(() => {
     if (!profileData) return
@@ -139,10 +133,7 @@ const ProfilePageClient = () => {
       : []
 
     const mappedIds = incomingInterests
-      .map(
-        (interest) =>
-          interestIdByNormalizedValue[normalizeInterestValue(interest)],
-      )
+      .map((interest) => interestIdByNormalizedValue[normalizeInterestValue(interest)])
       .filter((value): value is string => Boolean(value))
 
     setSelectedInterests(mappedIds)
@@ -195,7 +186,7 @@ const ProfilePageClient = () => {
       setGiftseonTagMessage(
         canChangeGiftseonTag
           ? 'You can change your Giftseon tag only once. Choose carefully.'
-          : 'Your Giftseon tag has already been changed and can no longer be edited.',
+          : 'Your Giftseon tag has already been changed and can no longer be edited.'
       )
       return
     }
@@ -205,21 +196,16 @@ const ProfilePageClient = () => {
       setIsCheckingGiftseonTag(false)
       setVerifiedAvailableGiftseonTag('')
       setGiftseonTagMessage(
-        'Your Giftseon tag has already been changed and can no longer be edited.',
+        'Your Giftseon tag has already been changed and can no longer be edited.'
       )
       return
     }
 
-    if (
-      !debouncedGiftseonTag ||
-      debouncedGiftseonTag === normalizedCurrentApiTag
-    ) {
+    if (!debouncedGiftseonTag || debouncedGiftseonTag === normalizedCurrentApiTag) {
       setHasGiftseonTagError(false)
       setIsCheckingGiftseonTag(false)
       setVerifiedAvailableGiftseonTag('')
-      setGiftseonTagMessage(
-        'You can change your Giftseon tag only once. Choose carefully.',
-      )
+      setGiftseonTagMessage('You can change your Giftseon tag only once. Choose carefully.')
       return
     }
 
@@ -228,7 +214,7 @@ const ProfilePageClient = () => {
       setIsCheckingGiftseonTag(false)
       setVerifiedAvailableGiftseonTag('')
       setGiftseonTagMessage(
-        'Tag can only include lowercase letters, numbers, hyphen, or underscore.',
+        'Tag can only include lowercase letters, numbers, hyphen, or underscore.'
       )
       return
     }
@@ -267,9 +253,7 @@ const ProfilePageClient = () => {
         setIsCheckingGiftseonTag(false)
         setVerifiedAvailableGiftseonTag('')
         setHasGiftseonTagError(true)
-        setGiftseonTagMessage(
-          'Unable to verify tag right now. Please try again.',
-        )
+        setGiftseonTagMessage('Unable to verify tag right now. Please try again.')
       }
     })()
 
@@ -297,9 +281,7 @@ const ProfilePageClient = () => {
     setGiftseonTagDraft(profileFromApi.giftseonTag)
     setHasGiftseonTagError(false)
     setVerifiedAvailableGiftseonTag('')
-    setGiftseonTagMessage(
-      'You can change your Giftseon tag only once. Choose carefully.',
-    )
+    setGiftseonTagMessage('You can change your Giftseon tag only once. Choose carefully.')
   }
 
   const handleCloseGiftseonTagModal = () => {
@@ -308,9 +290,7 @@ const ProfilePageClient = () => {
     setHasGiftseonTagError(false)
     setIsCheckingGiftseonTag(false)
     setVerifiedAvailableGiftseonTag('')
-    setGiftseonTagMessage(
-      'You can change your Giftseon tag only once. Choose carefully.',
-    )
+    setGiftseonTagMessage('You can change your Giftseon tag only once. Choose carefully.')
   }
 
   const handleSaveProfile = async () => {
@@ -331,8 +311,7 @@ const ProfilePageClient = () => {
     } catch (error: unknown) {
       analytics.trackProfileSaveFailed({
         error_message:
-          toApiError(error).message ||
-          'Unable to update profile. Please try again.',
+          toApiError(error).message || 'Unable to update profile. Please try again.',
       })
       setProfileErrorMessage('Unable to update profile. Please try again.')
     }
@@ -350,7 +329,7 @@ const ProfilePageClient = () => {
     if (!GIFTSEON_TAG_PATTERN.test(nextTag)) {
       setHasGiftseonTagError(true)
       setGiftseonTagMessage(
-        'Tag can only include lowercase letters, numbers, hyphen, or underscore.',
+        'Tag can only include lowercase letters, numbers, hyphen, or underscore.'
       )
       return
     }
@@ -373,16 +352,12 @@ const ProfilePageClient = () => {
       setVerifiedAvailableGiftseonTag('')
       setHasGiftseonTagError(false)
       setGiftseonTagMessage(
-        'Your Giftseon tag has already been changed and can no longer be edited.',
+        'Your Giftseon tag has already been changed and can no longer be edited.'
       )
-      openSuccess({
-        message: 'Your Giftseon tag has been successfully updated.',
-      })
+      openSuccess({ message: 'Your Giftseon tag has been successfully updated.' })
     } catch (error: unknown) {
       analytics.trackProfileTagSaveFailed({
-        error_message:
-          toApiError(error).message ||
-          'Unable to update tag. Please try again.',
+        error_message: toApiError(error).message || 'Unable to update tag. Please try again.',
       })
       setHasGiftseonTagError(true)
       setGiftseonTagMessage('Unable to update tag. Please try again.')
@@ -530,8 +505,7 @@ const ProfilePageClient = () => {
               firstName: activeProfile.firstName,
               lastName: activeProfile.lastName,
               giftseonTag: activeProfile.giftseonTag,
-              profilePicture:
-                profilePhotoPreviewUrl || activeProfile.profilePicture,
+              profilePicture: profilePhotoPreviewUrl || activeProfile.profilePicture,
               verificationLabel,
               verificationTone,
             }}
@@ -670,7 +644,7 @@ const ProfilePageClient = () => {
             'You can change your Giftseon tag only once. Choose carefully.'
           ) {
             setGiftseonTagMessage(
-              'You can change your Giftseon tag only once. Choose carefully.',
+              'You can change your Giftseon tag only once. Choose carefully.'
             )
           }
         }}
@@ -682,7 +656,10 @@ const ProfilePageClient = () => {
         hasError={hasGiftseonTagError}
       />
 
-      <KycVerificationModal isOpen={isKycModalOpen} onClose={closeKycModal} />
+      <KycVerificationModal
+        isOpen={isKycModalOpen}
+        onClose={closeKycModal}
+      />
     </div>
   )
 }
