@@ -168,6 +168,27 @@ export const analytics = {
     reason: 'pin' | 'kyc' | 'other'
     error_message: string
   }) => capture('wallet_withdraw_failed', properties),
+  trackWalletTransferRecipientResolved: (properties: { currency: string }) =>
+    capture('wallet_transfer_recipient_resolved', properties),
+  trackWalletTransferPinStepOpened: (properties: {
+    amount: number
+    currency: string
+  }) => capture('wallet_transfer_pin_step_opened', properties),
+  trackWalletTransferSubmitted: (properties: {
+    amount: number
+    currency: string
+  }) => capture('wallet_transfer_submitted', properties),
+  trackWalletTransferSucceeded: (properties: {
+    amount: number
+    currency: string
+    cross_currency: boolean
+  }) => capture('wallet_transfer_succeeded', properties),
+  trackWalletTransferFailed: (properties: {
+    amount: number
+    currency: string
+    reason: 'pin' | 'other'
+    error_message: string
+  }) => capture('wallet_transfer_failed', properties),
   trackKycModalOpened: (properties: { source: string }) =>
     capture('kyc_modal_opened', properties),
   trackDashboardRecentGiftActionOpened: (properties: {

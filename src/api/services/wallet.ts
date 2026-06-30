@@ -4,6 +4,9 @@ import { ApiResponse } from '@/types/Common'
 import { generateIdempotencyKey } from '@/lib/utils/idempotency'
 import {
   TopupRequestBody,
+  TransferRecipientLookupData,
+  TransferRequestBody,
+  TransferResultData,
   WalletDetails,
   WalletWithdrawalData,
   WalletTopupLocalsResponse,
@@ -52,6 +55,27 @@ export const withdrawFromWallet = async (
   const idempotencyKey = generateIdempotencyKey()
   const resp: AxiosResponse<ApiResponse<WalletWithdrawalData>> =
     await apiService.appPrivate.post('/wallet/withdraw', data, {
+      headers: { 'idempotency-key': idempotencyKey },
+    })
+  return resp.data
+}
+
+export const lookupTransferRecipient = async (
+  tag: string
+): Promise<ApiResponse<TransferRecipientLookupData>> => {
+  const resp: AxiosResponse<ApiResponse<TransferRecipientLookupData>> =
+    await apiService.appPrivate.get('/misc/finance/transfer/lookup', {
+      params: { tag },
+    })
+  return resp.data
+}
+
+export const transferToWallet = async (
+  data: TransferRequestBody
+): Promise<ApiResponse<TransferResultData>> => {
+  const idempotencyKey = generateIdempotencyKey()
+  const resp: AxiosResponse<ApiResponse<TransferResultData>> =
+    await apiService.appPrivate.post('/wallet/transfer', data, {
       headers: { 'idempotency-key': idempotencyKey },
     })
   return resp.data
