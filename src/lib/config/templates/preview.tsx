@@ -1,15 +1,71 @@
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import Image from 'next/image'
 import {
   InstagramColored,
   LinkedinIcon,
   XTwitterIcon,
   ChevronDownIcon,
+  FacebookIcon,
 } from '@/assets/icons'
 import { GiftPageData } from '@/types/gifts'
 
-// ========== PREVIEW TEMPLATE 1 ==========
-export const PreviewTemplate1 = ({ data }: { data: GiftPageData }) => {
+const toCssTextAlign = (alignment: GiftPageData['title']['alignment']) =>
+  alignment === 'middle' ? 'center' : alignment
+
+const PreviewSocialLinks = ({ links }: { links: GiftPageData['socialLinks'] }) => (
+  <div className='flex gap-2'>
+    {links.facebook && (
+      <a
+        href={links.facebook}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 transition-colors hover:bg-blue-200'
+      >
+        <span className='block h-2.5 w-2.5'>
+          <FacebookIcon />
+        </span>
+      </a>
+    )}
+    {links.instagram && (
+      <a
+        href={links.instagram}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='flex h-5 w-5 items-center justify-center rounded-full bg-pink-100 transition-colors hover:bg-pink-200'
+      >
+        <span className='block h-2.5 w-2.5'>
+          <InstagramColored />
+        </span>
+      </a>
+    )}
+    {links.twitter && (
+      <a
+        href={links.twitter}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 transition-colors hover:bg-gray-200'
+      >
+        <span className='block h-2.5 w-2.5'>
+          <XTwitterIcon />
+        </span>
+      </a>
+    )}
+    {links.linkedin && (
+      <a
+        href={links.linkedin}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 transition-colors hover:bg-blue-200'
+      >
+        <span className='block h-2.5 w-2.5'>
+          <LinkedinIcon />
+        </span>
+      </a>
+    )}
+  </div>
+)
+
+export const PreviewClassicSplit = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -27,7 +83,7 @@ export const PreviewTemplate1 = ({ data }: { data: GiftPageData }) => {
             fontWeight: data.title.bold ? 'bold' : 'normal',
             fontStyle: data.title.italic ? 'italic' : 'normal',
             textDecoration: data.title.underline ? 'underline' : 'none',
-            textAlign: data.title.alignment,
+            textAlign: toCssTextAlign(data.title.alignment),
             color: data.title.color,
             fontFamily: data.title.font,
           }}
@@ -76,7 +132,7 @@ export const PreviewTemplate1 = ({ data }: { data: GiftPageData }) => {
                 textDecoration: data.description.underline
                   ? 'underline'
                   : 'none',
-                textAlign: data.description.alignment,
+                textAlign: toCssTextAlign(data.description.alignment),
                 color: data.description.color,
                 fontFamily: data.description.font,
               }}
@@ -92,44 +148,7 @@ export const PreviewTemplate1 = ({ data }: { data: GiftPageData }) => {
             >
               {data.button.label}
             </button>
-            <div className='flex gap-2'>
-              {data.socialLinks.instagram && (
-                <a
-                  href={data.socialLinks.instagram}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-5 h-5 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <InstagramColored />
-                  </span>
-                </a>
-              )}
-              {data.socialLinks.twitter && (
-                <a
-                  href={data.socialLinks.twitter}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <XTwitterIcon />
-                  </span>
-                </a>
-              )}
-              {data.socialLinks.linkedin && (
-                <a
-                  href={data.socialLinks.linkedin}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <LinkedinIcon />
-                  </span>
-                </a>
-              )}
-            </div>
+            <PreviewSocialLinks links={data.socialLinks} />
           </div>
         </div>
       </div>
@@ -191,10 +210,10 @@ export const PreviewTemplate1 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})
+PreviewClassicSplit.displayName = 'PreviewClassicSplit'
 
-// ========== PREVIEW TEMPLATE 2 ==========
-export const PreviewTemplate2 = ({ data }: { data: GiftPageData }) => {
+export const PreviewHaloPortrait = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -232,38 +251,7 @@ export const PreviewTemplate2 = ({ data }: { data: GiftPageData }) => {
             )}
           </div>
           <div className='flex flex-col gap-2 items-end'>
-            <div className='flex gap-2'>
-              {data.socialLinks.instagram && (
-                <a
-                  href={data.socialLinks.instagram}
-                  className='w-5 h-5 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <InstagramColored />
-                  </span>
-                </a>
-              )}
-              {data.socialLinks.twitter && (
-                <a
-                  href={data.socialLinks.twitter}
-                  className='w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <XTwitterIcon />
-                  </span>
-                </a>
-              )}
-              {data.socialLinks.linkedin && (
-                <a
-                  href={data.socialLinks.linkedin}
-                  className='w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <LinkedinIcon />
-                  </span>
-                </a>
-              )}
-            </div>
+            <PreviewSocialLinks links={data.socialLinks} />
             <button
               className='py-1 px-2 rounded-full text-xs'
               style={{
@@ -284,7 +272,7 @@ export const PreviewTemplate2 = ({ data }: { data: GiftPageData }) => {
               fontWeight: data.title.bold ? 'bold' : 'normal',
               fontStyle: data.title.italic ? 'italic' : 'normal',
               textDecoration: data.title.underline ? 'underline' : 'none',
-              textAlign: data.title.alignment,
+              textAlign: toCssTextAlign(data.title.alignment),
               color: data.title.color,
               fontFamily: data.title.font,
             }}
@@ -298,7 +286,7 @@ export const PreviewTemplate2 = ({ data }: { data: GiftPageData }) => {
               fontWeight: data.description.bold ? 'bold' : 'normal',
               fontStyle: data.description.italic ? 'italic' : 'normal',
               textDecoration: data.description.underline ? 'underline' : 'none',
-              textAlign: data.description.alignment,
+              textAlign: toCssTextAlign(data.description.alignment),
               color: data.description.color,
               fontFamily: data.description.font,
             }}
@@ -362,10 +350,10 @@ export const PreviewTemplate2 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})
+PreviewHaloPortrait.displayName = 'PreviewHaloPortrait'
 
-// ========== PREVIEW TEMPLATE 3 ==========
-export const PreviewTemplate3 = ({ data }: { data: GiftPageData }) => {
+export const PreviewStorySplit = memo(({ data }: { data: GiftPageData }) => {
   const [activeTab, setActiveTab] = useState<'comments' | 'activities'>(
     'comments'
   )
@@ -385,7 +373,7 @@ export const PreviewTemplate3 = ({ data }: { data: GiftPageData }) => {
                 fontWeight: data.title.bold ? 'bold' : 'normal',
                 fontStyle: data.title.italic ? 'italic' : 'normal',
                 textDecoration: data.title.underline ? 'underline' : 'none',
-                textAlign: data.title.alignment,
+                textAlign: toCssTextAlign(data.title.alignment),
                 color: data.title.color,
                 fontFamily: data.title.font,
               }}
@@ -401,7 +389,7 @@ export const PreviewTemplate3 = ({ data }: { data: GiftPageData }) => {
                 textDecoration: data.description.underline
                   ? 'underline'
                   : 'none',
-                textAlign: data.description.alignment,
+                textAlign: toCssTextAlign(data.description.alignment),
                 color: data.description.color,
                 fontFamily: data.description.font,
               }}
@@ -417,38 +405,7 @@ export const PreviewTemplate3 = ({ data }: { data: GiftPageData }) => {
             >
               {data.button.label}
             </button>
-            <div className='flex gap-2'>
-              {data.socialLinks.instagram && (
-                <a
-                  href={data.socialLinks.instagram}
-                  className='w-5 h-5 rounded-full bg-pink-100 flex items-center justify-center hover:bg-pink-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <InstagramColored />
-                  </span>
-                </a>
-              )}
-              {data.socialLinks.twitter && (
-                <a
-                  href={data.socialLinks.twitter}
-                  className='w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <XTwitterIcon />
-                  </span>
-                </a>
-              )}
-              {data.socialLinks.linkedin && (
-                <a
-                  href={data.socialLinks.linkedin}
-                  className='w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors'
-                >
-                  <span className='w-2.5 h-2.5 block'>
-                    <LinkedinIcon />
-                  </span>
-                </a>
-              )}
-            </div>
+            <PreviewSocialLinks links={data.socialLinks} />
           </div>
 
           {/* Image second */}
@@ -536,10 +493,10 @@ export const PreviewTemplate3 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})
+PreviewStorySplit.displayName = 'PreviewStorySplit'
 
-// ========== PREVIEW TEMPLATE 4 ==========
-export const PreviewTemplate4 = ({ data }: { data: GiftPageData }) => {
+export const PreviewSpotlightGrid = memo(({ data }: { data: GiftPageData }) => {
   const [commentsOpen, setCommentsOpen] = useState(true)
   const [activitiesOpen, setActivitiesOpen] = useState(false)
 
@@ -584,44 +541,15 @@ export const PreviewTemplate4 = ({ data }: { data: GiftPageData }) => {
               fontWeight: data.title.bold ? 'bold' : 'normal',
               fontStyle: data.title.italic ? 'italic' : 'normal',
               textDecoration: data.title.underline ? 'underline' : 'none',
-              textAlign: data.title.alignment,
+              textAlign: toCssTextAlign(data.title.alignment),
               color: data.title.color,
               fontFamily: data.title.font,
             }}
           >
             {data.title.text}
           </h1>
-          <div className='flex gap-2 mb-1.5'>
-            {data.socialLinks.instagram && (
-              <a
-                href={data.socialLinks.instagram}
-                className='w-5 h-5 rounded-full bg-pink-100 flex items-center justify-center'
-              >
-                <span className='w-2.5 h-2.5 block'>
-                  <InstagramColored />
-                </span>
-              </a>
-            )}
-            {data.socialLinks.twitter && (
-              <a
-                href={data.socialLinks.twitter}
-                className='w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center'
-              >
-                <span className='w-2.5 h-2.5 block'>
-                  <XTwitterIcon />
-                </span>
-              </a>
-            )}
-            {data.socialLinks.linkedin && (
-              <a
-                href={data.socialLinks.linkedin}
-                className='w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center'
-              >
-                <span className='w-2.5 h-2.5 block'>
-                  <LinkedinIcon />
-                </span>
-              </a>
-            )}
+          <div className='mb-1.5'>
+            <PreviewSocialLinks links={data.socialLinks} />
           </div>
           <p
             className='leading-snug'
@@ -630,7 +558,7 @@ export const PreviewTemplate4 = ({ data }: { data: GiftPageData }) => {
               fontWeight: data.description.bold ? 'bold' : 'normal',
               fontStyle: data.description.italic ? 'italic' : 'normal',
               textDecoration: data.description.underline ? 'underline' : 'none',
-              textAlign: data.description.alignment,
+              textAlign: toCssTextAlign(data.description.alignment),
               color: data.description.color,
               fontFamily: data.description.font,
             }}
@@ -729,4 +657,5 @@ export const PreviewTemplate4 = ({ data }: { data: GiftPageData }) => {
       </div>
     </div>
   )
-}
+})
+PreviewSpotlightGrid.displayName = 'PreviewSpotlightGrid'

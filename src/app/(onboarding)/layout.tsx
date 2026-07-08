@@ -1,13 +1,48 @@
+'use client'
+
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import HomeIcon from '../../assets/icons/HomeIcon'
-import Image from 'next/image'
+import OnboardingLogo from './components/OnboardingLogo'
+import { useAuth } from '@/context/AuthContext'
 
 const OnboardingLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) => {
+  const router = useRouter()
+  const pathname = usePathname()
+  const { status } = useAuth()
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      const nextPath = new URLSearchParams(window.location.search).get('next')
+      const safeNextPath =
+        nextPath &&
+        nextPath.startsWith('/') &&
+        !nextPath.startsWith('//') &&
+        !nextPath.startsWith('/login')
+          ? nextPath
+          : null
+
+      if (pathname === '/login' && safeNextPath) {
+        router.replace(safeNextPath)
+        return
+      }
+      router.replace('/dashboard')
+    }
+  }, [status, router, pathname])
+
+  if (status !== 'unauthenticated') {
+    return (
+      <div className='w-full min-h-screen flex items-center justify-center bg-white'>
+        <div className='w-10 h-10 border-2 border-primary-500 border-t-transparent rounded-full animate-spin' />
+      </div>
+    )
+  }
+
   return (
     <div className='min-h-screen bg-white flex'>
       <div className='hidden lg:flex lg:flex-1 h-screen sticky top-0'>
@@ -34,17 +69,7 @@ const OnboardingLayout = ({
           </Link>
         </div>
         <div className='flex lg:hidden justify-between items-center py-6 px-4'>
-          <Link href='/'>
-            <div className='w-[146px] h-[60px] flex items-center justify-center'>
-              <Image
-                src='/assets/images/logo/logo.svg'
-                alt='Giftseon'
-                className='w-full h-full'
-                width={200}
-                height={80}
-              />
-            </div>
-          </Link>
+          <OnboardingLogo />
           <Link href='/'>
             <div className='flex items-center space-x-1'>
               <span className='w-4 h-4 text-[#5B7880]'>

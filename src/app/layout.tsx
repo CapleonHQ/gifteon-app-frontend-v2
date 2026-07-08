@@ -3,6 +3,11 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import degular from '@/assets/fonts/degular'
 import georgia from '@/assets/fonts/georgia'
+import CookieConsentBanner from '@/components/CookieConsent/CookieConsentBanner'
+import PostHogAuthBridge from '@/components/Providers/PostHogAuthBridge'
+import QueryProvider from '@/components/Providers/QueryProvider'
+import { AuthProvider } from '@/context/AuthContext'
+import { SuccessModalProvider } from '@/context/SuccessModalContext'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -16,12 +21,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Giftseon - Celebrating Life's Special Moments",
+    default: 'Giftseon - Send Gifts Globally',
     template: '%s | Giftseon',
   },
   description:
     'Make every celebration unforgettable with Giftseon. Create elegant gift collections, gather meaningful contributions, and unite loved ones for birthdays, weddings, graduations and more. Trusted by 200K+ users worldwide.',
   keywords: [
+    'send gift',
+    'gift global',
     'gift collection',
     'birthday celebration',
     'wedding gifts',
@@ -47,7 +54,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://giftseon.com',
     siteName: 'Giftseon',
-    title: "Giftseon - Celebrating Life's Special Moments",
+    title: 'Giftseon - Send Gifts Globally',
     description:
       'Make every celebration unforgettable. Create beautiful gift collections and unite loved ones for birthdays, weddings, graduations and more. Join 200K+ happy users.',
     images: [
@@ -55,11 +62,11 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Giftseon - Make Every Celebration Unforgettable',
+        alt: 'Giftseon - Send Gifts Globally',
         type: 'image/jpeg',
       },
       {
-        url: '/og-image-square.jpg',
+        url: '/og-image.jpg',
         width: 400,
         height: 400,
         alt: 'Giftseon Logo',
@@ -69,10 +76,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Giftseon - Celebrating Life's Special Moments",
+    title: 'Giftseon - Send Gifts Globally',
     description:
       'Make every celebration unforgettable. Create beautiful gift collections and unite loved ones for special moments.',
-    images: ['/twitter-image.jpg'],
+    images: ['/og-image.jpg'],
     creator: '@giftseon',
     site: '@giftseon',
   },
@@ -97,13 +104,13 @@ export const metadata: Metadata = {
   category: 'technology',
   classification: 'Gift Collection Platform',
   other: {
-    'theme-color': '[#F97316]',
+    'theme-color': '[#1a1abc]',
     'color-scheme': 'light dark',
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': 'Giftseon',
     'mobile-web-app-capable': 'yes',
-    'msapplication-TileColor': '#F97316',
+    'msapplication-TileColor': '#1a1abc',
     'msapplication-config': '/browserconfig.xml',
   },
   manifest: '/manifest.json',
@@ -133,7 +140,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${degular.variable} ${georgia.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>
+          <AuthProvider>
+            <SuccessModalProvider>
+              <PostHogAuthBridge />
+              {children}
+              <CookieConsentBanner />
+            </SuccessModalProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   )

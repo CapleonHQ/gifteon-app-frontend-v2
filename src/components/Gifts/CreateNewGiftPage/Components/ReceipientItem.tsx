@@ -1,44 +1,57 @@
-import React from 'react'
-import InputField from './InputField'
 import { Recipient } from '@/types/gifts'
+import EditIcon from '@/assets/icons/EditIcon'
+import DeleteIcon from '@/assets/icons/DeleteIcon'
+import { getInitials } from '@/lib/utils/initials'
 
 const RecipientItem = ({
   recipient,
-  index,
-  onChange,
+  onEdit,
   onRemove,
-  canRemove,
 }: {
   recipient: Recipient
-  index: number
-  onChange: (index: number, field: keyof Recipient, value: string) => void
-  onRemove: (index: number) => void
-  canRemove: boolean
-}) => (
-  <div className='space-y-3 mb-4 rounded-lg'>
-    <InputField
-      label='Name'
-      value={recipient.name}
-      onChange={(value) => onChange(index, 'name', value)}
-      placeholder='Enter recipient name'
-    />
-    <InputField
-      label='Email Address'
-      value={recipient.email}
-      onChange={(value) => onChange(index, 'email', value)}
-      placeholder='Enter recipient email address'
-      type='email'
-    />
-    {canRemove && (
-      <button
-        type='button'
-        onClick={() => onRemove(index)}
-        className='text-sm text-red-600 hover:text-red-700'
-      >
-        Remove
-      </button>
-    )}
-  </div>
-)
+  onEdit: () => void
+  onRemove: () => void
+}) => {
+  const initials = getInitials(recipient.name, recipient.email)
+
+  return (
+    <div className='flex items-center justify-between gap-3 rounded-[16px] border-[0.5px] border-secondary-800 bg-white px-2.5 py-2 shadow-[0px_1px_2px_-1px_#10192812] border-l-4'>
+      <div className='flex items-center gap-1.5'>
+        <div className='w-10 h-10 rounded-full bg-secondary-100 text-secondary-700 flex items-center justify-center text-sm font-semibold'>
+          {initials}
+        </div>
+        <div>
+          <p className='text-grey-900 text-sm font-semibold'>
+            {recipient.name || 'Unnamed recipient'}
+          </p>
+          <p className='text-grey-600 text-xs'>{recipient.email}</p>
+        </div>
+      </div>
+      <div className='flex items-center gap-2.5'>
+        <button
+          type='button'
+          onClick={onEdit}
+          className='w-4 h-4 rounded-lg flex items-center justify-center'
+          aria-label='Edit recipient'
+        >
+          <span className='text-grey-600 transition-colors hover:text-grey-800'>
+            <EditIcon />
+          </span>
+        </button>
+        <div className='w-px h-6 bg-grey-50' />
+        <button
+          type='button'
+          onClick={onRemove}
+          className='w-4 h-4 rounded-lg flex items-center justify-center'
+          aria-label='Remove recipient'
+        >
+          <span className='text-error-300 transition-colors hover:text-error-600'>
+            <DeleteIcon />
+          </span>
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export default RecipientItem

@@ -1,6 +1,6 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import Image from 'next/image'
+import type { TemplateMeta } from './types'
 import {
   InstagramColored,
   LinkedinIcon,
@@ -8,35 +8,55 @@ import {
   ChevronDownIcon,
 } from '../../../assets/icons'
 
-export const TEMPLATES = [
+export const TEMPLATES: TemplateMeta[] = [
   {
-    id: 1,
-    title: 'Template 1',
+    title: 'Classic Split',
     description: 'Side by side layout',
-    layout: 'template1',
+    layout: 'classicSplit',
   },
   {
-    id: 2,
-    title: 'Template 2',
+    title: 'Halo Portrait',
     description: 'Centered circular image',
-    layout: 'template2',
+    layout: 'haloPortrait',
   },
   {
-    id: 3,
-    title: 'Template 3',
+    title: 'Story Split',
     description: 'Horizontal split view',
-    layout: 'template3',
+    layout: 'storySplit',
   },
   {
-    id: 4,
-    title: 'Template 4',
+    title: 'Spotlight Grid',
     description: 'Grid layout',
-    layout: 'template4',
+    layout: 'spotlightGrid',
   },
 ]
 
+const normalizeTemplateName = (value?: string | null) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+
+export const getTemplateMetaByName = (
+  name?: string | null
+): TemplateMeta | null => {
+  const normalizedName = normalizeTemplateName(name)
+  if (!normalizedName) return null
+
+  return (
+    TEMPLATES.find(
+      (template) => normalizeTemplateName(template.title) === normalizedName
+    ) ?? null
+  )
+}
+
+export const getTemplateLayoutByName = (
+  name?: string | null
+): TemplateMeta['layout'] | null => {
+  return getTemplateMetaByName(name)?.layout ?? null
+}
+
 // ========== SELECTION TEMPLATES (Scaled for grid view) ==========
-export const Template1Selection = () => (
+export const ClassicSplitSelection = () => (
   <div className='w-full h-full flex flex-col gap-3 relative pb-6 bg-white'>
     {/* Colored Background - scaled down */}
     <div className='absolute top-0 left-0 right-0 h-32 bg-warning-50'></div>
@@ -123,7 +143,7 @@ export const Template1Selection = () => (
   </div>
 )
 
-export const Template2Selection = () => (
+export const HaloPortraitSelection = () => (
   <div className='w-full h-full flex flex-col gap-3 relative pb-6 bg-white'>
     <div className='absolute top-0 left-0 right-0 h-20 bg-warning-50'></div>
 
@@ -204,7 +224,7 @@ export const Template2Selection = () => (
   </div>
 )
 
-export const Template3Selection = () => (
+export const StorySplitSelection = () => (
   <div className='w-full h-full flex flex-col gap-3 relative pb-6 bg-white'>
     <div className='absolute top-[-10px] left-0 right-0 h-20 bg-secondary-100 rounded-full blur-[20px]'></div>
 
@@ -286,7 +306,7 @@ export const Template3Selection = () => (
   </div>
 )
 
-export const Template4Selection = () => (
+export const SpotlightGridSelection = () => (
   <div className='w-full h-full flex flex-col gap-2 relative pb-6 bg-white'>
     <div className='absolute top-0 left-0 right-0 h-full w-1/2 bg-secondary-50 rounded-br-[80px] blur-[20px]'></div>
 

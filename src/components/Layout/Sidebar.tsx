@@ -8,9 +8,13 @@ import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { LogoutIcon } from '@/assets/icons'
 import { MENU_ITEMS } from '@/lib/constants/menu'
+import { logout } from '@/api/auth'
 
 const Sidebar = () => {
   const pathname = usePathname()
+  const handleLogout = () => {
+    logout({ redirectTo: '/login' })
+  }
 
   return (
     <div className='w-[264px] h-screen overflow-y-scroll bg-white border-r border-grey-50 flex flex-col px-3 py-6'>
@@ -73,6 +77,7 @@ const Sidebar = () => {
         <div className='pt-3 pb-2 border-y border-grey-50'>
           <motion.button
             className='w-full flex items-center gap-2 px-3 py-3 rounded-lg text-left text-grey-600 hover:bg-grey-50 transition-colors'
+            onClick={handleLogout}
             whileHover={{ x: 4 }}
             whileTap={{ scale: 0.98 }}
           >

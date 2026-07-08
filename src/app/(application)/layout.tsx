@@ -1,51 +1,50 @@
 'use client'
 
-import React from 'react'
-import Sidebar from '@/components/Layout/Sidebar'
-import Header from '@/components/Layout/Header'
-import { PAGE_TITLES } from '@/lib/constants/menu'
+import { useMemo, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
+import { resolvePageTitle } from '@/lib/utils/pageTitle'
+import { MobileBackProvider } from '@/components/Layout/MobileTitleContext'
+import ApplicationShell from '@/components/Layout/ApplicationShell'
+import OfflineBanner from '@/components/Layout/OfflineBanner'
+import AuthGuard from '@/components/Auth/AuthGuard'
+import AccountSetupGuard from '@/components/Auth/AccountSetupGuard'
+import { Toaster } from 'sonner'
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname()
-
-  // Get page title based on current pathname
-  const getPageTitle = () => {
-    // Check for exact match first
-    if (PAGE_TITLES[pathname]) {
-      return PAGE_TITLES[pathname]
-    }
-
-    // Check for partial match (useful for dynamic routes)
-    const matchedKey = Object.keys(PAGE_TITLES).find(
-      (key) => pathname.startsWith(key) && key !== '/'
-    )
-
-    return matchedKey ? PAGE_TITLES[matchedKey] : 'Dashboard'
-  }
-
-  const pageTitle = getPageTitle()
+  const pageTitle = useMemo(() => resolvePageTitle(pathname), [pathname])
 
   return (
-    <div className='w-full max-w-[2500px] flex flex-col h-screen bg-grey-50 text-blackish'>
-      <main className='grid grid-cols-1 lg:grid-cols-[auto_1fr] flex-1 overflow-hidden'>
-        {/* Desktop Sidebar */}
-        <div className='hidden lg:block'>
-          <Sidebar />
-        </div>
-        <div className='w-full h-full overflow-hidden flex-1 transition-all duration-300 flex flex-col'>
-          <Header pageTitle={pageTitle} />
-          <div className='flex-1 overflow-y-auto bg-white lg:bg-grey-50 mt-[72.5px] lg:mt-0 px-4 lg:px-6 pt-8 lg:pt-5 pb-6'>
-            <div className='lg:hidden'>
-              <h1 className='text-blackish text-2xl leading-[127%] font-medium'>
-                {pageTitle}
-              </h1>
-            </div>
+    <MobileBackProvider>
+      <Toaster
+        position='top-right'
+        offset={16}
+        mobileOffset={12}
+        closeButton
+        visibleToasts={3}
+        richColors
+        toastOptions={{
+          classNames: {
+            toast:
+              'group rounded-[12px] border border-grey-100 bg-white text-grey-900 shadow-[0px_10px_18px_-2px_#10192812] px-4 py-3',
+            title: 'text-sm font-medium leading-[20px] text-blackish',
+            description: 'text-xs leading-[18px] text-grey-700',
+            closeButton:
+              'border border-grey-100 bg-white text-grey-500 hover:bg-grey-50 hover:text-grey-700',
+            success: 'border-success-100 bg-success-50/60 text-success-900',
+            error: 'border-error-100 bg-error-50/60 text-error-900',
+          },
+        }}
+      />
+      <AuthGuard>
+        <AccountSetupGuard>
+          <ApplicationShell pageTitle={pageTitle}>
+            <OfflineBanner />
             {children}
-          </div>
-        </div>
-      </main>
-    </div>
+          </ApplicationShell>
+        </AccountSetupGuard>
+      </AuthGuard>
+    </MobileBackProvider>
   )
 }
 

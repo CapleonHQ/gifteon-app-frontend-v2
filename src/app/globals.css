@@ -58,7 +58,7 @@
   --success-900: #043d17;
 
   /* === Information === */
-  --information-50: #ebf1ff;
+  --information-50: #e8f1fb;
   --information-100: #b7d3f3;
   --information-200: #94b8ee;
   --information-300: #63a0e6;
@@ -280,6 +280,62 @@ body {
   overflow: hidden;
   width: 100%;
 }
+
+.app-shell-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(96, 92, 90, 0.18) transparent;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(96, 92, 90, 0.16);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 92, 90, 0.32);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.app-shell-scrollbar::-webkit-scrollbar-thumb:active {
+  background: rgba(96, 92, 90, 0.42);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+@keyframes shake-x {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake-x {
+  animation: shake-x 0.38s ease-in-out;
+}
 /* Light mode selection */
 ::selection {
   background-color: rgba(26, 26, 188, 0.2);
@@ -344,4 +400,28 @@ select:-webkit-autofill:focus {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes review-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.review-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: review-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.review-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.review-marquee-track-paused {
+  animation-play-state: paused;
 }
