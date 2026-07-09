@@ -20,6 +20,7 @@ import {
   resolveCashAmount,
 } from './confirmation/helpers'
 import { analytics } from '@/lib/analytics/events'
+import { calculateFee } from './utils'
 
 type ConfirmationModalProps = {
   isOpen: boolean
@@ -144,7 +145,8 @@ export default function ConfirmationModal({
     (sum, item) => sum + getLineAmount(item),
     0
   )
-  const serviceCharge = Math.round(giftsTotal * 0.07)
+  const serviceCharge = calculateFee(giftsTotal) || Math.round(giftsTotal * 0.07)
+  // const serviceCharge = Math.round(giftsTotal * 0.07)
   const total = giftsTotal + serviceCharge
   const paymentBreakdownItems = selectedGiftItems.map((item) => ({
     id: item.id,

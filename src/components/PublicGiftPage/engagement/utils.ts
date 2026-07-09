@@ -10,6 +10,35 @@ import type { PublicActivityItem, GiftOption } from './types'
 
 export const DEFAULT_GIFT_IMAGE = '/assets/images/place-holder-image.jpg'
 
+export interface CurrencyFee {
+  /** Flat fee in currency units added to every transaction */
+  flat: number;
+  /** Percentage of amount as a decimal, e.g. 0.005 = 0.5% */
+  percent: number;
+  /** Maximum total fee regardless of amount */
+  cap: number;
+}
+
+const CURRENCY_WITHDRAWAL_FEES: Record<string, CurrencyFee> = {
+  NGN: { flat: 50, percent: 0.005, cap: 1_500 }, // ₦50 + 0.5%, max ₦1,500
+  USD: { flat: 1.5, percent: 0.008, cap: 50 }, // $1.50 + 0.8%, max $50
+  GBP: { flat: 1.0, percent: 0.008, cap: 40 }, // £1.00 + 0.8%, max £40
+  EUR: { flat: 1.0, percent: 0.008, cap: 40 }, // €1.00 + 0.8%, max €40
+  GHS: { flat: 2, percent: 0.0075, cap: 100 }, // GH₵2 + 0.75%, max GH₵100
+  KES: { flat: 25, percent: 0.005, cap: 2_000 }, // KSh25 + 0.5%, max KSh2,000
+  ZAR: { flat: 3, percent: 0.005, cap: 500 }, // R3 + 0.5%, max R500
+  XOF: { flat: 200, percent: 0.0075, cap: 10_000 }, // CFA200 + 0.75%, max CFA10,000
+  XAF: { flat: 200, percent: 0.0075, cap: 10_000 }, // CFA200 + 0.75%, max CFA10,000
+};
+
+export const calculateFee = (amount: number, currency: string = 'NGN'): number => {
+  const fee =
+    CURRENCY_WITHDRAWAL_FEES[currency] ?? CURRENCY_WITHDRAWAL_FEES['NGN'];
+  const computed = fee.flat + amount * fee.percent;
+  return Math.min(computed, fee.cap);
+};
+
+
 export const toRelativeTime = (value: string | null): string => {
   if (!value) return 'Recently'
   return formatRelativeTimeOrDate(value, 30)
