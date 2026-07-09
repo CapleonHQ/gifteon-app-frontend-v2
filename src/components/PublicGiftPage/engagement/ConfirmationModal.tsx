@@ -238,11 +238,11 @@ export default function ConfirmationModal({
       ...(cashGiftAmount > 0 ? { cashGiftAmount } : {}),
       ...(!isAuthenticated && paymentMethod === 'external'
         ? {
-            userDetails: {
-              fullName: guestDetails.fullName.trim(),
-              email: guestDetails.email.trim(),
-            },
-          }
+          userDetails: {
+            fullName: guestDetails.fullName.trim(),
+            email: guestDetails.email.trim(),
+          },
+        }
         : {}),
       ...(paymentMethod === 'wallet' ? { payWithWallet: true, pin } : {}),
     }
@@ -255,11 +255,11 @@ export default function ConfirmationModal({
   ) => {
     const firstFieldError = fieldErrors
       ? Object.values(fieldErrors).find(
-          (messages): messages is string[] =>
-            Array.isArray(messages) &&
-            messages.length > 0 &&
-            typeof messages[0] === 'string'
-        )?.[0]
+        (messages): messages is string[] =>
+          Array.isArray(messages) &&
+          messages.length > 0 &&
+          typeof messages[0] === 'string'
+      )?.[0]
       : undefined
 
     if (firstFieldError?.trim()) return firstFieldError.trim()

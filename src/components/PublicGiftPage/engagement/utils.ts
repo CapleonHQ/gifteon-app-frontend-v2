@@ -100,32 +100,32 @@ export const resolveGiftOptions = (page: PublicPageApiData): GiftOption[] => {
 
   const cashGiftItem: GiftOption | null = page.settings?.acceptCashGift
     ? (() => {
-        const coveredAmount = Math.max(
-          0,
-          readNumber(page.settings?.amount) ?? 0
-        )
-        const targetAmount = Math.max(
-          0,
-          readNumber(page.settings?.targetAmount) ?? 0
-        )
-        const minimumAmount = Math.max(
-          0,
-          readNumber(page.settings?.minimumAmount) ?? 0
-        )
-        return {
-          id: 'cash-gift',
-          title: 'Cash Gift',
-          subtitle: 'Send cash directly to the celebrant',
-          imageUrl: '',
-          price: Math.max(0, amount),
-          quantity: 1,
-          claimed: 0,
-          kind: 'cash',
-          coveredAmount,
-          targetAmount,
-          minimumAmount,
-        }
-      })()
+      const coveredAmount = Math.max(
+        0,
+        readNumber(page.settings?.amount) ?? 0
+      )
+      const targetAmount = Math.max(
+        0,
+        readNumber(page.settings?.targetAmount) ?? 0
+      )
+      const minimumAmount = Math.max(
+        0,
+        readNumber(page.settings?.minimumAmount) ?? 0
+      )
+      return {
+        id: 'cash-gift',
+        title: 'Cash Gift',
+        subtitle: 'Send cash directly to the celebrant',
+        imageUrl: '',
+        price: Math.max(0, amount),
+        quantity: 1,
+        claimed: 0,
+        kind: 'cash',
+        coveredAmount,
+        targetAmount,
+        minimumAmount,
+      }
+    })()
     : null
 
   if (cashGiftItem) {
