@@ -10,6 +10,9 @@ import SummaryCards from './SummaryCards'
 import VisitSharesCard from './VisitSharesCard'
 import GiftTypeDistributionCard from './GiftTypeDistributionCard'
 import ClaimableBalanceModal from './ClaimableBalanceModal'
+import DashboardWalletBanner from './DashboardWalletBanner'
+import DashboardQuickActions from './DashboardQuickActions'
+import DashboardRecentTransactions from './DashboardRecentTransactions'
 import SummaryCardsSkeleton from './Skeletons/SummaryCardsSkeleton'
 import VisitSharesSkeleton from './Skeletons/VisitSharesSkeleton'
 import GiftTypeDistributionSkeleton from './Skeletons/GiftTypeDistributionSkeleton'
@@ -186,6 +189,10 @@ const DashboardStatsSection = () => {
 
   return (
     <>
+      <DashboardWalletBanner />
+
+      <DashboardQuickActions />
+
       {overview.isLoading ? (
         <SummaryCardsSkeleton />
       ) : (
@@ -212,6 +219,8 @@ const DashboardStatsSection = () => {
           />
         )}
       </div>
+
+      <DashboardRecentTransactions />
 
       <ClaimableBalanceModal
         isOpen={isClaimableModalOpen}

@@ -14,6 +14,7 @@ type WalletSummarySectionProps = {
   totalWithdrawn: string
   onTopUp: () => void
   onWithdraw: () => void
+  onSend: () => void
   hasError?: boolean
   isRetrying?: boolean
   onRetry?: () => void
@@ -28,6 +29,7 @@ const WalletSummarySection = ({
   totalWithdrawn,
   onTopUp,
   onWithdraw,
+  onSend,
   hasError = false,
   isRetrying = false,
   onRetry,
@@ -128,6 +130,13 @@ const WalletSummarySection = ({
               className='px-4 py-1 rounded-[6px] bg-primary-400 text-white text-sm font-medium hover:bg-primary-500 transition-colors shadow-[0px_5px_13px_-5px_#1019280D]'
             >
               Withdraw
+            </button>
+            <button
+              type='button'
+              onClick={onSend}
+              className='px-4 py-1 rounded-[6px] bg-primary-400 text-white text-sm font-medium hover:bg-primary-500 transition-colors shadow-[0px_5px_13px_-5px_#1019280D]'
+            >
+              Send
             </button>
           </>
         }

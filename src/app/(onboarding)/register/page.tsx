@@ -55,6 +55,11 @@ const RegisterPage = () => {
     return requestedNextPath
   }
 
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) setReferralCode(ref)
+  }, [searchParams])
+
   // Countdown timer for resend
   useEffect(() => {
     if (currentStep === 'verification' && countdown > 0) {
