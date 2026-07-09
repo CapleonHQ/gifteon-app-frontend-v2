@@ -6,3 +6,7 @@ export const generateIdempotencyKey = (): string => {
   return `idem-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
+export const idempotencyHeaders = () => ({
+  headers: { 'idempotency-key': generateIdempotencyKey() },
+})
+

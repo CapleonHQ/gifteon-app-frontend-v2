@@ -4,7 +4,9 @@ import {
   getWalletDetails,
   getWalletTransactions,
   getWalletWithdrawals,
+  lookupTransferRecipient,
   topupWalletLocals,
+  transferToWallet,
   withdrawFromWallet,
 } from '@/api/services/wallet'
 import type {
@@ -16,6 +18,9 @@ import type {
   WalletTransactionsData,
   WalletTransactionsParams,
   WithdrawRequestBody,
+  TransferRecipientLookupData,
+  TransferRequestBody,
+  TransferResultData,
 } from '@/types/Wallet'
 import type { ApiResponse } from '@/types/Common'
 import {
@@ -89,6 +94,28 @@ export const useWithdrawFromWallet = () => {
       queryClient.invalidateQueries({ queryKey: ['wallet', 'details'] })
       queryClient.invalidateQueries({ queryKey: ['wallet', 'transactions'] })
       queryClient.invalidateQueries({ queryKey: ['wallet', 'withdrawals'] })
+    },
+  })
+}
+
+export const useLookupTransferRecipient = () => {
+  return useMutation({
+    mutationFn: (
+      tag: string
+    ): Promise<ApiResponse<TransferRecipientLookupData>> =>
+      lookupTransferRecipient(tag),
+  })
+}
+
+export const useTransferToWallet = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      data: TransferRequestBody
+    ): Promise<ApiResponse<TransferResultData>> => transferToWallet(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallet', 'details'] })
+      queryClient.invalidateQueries({ queryKey: ['wallet', 'transactions'] })
     },
   })
 }

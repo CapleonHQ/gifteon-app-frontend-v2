@@ -13,11 +13,16 @@ const CURRENCY_LOCALE_MAP: Record<string, string> = {
   EUR: 'en-IE',
 }
 
-const CURRENCY_SYMBOL_MAP: Record<string, string> = {
+export const CURRENCY_SYMBOL_MAP: Record<string, string> = {
   NGN: '₦',
   USD: '$',
   GBP: '£',
   EUR: '€',
+}
+
+export const formatAmountDigits = (value: string): string => {
+  const numeric = value.replace(/\D/g, '')
+  return numeric ? Number(numeric).toLocaleString('en-US') : ''
 }
 
 export const formatCurrency = (

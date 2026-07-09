@@ -233,3 +233,25 @@ export type WalletWithdrawalsData = {
     totalPages: number
   }
 }
+
+export interface TransferRecipientLookupData {
+  userId: string
+  fullName: string
+  tag: string
+  profilePicture: string | null
+  walletCurrency: string
+}
+
+export interface TransferRequestBody {
+  receiverTag: string
+  amount: number
+  pin: string
+}
+
+export interface TransferResultData {
+  reference: string
+  fee: number
+  convertedAmount: number
+  receiverCurrency: string
+  senderCurrency: string
+}

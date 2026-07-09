@@ -78,6 +78,7 @@ export type SummaryCardItem = {
   value: string
   meta: string
   icon: ReactNode
+  iconBg?: string
   actionLabel?: string
   onAction?: () => void
   actionDisabled?: boolean
